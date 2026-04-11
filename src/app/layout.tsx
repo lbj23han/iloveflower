@@ -63,7 +63,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon.png?v=2" />
         <meta
           name="google-site-verification"
-          content="Vq9YIQhP8jCnjy04VZuJho2Hrp8mVah5ZniB3UH6rhg"
+          content="0JLZhV3wwUOIb0z2HLvwOaXesjZI046RL_nD6jkh8zk"
         />
       </head>
       <body className="h-full">

@@ -2,7 +2,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { loadLocalEnv } = require('./loadEnv.cjs');
 const { CITY_BOUNDS, tileBounds } = require('./cityBounds.cjs');
-const { requestKeywordSearch, mapKakaoPlace } = require('./kakaoLocal.cjs');
+const { requestKeywordSearch, mapKakaoPlace, filterSpotsWithAI } = require('./kakaoLocal.cjs');
 
 const KEYWORDS = [
   '벚꽃 명소',
@@ -139,7 +139,13 @@ async function collectCitySpots(apiKey, cityKey) {
   }
 
   console.log(`[seed] ${city.label}: raw=${totalDocuments}, unique=${deduped.size}`);
-  return [...deduped.values()];
+  const allSpots = [...deduped.values()];
+
+  const apiKey = process.env.KAKAO_REST_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
+  const spots = await filterSpotsWithAI(allSpots, apiKey, openaiKey);
+  console.log(`[seed] ${city.label}: AI 필터 후 ${spots.length}개 (카페 제외 기준)`);
+  return spots;
 }
 
 async function main() {

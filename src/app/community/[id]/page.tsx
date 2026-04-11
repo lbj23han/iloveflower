@@ -305,6 +305,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               <>
                 <h1 className="text-base font-bold text-[#111827]">{post.title}</h1>
                 <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#374151]">{post.content}</p>
+                {post.image_urls && post.image_urls.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                    {post.image_urls.map((url) => (
+                      <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={url}
+                          alt=""
+                          className="aspect-square w-full rounded-[16px] object-cover shadow-sm"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                )}
                 <div className="mt-4 flex items-center gap-2 text-xs text-[#9ca3af]">
                   <span>{post.nickname}</span>
                   <span>·</span>

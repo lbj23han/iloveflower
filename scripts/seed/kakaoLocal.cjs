@@ -1,6 +1,9 @@
 const KAKAO_LOCAL_URL = 'https://dapi.kakao.com/v2/local/search/keyword.json';
+const KAKAO_BLOG_SEARCH_URL = 'https://dapi.kakao.com/v2/search/blog';
+const KAKAO_CAFE_SEARCH_URL = 'https://dapi.kakao.com/v2/search/cafe';
 const REQUEST_DELAY_MS = 180;
 const MAX_RETRIES = 3;
+const AI_BATCH_SIZE = 5;
 
 const FLOWER_TYPE_RULES = [
   { type: 'cherry', keywords: ['벚꽃', '벚나무'] },
@@ -79,21 +82,22 @@ function normalizeText(...parts) {
     .toLowerCase();
 }
 
+function isCafeOrFoodPlace(placeName, categoryName) {
+  return categoryName.includes('카페') || categoryName.includes('음식점')
+    || categoryName.includes('베이커리') || categoryName.includes('디저트')
+    || placeName.includes('카페') || placeName.toLowerCase().includes('cafe');
+}
+
 function isExcludedPlace(placeName, categoryName, keyword) {
   const text = normalizeText(placeName, categoryName, keyword);
   if (NOISE_KEYWORDS.some((noise) => text.includes(noise))) return true;
 
-  // 카카오 로컬 API는 블로그/후기 데이터가 없으므로
-  // 카페·음식점·숙박은 place_name에 꽃 관련 단어가 2개 이상 있을 때만 허용
-  // (단순히 "벚꽃카페"처럼 상호명에 꽃 단어를 끼워 넣은 것 방지)
-  const isCafeOrFood = categoryName.includes('카페') || categoryName.includes('음식점')
-    || categoryName.includes('베이커리') || categoryName.includes('디저트')
-    || placeName.includes('카페') || placeName.toLowerCase().includes('cafe');
-  if (isCafeOrFood) {
+  // 카페·음식점은 상호명에 꽃 단어가 하나도 없으면 즉시 제외 (명백히 무관한 곳)
+  // 꽃 단어가 있는 카페는 AI 검증을 거쳐야 하므로 여기서는 통과시킴 (mapKakaoPlace에서 _needsAiCheck 표시)
+  if (isCafeOrFoodPlace(placeName, categoryName)) {
     const nameOnly = placeName.toLowerCase();
-    const matchCount = CAFE_ALLOWED_FLOWER_WORDS.filter((w) => nameOnly.includes(w)).length;
-    // place_name에 꽃 단어가 없으면 제외, 1개만 있어도 제외 (상호명 편승 방지)
-    if (matchCount < 2) return true;
+    const hasAnyFlowerWord = CAFE_ALLOWED_FLOWER_WORDS.some((w) => nameOnly.includes(w));
+    if (!hasAnyFlowerWord) return true;
   }
 
   return false;
@@ -165,6 +169,7 @@ function mapKakaoPlace(place, keyword) {
   const category = inferCategory(place.place_name, place.category_name, keyword);
   const flags = inferFeatureFlags(place.place_name, place.category_name, keyword);
   const peakMonths = inferPeakMonths(flowerTypes);
+  const needsAiCheck = isCafeOrFoodPlace(place.place_name, place.category_name);
 
   return {
     external_place_id: place.id,
@@ -184,7 +189,117 @@ function mapKakaoPlace(place, keyword) {
     phone: place.phone || null,
     website_url: place.place_url || null,
     source: 'kakao_local',
+    _needsAiCheck: needsAiCheck,
   };
 }
 
-module.exports = { requestKeywordSearch, mapKakaoPlace };
+async function fetchBlogSnippets(placeName, address, kakaoApiKey) {
+  const query = `${placeName} 꽃`;
+  const snippets = [];
+
+  for (const url of [KAKAO_BLOG_SEARCH_URL, KAKAO_CAFE_SEARCH_URL]) {
+    try {
+      const params = new URLSearchParams({ query, size: '5', sort: 'accuracy' });
+      const res = await fetch(`${url}?${params}`, {
+        headers: { Authorization: `KakaoAK ${kakaoApiKey}` },
+      });
+      if (!res.ok) continue;
+      const json = await res.json();
+      for (const doc of json.documents ?? []) {
+        const text = (doc.contents || doc.title || '')
+          .replace(/<[^>]+>/g, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 200);
+        if (text && text.length > 10) snippets.push(text);
+      }
+      await sleep(REQUEST_DELAY_MS);
+    } catch {
+      // ignore per-source errors
+    }
+  }
+
+  return snippets;
+}
+
+async function validateCafeWithAI(spot, kakaoApiKey, openaiApiKey) {
+  const snippets = await fetchBlogSnippets(spot.name, spot.address, kakaoApiKey);
+  if (snippets.length === 0) return false;
+
+  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  const prompt = `카페/음식점 이름: "${spot.name}"
+주소: ${spot.address || ''}
+
+블로그·카페 검색 결과 (꽃 관련 검색):
+${snippets.map((s, i) => `[${i + 1}] ${s}`).join('\n')}
+
+위 검색 결과를 바탕으로, 이 장소가 실제로 꽃(벚꽃, 유채꽃, 장미 등 자연 꽃)과 관련된 명소인지 판단해주세요.
+단순히 상호명에 꽃 단어가 있는 것은 해당 없음. 실제 꽃밭, 꽃 정원, 꽃 명소 근처 카페 등만 해당.
+JSON {"is_flower_related": true/false} 만 반환하세요.`;
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${openaiApiKey}` },
+      signal: AbortSignal.timeout(20000),
+      body: JSON.stringify({
+        model,
+        temperature: 0,
+        max_completion_tokens: 30,
+        response_format: { type: 'json_object' },
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!res.ok) return false;
+    const json = await res.json();
+    const content = json?.choices?.[0]?.message?.content ?? '';
+    const parsed = JSON.parse(content);
+    return Boolean(parsed.is_flower_related);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validates cafe/food spots with AI (Kakao blog search + OpenAI nano).
+ * Returns spots with _needsAiCheck flag removed.
+ * Non-cafe spots pass through unchanged.
+ */
+async function filterSpotsWithAI(spots, kakaoApiKey, openaiApiKey) {
+  if (!openaiApiKey) {
+    console.warn('[ai-filter] OPENAI_API_KEY 없음 - 카페 AI 검증 건너뜀, 모두 제외');
+    return spots.filter((s) => !s._needsAiCheck).map(({ _needsAiCheck: _, ...rest }) => rest);
+  }
+
+  const regular = spots.filter((s) => !s._needsAiCheck).map(({ _needsAiCheck: _, ...rest }) => rest);
+  const cafes = spots.filter((s) => s._needsAiCheck);
+
+  if (cafes.length === 0) return regular;
+
+  console.log(`[ai-filter] 카페/음식점 ${cafes.length}개 AI 검증 시작`);
+  const validated = [];
+  let passed = 0;
+
+  for (let i = 0; i < cafes.length; i += AI_BATCH_SIZE) {
+    const batch = cafes.slice(i, i + AI_BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map((spot) => validateCafeWithAI(spot, kakaoApiKey, openaiApiKey)),
+    );
+    for (let j = 0; j < batch.length; j += 1) {
+      const { _needsAiCheck: _, ...rest } = batch[j];
+      if (results[j]) {
+        validated.push(rest);
+        passed += 1;
+        console.log(`[ai-filter] ✓ ${batch[j].name}`);
+      } else {
+        console.log(`[ai-filter] ✕ ${batch[j].name} (제외)`);
+      }
+    }
+  }
+
+  console.log(`[ai-filter] 카페 검증 완료: ${passed}/${cafes.length} 통과`);
+  return [...regular, ...validated];
+}
+
+module.exports = { requestKeywordSearch, mapKakaoPlace, filterSpotsWithAI };
