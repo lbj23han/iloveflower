@@ -259,6 +259,7 @@ export interface Post {
   anon_session_id: string;
   moderation_status: "visible" | "hidden" | "deleted";
   comment_count?: number;
+  image_urls: string[];
   created_at: string;
 }
 

@@ -31,6 +31,13 @@ const NOISE_KEYWORDS = [
   '리조트',
 ];
 
+// 카페는 이름에 꽃 관련 단어가 직접 있을 때만 허용
+const CAFE_ALLOWED_FLOWER_WORDS = [
+  '벚꽃', '벚나무', '매화', '진달래', '철쭉', '유채', '코스모스',
+  '해바라기', '라벤더', '장미', '튤립', '수국', '동백', '꽃밭',
+  '꽃길', '꽃정원', '플라워', '가든', '정원',
+];
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -74,7 +81,22 @@ function normalizeText(...parts) {
 
 function isExcludedPlace(placeName, categoryName, keyword) {
   const text = normalizeText(placeName, categoryName, keyword);
-  return NOISE_KEYWORDS.some((noise) => text.includes(noise));
+  if (NOISE_KEYWORDS.some((noise) => text.includes(noise))) return true;
+
+  // 카카오 로컬 API는 블로그/후기 데이터가 없으므로
+  // 카페·음식점·숙박은 place_name에 꽃 관련 단어가 2개 이상 있을 때만 허용
+  // (단순히 "벚꽃카페"처럼 상호명에 꽃 단어를 끼워 넣은 것 방지)
+  const isCafeOrFood = categoryName.includes('카페') || categoryName.includes('음식점')
+    || categoryName.includes('베이커리') || categoryName.includes('디저트')
+    || placeName.includes('카페') || placeName.toLowerCase().includes('cafe');
+  if (isCafeOrFood) {
+    const nameOnly = placeName.toLowerCase();
+    const matchCount = CAFE_ALLOWED_FLOWER_WORDS.filter((w) => nameOnly.includes(w)).length;
+    // place_name에 꽃 단어가 없으면 제외, 1개만 있어도 제외 (상호명 편승 방지)
+    if (matchCount < 2) return true;
+  }
+
+  return false;
 }
 
 function inferFlowerTypes(placeName, categoryName, keyword) {

@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { title, content, category, password, anon_session_id, device_id, nickname } = body;
+  const { title, content, category, password, anon_session_id, device_id, nickname, image_urls } = body;
 
   if (!title?.trim() || !content?.trim() || !anon_session_id) {
     return NextResponse.json({ error: '제목과 내용을 입력해주세요.' }, { status: 400 });
@@ -114,6 +114,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '5분 내 하나의 글만 등록할 수 있습니다.' }, { status: 429 });
   }
 
+  const safeImageUrls = Array.isArray(image_urls)
+    ? image_urls.filter((u: unknown) => typeof u === 'string').slice(0, 4)
+    : [];
+
   const { data, error } = await supabase
     .from('posts')
     .insert({
@@ -126,6 +130,7 @@ export async function POST(req: NextRequest) {
       device_hash: device_id ?? null,
       ip_hash: ip,
       moderation_status: 'visible',
+      image_urls: safeImageUrls,
     })
     .select()
     .single();

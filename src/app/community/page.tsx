@@ -71,6 +71,8 @@ function CommunityPageContent() {
   const [content, setContent] = useState('');
   const [postCategory, setPostCategory] = useState<PostCategory>('chat');
   const [submitting, setSubmitting] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const selectedCategory: CommunityTab = isCommunityTab(searchParams.get('category'))
     ? (searchParams.get('category') as CommunityTab)
@@ -121,6 +123,27 @@ function CommunityPageContent() {
     );
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || imageUrls.length >= 4) return;
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      if (res.ok) {
+        const { url } = await res.json();
+        setImageUrls((prev) => [...prev, url]);
+      } else {
+        const { error } = await res.json();
+        alert(error || '업로드 실패');
+      }
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
   const submit = async () => {
     if (!title.trim() || !content.trim() || !nickname.trim() || !postPassword.trim() || submitting) return;
 
@@ -141,6 +164,7 @@ function CommunityPageContent() {
           anon_session_id: sessionId,
           device_id: deviceId,
           nickname: savedNickname,
+          image_urls: imageUrls,
         }),
       });
 
@@ -157,6 +181,7 @@ function CommunityPageContent() {
       setTitle('');
       setContent('');
       setPostPassword('');
+      setImageUrls([]);
       setShowForm(false);
       setPostCategory(selectedCategory === 'all' || selectedCategory === 'free' ? 'chat' : GROUP_TO_POST_CATEGORY[selectedCategory]);
     } finally {
@@ -284,6 +309,36 @@ function CommunityPageContent() {
               className="w-full resize-none rounded-[22px] border border-[#dbe4df] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#ff6b81] focus:outline-none"
             />
 
+            {/* 이미지 업로드 */}
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#4b5563]">사진 ({imageUrls.length}/4)</span>
+                {imageUrls.length < 4 && (
+                  <label className={`cursor-pointer rounded-full border border-[#ffd6dc] bg-white px-3 py-1.5 text-xs font-semibold text-[#c0394f] ${uploadingImage ? 'opacity-50' : ''}`}>
+                    {uploadingImage ? '업로드 중...' : '+ 사진 추가'}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
+                  </label>
+                )}
+              </div>
+              {imageUrls.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {imageUrls.map((url, i) => (
+                    <div key={url} className="relative shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="" className="h-20 w-20 rounded-[14px] object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setImageUrls((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#111827] text-[10px] text-white"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button
               onClick={submit}
               disabled={!title.trim() || !content.trim() || !nickname.trim() || !postPassword.trim() || submitting}
@@ -315,7 +370,21 @@ function CommunityPageContent() {
               <h2 className="mb-1.5 line-clamp-2 text-sm font-medium leading-snug text-[#111827]">
                 {post.title}
               </h2>
-              <p className="mb-3 line-clamp-2 text-xs text-[#6b7280]">{post.content}</p>
+              {post.image_urls?.length > 0 ? (
+                <div className="mb-2 flex gap-1.5 overflow-hidden">
+                  {post.image_urls.slice(0, 3).map((url) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={url} src={url} alt="" className="h-16 w-16 shrink-0 rounded-[10px] object-cover" />
+                  ))}
+                  {post.image_urls.length > 3 && (
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[10px] bg-[#f3f4f6] text-xs font-semibold text-[#6b7280]">
+                      +{post.image_urls.length - 3}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="mb-3 line-clamp-2 text-xs text-[#6b7280]">{post.content}</p>
+              )}
               <div className="flex items-center gap-2 text-xs text-[#9ca3af]">
                 <span>{post.nickname}</span>
                 <span>·</span>

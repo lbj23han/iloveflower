@@ -62,14 +62,12 @@ function FilterChip({
 export default function SpotFilter({ filters, onChange }: Props) {
   const [activeSection, setActiveSection] = useState<FilterSection>('explore');
   const timingSummary = useMemo(() => {
-    const festivalLabel =
-      filters.festival === 'all' ? '축제 전체' : FESTIVAL_FILTER_LABELS[filters.festival];
     const seasonLabel =
       filters.season === 'all' ? '계절 전체' : SEASON_FILTER_LABELS[filters.season];
     const monthLabel =
       filters.peak_month === 'all' ? '절정 시기 전체' : PEAK_MONTH_LABELS[filters.peak_month];
-    return `${festivalLabel} · ${seasonLabel} · ${monthLabel}`;
-  }, [filters.festival, filters.peak_month, filters.season]);
+    return `${seasonLabel} · ${monthLabel}`;
+  }, [filters.peak_month, filters.season]);
 
   return (
     <div className="flex max-h-[min(68vh,720px)] flex-col">
@@ -163,21 +161,6 @@ export default function SpotFilter({ filters, onChange }: Props) {
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">축제</div>
-              <div className="flex flex-wrap gap-1.5">
-                {FESTIVAL_FILTERS.map(([val, label]) => (
-                  <FilterChip
-                    key={val}
-                    active={filters.festival === val}
-                    onClick={() => onChange({ festival: val })}
-                  >
-                    {label}
-                  </FilterChip>
-                ))}
-              </div>
-            </div>
-
-            <div>
               <div className="mb-2 text-xs font-semibold text-[#6b7280]">계절</div>
               <div className="flex flex-wrap gap-1.5">
                 {SEASONS.map(([val, label]) => (
@@ -217,6 +200,21 @@ export default function SpotFilter({ filters, onChange }: Props) {
 
         {activeSection === 'comfort' && (
           <div className="space-y-5">
+            <div>
+              <div className="mb-2 text-xs font-semibold text-[#6b7280]">축제</div>
+              <div className="flex flex-wrap gap-1.5">
+                {FESTIVAL_FILTERS.map(([val, label]) => (
+                  <FilterChip
+                    key={val}
+                    active={filters.festival === val}
+                    onClick={() => onChange({ festival: val })}
+                  >
+                    {label}
+                  </FilterChip>
+                ))}
+              </div>
+            </div>
+
             <div>
               <div className="mb-2 text-xs font-semibold text-[#6b7280]">편의 정보</div>
               <div className="flex flex-wrap gap-1.5">

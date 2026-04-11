@@ -828,7 +828,7 @@ export default function MapPage() {
           <div className="hidden md:flex items-center justify-between rounded-[28px] border border-[#ffd6dc]/50 bg-[#fffafb]/76 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
             <BrandLockup
               title="꽃놀이맵"
-              subtitle="전국 꽃놀이 명소를 지도에서 한눈에"
+              subtitle="전국 꽃놀이 명소와 축제를 한눈에"
               iconSize={64}
               iconWidth={48}
               iconHeight={68}

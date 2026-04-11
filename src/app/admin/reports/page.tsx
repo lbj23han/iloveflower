@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { BLOOM_STATUS_LABELS, FlowerSpotMapItem } from '@/types';
 
 type Report = {
@@ -20,6 +20,8 @@ type Report = {
   flower_spots: { name: string; address: string | null } | null;
 };
 
+const ADMIN_SECRET_KEY = 'admin_secret_kkotmap';
+
 export default function AdminReportsPage() {
   const [secret, setSecret] = useState('');
   const [authed, setAuthed] = useState(false);
@@ -36,7 +38,9 @@ export default function AdminReportsPage() {
     setLoading(true);
     const res = await fetch(`/api/admin/reports?status=${status}&secret=${s}`);
     if (res.status === 401) {
+      localStorage.removeItem(ADMIN_SECRET_KEY);
       setAuthed(false);
+      setSecret('');
       setLoading(false);
       return;
     }
@@ -45,7 +49,18 @@ export default function AdminReportsPage() {
     setLoading(false);
   }, []);
 
+  // 새로고침 시 저장된 비번으로 자동 로그인
+  useEffect(() => {
+    const saved = localStorage.getItem(ADMIN_SECRET_KEY);
+    if (saved) {
+      setSecret(saved);
+      setAuthed(true);
+      load(saved, 'pending');
+    }
+  }, [load]);
+
   const handleLogin = () => {
+    localStorage.setItem(ADMIN_SECRET_KEY, secret);
     setAuthed(true);
     load(secret, tab);
   };
