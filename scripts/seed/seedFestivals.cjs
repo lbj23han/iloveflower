@@ -93,6 +93,233 @@ const FESTIVALS = [
       { name: '고창 벚꽃' },
     ],
   },
+  {
+    name: '구례 산수유꽃축제',
+    start_date: '2026-03-13',
+    end_date: '2026-03-22',
+    description: '구례 산동면 일대에서 열리는 대표 산수유 축제',
+    source_url: 'https://www.gurye.go.kr',
+    candidates: [
+      { name: '산수유마을' },
+      { name: '산수유꽃' },
+      { name: '산동면' },
+    ],
+  },
+  {
+    name: '하동 벚꽃축제',
+    start_date: '2026-04-01',
+    end_date: '2026-04-07',
+    description: '하동 섬진강 십리벚꽃길 일대에서 열리는 벚꽃 축제',
+    source_url: 'https://www.hadong.go.kr',
+    candidates: [
+      { name: '십리벚꽃길' },
+      { name: '화개장터' },
+      { name: '쌍계사' },
+    ],
+  },
+  {
+    name: '합천 황매산 철쭉제',
+    start_date: '2026-05-01',
+    end_date: '2026-05-10',
+    description: '황매산 군립공원 일대에서 열리는 대표 철쭉 축제',
+    source_url: 'https://www.hapcheon.go.kr',
+    candidates: [
+      { name: '황매산' },
+    ],
+  },
+  {
+    name: '함평나비대축제',
+    start_date: '2026-05-01',
+    end_date: '2026-05-10',
+    description: '함평 엑스포공원에서 열리는 나비와 꽃 축제',
+    source_url: 'https://www.hampyeong.go.kr',
+    candidates: [
+      { name: '함평엑스포' },
+      { name: '함평나비' },
+      { name: '함평자연생태공원' },
+    ],
+  },
+  {
+    name: '부산 대저생태공원 유채꽃',
+    start_date: '2026-04-01',
+    end_date: '2026-04-15',
+    description: '낙동강변 대저생태공원에서 즐기는 유채꽃 명소',
+    source_url: 'https://www.busan.go.kr',
+    candidates: [
+      { name: '대저생태공원' },
+    ],
+  },
+  {
+    name: '제주 녹산로 유채꽃 축제',
+    start_date: '2026-03-28',
+    end_date: '2026-04-06',
+    description: '제주 녹산로 일대에서 열리는 유채꽃 드라이브 명소',
+    source_url: 'https://www.visitjeju.net',
+    candidates: [
+      { name: '녹산로' },
+      { name: '가시리 유채꽃' },
+    ],
+  },
+  {
+    name: '경주 벚꽃 축제',
+    start_date: '2026-04-01',
+    end_date: '2026-04-10',
+    description: '경주 보문단지와 황룡원 일대에서 즐기는 벚꽃',
+    source_url: 'https://www.gyeongju.go.kr',
+    candidates: [
+      { name: '황룡원' },
+      { name: '보문호' },
+      { name: '경주벚꽃' },
+    ],
+  },
+  {
+    name: '담양 메타세쿼이아길 봄꽃',
+    start_date: '2026-04-01',
+    end_date: '2026-04-15',
+    description: '담양 메타세쿼이아 가로수길 일대 봄꽃 명소',
+    source_url: 'https://www.damyang.go.kr',
+    candidates: [
+      { name: '메타세쿼이아' },
+      { name: '담양메타' },
+    ],
+  },
+  // ── 여름꽃 축제 ──────────────────────────────────────────
+  {
+    name: '제주 마노르블랑 수국축제',
+    start_date: '2026-05-23',
+    end_date: '2026-08-31',
+    description: '제주 마노르블랑에서 7천 본 수국과 함께하는 여름 수국 명소',
+    source_url: 'https://www.manoirblancjeju.com',
+    candidates: [
+      { name: '마노르블랑' },
+    ],
+  },
+  {
+    name: '제주 휴애리 여름 수국축제',
+    start_date: '2026-06-13',
+    end_date: '2026-07-27',
+    description: '제주 휴애리 자연생활공원에서 열리는 유럽 수국 축제',
+    source_url: 'https://www.휴애리.com',
+    candidates: [
+      { name: '휴애리' },
+    ],
+  },
+  {
+    name: '비체올린 여름꽃·능소화 축제',
+    start_date: '2026-05-15',
+    end_date: '2026-07-15',
+    description: '비체올린에서 즐기는 여름꽃과 능소화 명소',
+    source_url: 'https://www.비체올린.com',
+    candidates: [
+      { name: '비체올린' },
+    ],
+  },
+  {
+    name: '울산 장생포 수국 페스티벌',
+    start_date: '2026-06-01',
+    end_date: '2026-06-30',
+    description: '울산 장생포 고래문화특구 일대에서 열리는 수국 축제',
+    source_url: 'https://www.ulsan.go.kr',
+    candidates: [
+      { name: '장생포' },
+      { name: '고래문화특구' },
+    ],
+  },
+  {
+    name: '공주 유구색동수국 정원 꽃축제',
+    start_date: '2026-06-01',
+    end_date: '2026-06-30',
+    description: '공주 유구읍 색동수국정원에서 열리는 수국 축제',
+    source_url: 'https://www.gongju.go.kr',
+    candidates: [
+      { name: '색동수국' },
+      { name: '유구수국' },
+    ],
+  },
+  {
+    name: '가평 양떼목장 수국축제',
+    start_date: '2026-06-27',
+    end_date: '2026-10-31',
+    description: '가평 양떼목장 일대에서 즐기는 여름~가을 수국 명소',
+    source_url: 'https://www.gapyeong.go.kr',
+    candidates: [
+      { name: '양떼목장' },
+    ],
+  },
+  {
+    name: '태백 해바라기 축제',
+    start_date: '2026-07-18',
+    end_date: '2026-08-17',
+    description: '태백 구와우마을 해바라기 고원에서 열리는 해바라기 축제',
+    source_url: 'https://www.taebaek.go.kr',
+    candidates: [
+      { name: '구와우마을' },
+      { name: '태백 해바라기' },
+    ],
+  },
+  {
+    name: '부여 서동연꽃축제',
+    start_date: '2026-07-01',
+    end_date: '2026-07-31',
+    description: '부여 궁남지에서 열리는 대표 연꽃 축제',
+    source_url: 'https://www.buyeo.go.kr',
+    candidates: [
+      { name: '궁남지' },
+    ],
+  },
+  {
+    name: '무안 연꽃축제',
+    start_date: '2026-07-01',
+    end_date: '2026-07-31',
+    description: '무안 회산백련지에서 열리는 백련 연꽃 축제',
+    source_url: 'https://www.muan.go.kr',
+    candidates: [
+      { name: '회산백련지' },
+      { name: '무안백련지' },
+    ],
+  },
+  {
+    name: '양평 세미원 연꽃문화제',
+    start_date: '2026-07-01',
+    end_date: '2026-07-31',
+    description: '양평 세미원에서 열리는 연꽃 문화 축제',
+    source_url: 'https://www.semiwon.or.kr',
+    candidates: [
+      { name: '세미원' },
+    ],
+  },
+  {
+    name: '장항 맥문동 꽃 축제',
+    start_date: '2026-08-01',
+    end_date: '2026-08-31',
+    description: '장항 국립생태원 일대에서 즐기는 맥문동 보라 물결',
+    source_url: 'https://www.seocheon.go.kr',
+    candidates: [
+      { name: '국립생태원' },
+      { name: '장항 맥문동' },
+    ],
+  },
+  {
+    name: '경기 광주 화담숲 수국축제',
+    start_date: '2026-06-01',
+    end_date: '2026-07-31',
+    description: '경기 광주 화담숲에서 열리는 여름 수국 축제',
+    source_url: 'https://www.hwadamsup.com',
+    candidates: [
+      { name: '화담숲' },
+    ],
+  },
+  {
+    name: '순천만국가정원 여름꽃 축제',
+    start_date: '2026-06-01',
+    end_date: '2026-08-31',
+    description: '순천만 국가정원에서 즐기는 여름꽃 및 야간 개장',
+    source_url: 'https://www.scgardens.or.kr',
+    candidates: [
+      { name: '순천만국가정원' },
+      { name: '순천정원박람회' },
+    ],
+  },
 ];
 
 async function findSpotForFestival(supabase, candidates) {

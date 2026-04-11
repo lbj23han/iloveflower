@@ -180,7 +180,7 @@ export default function KakaoMap({
       const categoryLabel = CATEGORY_LABELS[spot.category] ?? '기타';
       const flowerLabel = spot.flower_types[0] ? spot.flower_types[0] : null;
       const label = flowerLabel
-        ? { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', wisteria: '등나무', rose: '장미', cosmos: '코스모스', sunflower: '해바라기', tulip: '튤립', lavender: '라벤더', rape: '유채꽃', etc: categoryLabel }[flowerLabel] ?? categoryLabel
+        ? { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', wisteria: '등나무', tulip: '튤립', rape: '유채꽃', rose: '장미', sunflower: '해바라기', lavender: '라벤더', hydrangea: '수국', lotus: '연꽃', neungsohwa: '능소화', cosmos: '코스모스', chrysanthemum: '국화', camellia: '동백꽃', snowflower: '눈꽃', etc: categoryLabel }[flowerLabel] ?? categoryLabel
         : categoryLabel;
 
       const bg = isSelected ? '#111827' : 'rgba(255,255,255,0.96)';

@@ -9,7 +9,7 @@ import {
   BLOOM_STATUS_LABELS,
   FESTIVAL_FILTER_LABELS,
   PEAK_MONTH_LABELS,
-  SEASON_FILTER_LABELS,
+  SEASON_FLOWER_TYPES,
 } from '@/types';
 
 interface Props {
@@ -17,13 +17,8 @@ interface Props {
   onChange: (partial: Partial<FilterState>) => void;
 }
 
-const FLOWER_TYPES = Object.entries(FLOWER_TYPE_LABELS) as [string, string][];
 const CATEGORIES = [['all', '전체'], ...Object.entries(CATEGORY_LABELS)] as [string, string][];
 const BLOOM_STATUSES = [['all', '전체'], ...Object.entries(BLOOM_STATUS_LABELS)] as [string, string][];
-const SEASONS = Object.entries(SEASON_FILTER_LABELS) as [
-  FilterState['season'],
-  string,
-][];
 const PEAK_MONTHS = Object.entries(PEAK_MONTH_LABELS).map(([month, label]) => [
   Number(month),
   label,
@@ -32,6 +27,13 @@ const FESTIVAL_FILTERS = Object.entries(FESTIVAL_FILTER_LABELS) as [
   FilterState['festival'],
   string,
 ][];
+
+const SEASON_BUTTONS = [
+  { key: 'spring', label: '봄꽃' },
+  { key: 'summer', label: '여름꽃' },
+  { key: 'autumn', label: '가을꽃' },
+  { key: 'winter', label: '겨울꽃' },
+] as const;
 
 type FilterSection = 'explore' | 'timing' | 'comfort';
 
@@ -61,13 +63,10 @@ function FilterChip({
 
 export default function SpotFilter({ filters, onChange }: Props) {
   const [activeSection, setActiveSection] = useState<FilterSection>('explore');
+
   const timingSummary = useMemo(() => {
-    const seasonLabel =
-      filters.season === 'all' ? '계절 전체' : SEASON_FILTER_LABELS[filters.season];
-    const monthLabel =
-      filters.peak_month === 'all' ? '절정 시기 전체' : PEAK_MONTH_LABELS[filters.peak_month];
-    return `${seasonLabel} · ${monthLabel}`;
-  }, [filters.peak_month, filters.season]);
+    return filters.peak_month === 'all' ? '절정 시기 전체' : PEAK_MONTH_LABELS[filters.peak_month];
+  }, [filters.peak_month]);
 
   return (
     <div className="flex max-h-[min(68vh,720px)] flex-col">
@@ -98,6 +97,41 @@ export default function SpotFilter({ filters, onChange }: Props) {
         {activeSection === 'explore' && (
           <div className="space-y-5">
             <div>
+              <div className="mb-2 text-xs font-semibold text-[#6b7280]">꽃 종류</div>
+              {filters.season === 'all' ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {SEASON_BUTTONS.map(({ key, label }) => (
+                    <FilterChip
+                      key={key}
+                      active={false}
+                      onClick={() => onChange({ season: key, flower_type: 'all' })}
+                    >
+                      {label}
+                    </FilterChip>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  <FilterChip
+                    active={false}
+                    onClick={() => onChange({ season: 'all', flower_type: 'all' })}
+                  >
+                    ← 전체
+                  </FilterChip>
+                  {(SEASON_FLOWER_TYPES[filters.season] ?? []).map((flowerKey) => (
+                    <FilterChip
+                      key={flowerKey}
+                      active={filters.flower_type === flowerKey}
+                      onClick={() => onChange({ flower_type: flowerKey })}
+                    >
+                      {FLOWER_TYPE_LABELS[flowerKey]}
+                    </FilterChip>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
               <div className="mb-2 text-xs font-semibold text-[#6b7280]">카테고리</div>
               <div className="flex flex-wrap gap-1.5">
                 {CATEGORIES.map(([val, label]) => (
@@ -105,27 +139,6 @@ export default function SpotFilter({ filters, onChange }: Props) {
                     key={val}
                     active={filters.category === val}
                     onClick={() => onChange({ category: val as FlowerCategory | 'all' })}
-                  >
-                    {label}
-                  </FilterChip>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">꽃 종류</div>
-              <div className="flex flex-wrap gap-1.5">
-                <FilterChip
-                  active={filters.flower_type === 'all'}
-                  onClick={() => onChange({ flower_type: 'all' })}
-                >
-                  전체
-                </FilterChip>
-                {FLOWER_TYPES.map(([val, label]) => (
-                  <FilterChip
-                    key={val}
-                    active={filters.flower_type === val}
-                    onClick={() => onChange({ flower_type: val as FilterState['flower_type'] })}
                   >
                     {label}
                   </FilterChip>
@@ -156,22 +169,7 @@ export default function SpotFilter({ filters, onChange }: Props) {
               <div className="text-[11px] font-semibold text-[#6b7280]">지금 선택된 시기</div>
               <div className="mt-1 text-sm font-semibold text-[#111827]">{timingSummary}</div>
               <div className="mt-1 text-[11px] text-[#9ca3af]">
-                절정 월 기준으로 계절과 시기를 걸러볼 수 있어요
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">계절</div>
-              <div className="flex flex-wrap gap-1.5">
-                {SEASONS.map(([val, label]) => (
-                  <FilterChip
-                    key={val}
-                    active={filters.season === val}
-                    onClick={() => onChange({ season: val })}
-                  >
-                    {label}
-                  </FilterChip>
-                ))}
+                절정 월 기준으로 명소를 걸러볼 수 있어요
               </div>
             </div>
 

@@ -27,12 +27,18 @@ export type FlowerType =
   | "forsythia"
   | "azalea"
   | "wisteria"
-  | "rose"
-  | "cosmos"
-  | "sunflower"
   | "tulip"
-  | "lavender"
   | "rape"
+  | "rose"
+  | "sunflower"
+  | "lavender"
+  | "hydrangea"
+  | "lotus"
+  | "neungsohwa"
+  | "cosmos"
+  | "chrysanthemum"
+  | "camellia"
+  | "snowflower"
   | "etc";
 
 export const FLOWER_TYPE_LABELS: Record<FlowerType, string> = {
@@ -41,13 +47,27 @@ export const FLOWER_TYPE_LABELS: Record<FlowerType, string> = {
   forsythia: "개나리",
   azalea: "진달래·철쭉",
   wisteria: "등나무",
-  rose: "장미",
-  cosmos: "코스모스",
-  sunflower: "해바라기",
   tulip: "튤립",
-  lavender: "라벤더",
   rape: "유채꽃",
+  rose: "장미",
+  sunflower: "해바라기",
+  lavender: "라벤더",
+  hydrangea: "수국",
+  lotus: "연꽃",
+  neungsohwa: "능소화",
+  cosmos: "코스모스",
+  chrysanthemum: "국화",
+  camellia: "동백꽃",
+  snowflower: "눈꽃",
   etc: "기타",
+};
+
+// 계절별 꽃 타입 그룹
+export const SEASON_FLOWER_TYPES: Record<string, FlowerType[]> = {
+  spring: ["cherry", "plum", "forsythia", "azalea", "wisteria", "tulip", "rape"],
+  summer: ["rose", "sunflower", "lavender", "hydrangea", "lotus", "neungsohwa"],
+  autumn: ["cosmos", "chrysanthemum"],
+  winter: ["camellia", "snowflower"],
 };
 
 export type BloomStatusValue =

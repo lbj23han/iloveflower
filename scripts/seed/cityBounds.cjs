@@ -236,7 +236,123 @@ const CITY_BOUNDS = {
     lngStep: 0.035,
   },
 
+  // ── 경남 ────────────────────────────────────────────────
+  hadong: {
+    label: '하동',
+    bounds: { swLat: 34.9500, swLng: 127.5800, neLat: 35.2600, neLng: 127.9200 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
+  hapcheon: {
+    label: '합천',
+    bounds: { swLat: 35.4000, swLng: 127.9500, neLat: 35.8200, neLng: 128.4200 },
+    latStep: 0.05,
+    lngStep: 0.06,
+  },
+  geochang: {
+    label: '거창',
+    bounds: { swLat: 35.6000, swLng: 127.7500, neLat: 35.8800, neLng: 128.0600 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
+
+  // ── 경북 ────────────────────────────────────────────────
+  gyeongju: {
+    label: '경주',
+    bounds: { swLat: 35.7000, swLng: 128.9800, neLat: 36.0600, neLng: 129.4200 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
+  andong: {
+    label: '안동',
+    bounds: { swLat: 36.4000, swLng: 128.5500, neLat: 36.7600, neLng: 128.9600 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
+  yeongcheon: {
+    label: '영천',
+    bounds: { swLat: 35.8500, swLng: 128.7500, neLat: 36.1100, neLng: 129.1500 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
+
+  // ── 전남 ────────────────────────────────────────────────
+  damyang: {
+    label: '담양',
+    bounds: { swLat: 35.1800, swLng: 126.8500, neLat: 35.4500, neLng: 127.1200 },
+    latStep: 0.035,
+    lngStep: 0.04,
+  },
+  suncheon: {
+    label: '순천',
+    bounds: { swLat: 34.8500, swLng: 127.3500, neLat: 35.1000, neLng: 127.6600 },
+    latStep: 0.035,
+    lngStep: 0.04,
+  },
+  yeosu: {
+    label: '여수',
+    bounds: { swLat: 34.6500, swLng: 127.5500, neLat: 34.9000, neLng: 127.8600 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
+  haenam: {
+    label: '해남',
+    bounds: { swLat: 34.4000, swLng: 126.3800, neLat: 34.7600, neLng: 126.8200 },
+    latStep: 0.05,
+    lngStep: 0.06,
+  },
+  gurye: {
+    label: '구례',
+    bounds: { swLat: 35.1200, swLng: 127.3800, neLat: 35.3200, neLng: 127.6500 },
+    latStep: 0.03,
+    lngStep: 0.035,
+  },
+
+  // ── 전북 ────────────────────────────────────────────────
+  gunsan: {
+    label: '군산',
+    bounds: { swLat: 35.8500, swLng: 126.6000, neLat: 36.1000, neLng: 126.9000 },
+    latStep: 0.035,
+    lngStep: 0.04,
+  },
+  jeongeup: {
+    label: '정읍',
+    bounds: { swLat: 35.4000, swLng: 126.7000, neLat: 35.7500, neLng: 127.0600 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
+  namwon: {
+    label: '남원',
+    bounds: { swLat: 35.2900, swLng: 127.2400, neLat: 35.5600, neLng: 127.5500 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
+
   // ── 강원권 ───────────────────────────────────────────────
+  gangneung: {
+    label: '강릉',
+    bounds: { swLat: 37.6500, swLng: 128.7500, neLat: 37.8600, neLng: 129.0100 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
+  sokcho: {
+    label: '속초',
+    bounds: { swLat: 38.1400, swLng: 128.4900, neLat: 38.3200, neLng: 128.7100 },
+    latStep: 0.03,
+    lngStep: 0.035,
+  },
+  inje: {
+    label: '인제',
+    bounds: { swLat: 37.8800, swLng: 128.0000, neLat: 38.3000, neLng: 128.5000 },
+    latStep: 0.05,
+    lngStep: 0.06,
+  },
+  pyeongchang: {
+    label: '평창',
+    bounds: { swLat: 37.1800, swLng: 128.1000, neLat: 37.6000, neLng: 128.7000 },
+    latStep: 0.05,
+    lngStep: 0.06,
+  },
   wonju: {
     label: '원주',
     bounds: { swLat: 37.2900, swLng: 127.8400, neLat: 37.4400, neLng: 128.0600 },

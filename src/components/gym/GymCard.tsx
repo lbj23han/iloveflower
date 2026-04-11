@@ -11,7 +11,7 @@ interface Props {
 export default function SpotCard({ spot, onClick }: Props) {
   const bloomLabel = spot.bloom_status ? BLOOM_STATUS_LABELS[spot.bloom_status] : null;
   const flowerLabel = spot.flower_types[0]
-    ? { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', wisteria: '등나무', rose: '장미', cosmos: '코스모스', sunflower: '해바라기', tulip: '튤립', lavender: '라벤더', rape: '유채꽃', etc: '기타' }[spot.flower_types[0]] ?? '기타'
+    ? { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', wisteria: '등나무', tulip: '튤립', rape: '유채꽃', rose: '장미', sunflower: '해바라기', lavender: '라벤더', hydrangea: '수국', lotus: '연꽃', neungsohwa: '능소화', cosmos: '코스모스', chrysanthemum: '국화', camellia: '동백꽃', snowflower: '눈꽃', etc: '기타' }[spot.flower_types[0]] ?? '기타'
     : null;
   const accent = getAccentStyle(spot.flower_types, spot.category);
 

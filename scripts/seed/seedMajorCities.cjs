@@ -5,6 +5,7 @@ const { CITY_BOUNDS, tileBounds } = require('./cityBounds.cjs');
 const { requestKeywordSearch, mapKakaoPlace, filterSpotsWithAI } = require('./kakaoLocal.cjs');
 
 const KEYWORDS = [
+  // 봄꽃
   '벚꽃 명소',
   '벚꽃 공원',
   '벚꽃 카페',
@@ -22,22 +23,41 @@ const KEYWORDS = [
   '유채꽃 축제',
   '튤립 공원',
   '튤립 축제',
+  // 여름꽃
+  '수국 명소',
+  '수국 카페',
+  '수국 축제',
+  '수국 군락지',
+  '연꽃 명소',
+  '연꽃단지',
+  '연꽃 축제',
+  '능소화 명소',
+  '능소화 군락',
+  '해바라기 명소',
+  '해바라기 축제',
+  '라벤더 농장',
+  '라벤더 축제',
   '장미 공원',
   '장미원',
   '장미 축제',
-  '라벤더 농장',
-  '라벤더 축제',
+  // 가을꽃
   '코스모스 공원',
   '코스모스 축제',
-  '해바라기 명소',
-  '해바라기 축제',
+  '국화 축제',
+  '국화 공원',
+  '구절초 명소',
+  '구절초 축제',
+  // 겨울꽃/기타
+  '동백꽃 명소',
+  '동백 군락지',
+  '눈꽃 축제',
+  '설경 명소',
+  // 공통
   '꽃축제',
   '꽃 정원',
   '국가정원',
   '수목원 꽃축제',
-  '정원 카페',
   '플라워 카페',
-  '가든 카페',
 ];
 const DEFAULT_CITY = 'all';
 const CHUNK_SIZE = 100;
@@ -141,7 +161,6 @@ async function collectCitySpots(apiKey, cityKey) {
   console.log(`[seed] ${city.label}: raw=${totalDocuments}, unique=${deduped.size}`);
   const allSpots = [...deduped.values()];
 
-  const apiKey = process.env.KAKAO_REST_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
   const spots = await filterSpotsWithAI(allSpots, apiKey, openaiKey);
   console.log(`[seed] ${city.label}: AI 필터 후 ${spots.length}개 (카페 제외 기준)`);

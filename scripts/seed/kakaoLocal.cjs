@@ -11,12 +11,18 @@ const FLOWER_TYPE_RULES = [
   { type: 'forsythia', keywords: ['개나리'] },
   { type: 'azalea', keywords: ['진달래', '철쭉', '영산홍'] },
   { type: 'wisteria', keywords: ['등꽃', '등나무'] },
-  { type: 'rose', keywords: ['장미'] },
-  { type: 'cosmos', keywords: ['코스모스'] },
-  { type: 'sunflower', keywords: ['해바라기'] },
   { type: 'tulip', keywords: ['튤립'] },
-  { type: 'lavender', keywords: ['라벤더'] },
   { type: 'rape', keywords: ['유채꽃', '유채'] },
+  { type: 'rose', keywords: ['장미'] },
+  { type: 'sunflower', keywords: ['해바라기'] },
+  { type: 'lavender', keywords: ['라벤더'] },
+  { type: 'hydrangea', keywords: ['수국'] },
+  { type: 'lotus', keywords: ['연꽃', '연밭', '연못', '수련'] },
+  { type: 'neungsohwa', keywords: ['능소화'] },
+  { type: 'cosmos', keywords: ['코스모스'] },
+  { type: 'chrysanthemum', keywords: ['국화', '구절초'] },
+  { type: 'camellia', keywords: ['동백꽃', '동백'] },
+  { type: 'snowflower', keywords: ['눈꽃', '설경', '눈축제'] },
 ];
 
 const NOISE_KEYWORDS = [
@@ -34,11 +40,11 @@ const NOISE_KEYWORDS = [
   '리조트',
 ];
 
-// 카페는 이름에 꽃 관련 단어가 직접 있을 때만 허용
+// 카페는 이름에 꽃 관련 단어가 직접 있을 때만 허용 (가든/정원은 너무 범용적이라 제외)
 const CAFE_ALLOWED_FLOWER_WORDS = [
   '벚꽃', '벚나무', '매화', '진달래', '철쭉', '유채', '코스모스',
   '해바라기', '라벤더', '장미', '튤립', '수국', '동백', '꽃밭',
-  '꽃길', '꽃정원', '플라워', '가든', '정원',
+  '꽃길', '꽃정원', '플라워',
 ];
 
 function sleep(ms) {
@@ -144,12 +150,18 @@ function inferPeakMonths(flowerTypes) {
     forsythia: [3, 4],
     azalea: [4, 5],
     wisteria: [4, 5],
-    rose: [5, 6],
-    cosmos: [9, 10],
-    sunflower: [7, 8],
     tulip: [4, 5],
-    lavender: [6, 7],
     rape: [4, 5],
+    rose: [5, 6],
+    sunflower: [7, 8],
+    lavender: [6, 7],
+    hydrangea: [6, 8],
+    lotus: [7, 8],
+    neungsohwa: [6, 8],
+    cosmos: [9, 10],
+    chrysanthemum: [10, 11],
+    camellia: [12, 2],
+    snowflower: [12, 2],
     etc: [null, null],
   };
 
@@ -233,8 +245,11 @@ async function validateCafeWithAI(spot, kakaoApiKey, openaiApiKey) {
 블로그·카페 검색 결과 (꽃 관련 검색):
 ${snippets.map((s, i) => `[${i + 1}] ${s}`).join('\n')}
 
-위 검색 결과를 바탕으로, 이 장소가 실제로 꽃(벚꽃, 유채꽃, 장미 등 자연 꽃)과 관련된 명소인지 판단해주세요.
-단순히 상호명에 꽃 단어가 있는 것은 해당 없음. 실제 꽃밭, 꽃 정원, 꽃 명소 근처 카페 등만 해당.
+위 검색 결과를 바탕으로, 이 카페/음식점이 실제 꽃 명소인지 판단해주세요.
+판단 기준 (모두 충족해야 true):
+1. 블로그 후기에서 실제 꽃(벚꽃, 유채꽃, 장미, 수국 등 자연 꽃)이 언급됨
+2. 카페 자체에 꽃밭/꽃정원이 있거나, 꽃 명소 바로 인접
+3. 단순히 상호명에 꽃 단어가 있는 것, 꽃 장식/인테리어만 있는 것은 false
 JSON {"is_flower_related": true/false} 만 반환하세요.`;
 
   try {
