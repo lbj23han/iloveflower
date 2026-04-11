@@ -59,9 +59,9 @@ export default function SpotFilter({ filters, onChange }: Props) {
         </div>
       </div>
 
-      {/* 편의 시설 */}
+      {/* 편의 정보 */}
       <div>
-        <div className="mb-2 text-xs font-semibold text-[#6b7280]">편의 시설</div>
+        <div className="mb-2 text-xs font-semibold text-[#6b7280]">편의 정보</div>
         <div className="flex flex-wrap gap-1.5">
           {[
             { key: 'has_night_light', label: '야간조명' },

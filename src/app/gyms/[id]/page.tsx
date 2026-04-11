@@ -79,7 +79,7 @@ export default async function SpotDetailPage({ params }: Props) {
             </div>
           )}
 
-          {/* 시설 정보 */}
+          {/* 이용 정보 */}
           <div className="flex flex-wrap gap-2 mb-4">
             {spot.entry_fee === 0 && <span className="text-xs px-2.5 py-1 rounded-full bg-[#ecfbf3] text-[#00935d] font-medium">무료입장</span>}
             {spot.entry_fee > 0 && <span className="text-xs px-2.5 py-1 rounded-full bg-[#f3f4f6] text-[#374151] font-medium">입장료 {spot.entry_fee.toLocaleString()}원</span>}

@@ -175,10 +175,10 @@ function ReportForm() {
         </label>
       </div>
 
-      {/* 시설 */}
+      {/* 편의 정보 */}
       <div>
         <label className="mb-2 block text-sm font-medium text-[#374151]">
-          시설 정보
+          편의 정보
         </label>
         <div className="space-y-2 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] px-4 py-3">
           {[

@@ -11,7 +11,7 @@ export default function PrivacyPage() {
             <div>
               <h1 className="text-xl font-bold text-[#111827]">개인정보처리방침</h1>
               <p className="mt-2 text-sm leading-6 text-[#4b5563]">
-                꽃놀이맵은 지도 탐색, 후기 작성, 커뮤니티 글쓰기, 시설 제보 기능을 제공하는 과정에서
+                꽃놀이맵은 지도 탐색, 후기 작성, 커뮤니티 글쓰기, 명소 제보 기능을 제공하는 과정에서
                 필요한 최소한의 정보만 처리하려고 노력합니다.
               </p>
               <p className="mt-2 text-xs text-[#9ca3af]">최종 업데이트: {LAST_UPDATED}</p>
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
           <section className="rounded-[28px] border border-white/60 bg-white/84 p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <h2 className="text-base font-semibold text-[#111827]">2. 처리 목적</h2>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-[#4b5563]">
-              <li>시설 정보, 후기, 커뮤니티 글, 댓글, 제보 기능 제공</li>
+              <li>명소 정보, 후기, 커뮤니티 글, 댓글, 제보 기능 제공</li>
               <li>중복 제출 방지와 악성 이용 대응</li>
               <li>서비스 품질 개선과 운영 통계 확인</li>
             </ul>

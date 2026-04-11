@@ -167,7 +167,7 @@ function CommunityPageContent() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,#ffe4e6_0%,#fff1f4_38%,#f8fafc_100%)] pb-28">
       <header className="sticky top-0 z-10 px-3 pt-3 md:px-4 md:pt-4">
-        <div className="mx-auto flex max-w-4xl items-center justify-between rounded-[28px] border border-[#ffb3c0]/55 bg-[#fff0f2]/82 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+        <div className="mx-auto flex max-w-4xl items-center justify-between rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/82 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
           <BrandLockup
             title="커뮤니티"
             subtitle="꽃놀이 이야기와 명소 팁을 나눠보세요"
@@ -201,7 +201,7 @@ function CommunityPageContent() {
                     ? 'border-[#111827] bg-[#111827] text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]'
                     : tab.value === 'free'
                       ? 'border-[#f59e0b]/40 bg-[#fffbeb] text-[#b45309] hover:border-[#f59e0b]'
-                      : 'border-[#ffb3c0]/55 bg-[#fff0f2]/76 text-[#4b5563] hover:border-[#ffb3c0]'
+                      : 'border-[#ffd6dc]/55 bg-[#fffafb]/76 text-[#4b5563] hover:border-[#ffd6dc]'
                 }`}
               >
                 {tab.label}
@@ -211,7 +211,7 @@ function CommunityPageContent() {
         </div>
 
         {!isHotdeals && showForm && (
-          <div className="space-y-3 rounded-[28px] border border-[#ffb3c0]/55 bg-[#fff0f2]/84 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.10)] backdrop-blur-xl">
+          <div className="space-y-3 rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/84 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.10)] backdrop-blur-xl">
             <div className="rounded-[24px] border border-[#dbe8f2] bg-[#eff5fb] p-4">
               <div className="text-2xl font-extrabold tracking-tight text-[#111827]">새 글 쓰기</div>
               <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_56px]">
@@ -258,7 +258,7 @@ function CommunityPageContent() {
                       className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
                         active
                           ? 'border-[#ff6b81] bg-[#ff6b81] text-white'
-                          : 'border-[#dbe4df] bg-[#fff0f2]/84 text-[#4b5563]'
+                          : 'border-[#dbe4df] bg-[#fffafb]/84 text-[#4b5563]'
                       }`}
                     >
                       {tab.label}
@@ -297,7 +297,7 @@ function CommunityPageContent() {
         {loading ? (
           <div className="py-10 text-center text-sm text-[#9ca3af]">불러오는 중...</div>
         ) : posts.length === 0 ? (
-          <div className="rounded-[28px] border border-[#ffb3c0]/55 bg-[#fff0f2]/84 px-6 py-10 text-center text-sm text-[#9ca3af] shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+          <div className="rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/84 px-6 py-10 text-center text-sm text-[#9ca3af] shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             아직 글이 없어요. 첫 글을 남겨보세요!
           </div>
         ) : (
@@ -305,7 +305,7 @@ function CommunityPageContent() {
             <Link
               key={post.id}
               href={`/community/${post.id}`}
-              className="block rounded-[28px] border border-[#ffb3c0]/55 bg-[#fff0f2]/84 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-[#ffb3c0]"
+              className="block rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/84 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-[#ffd6dc]"
             >
               <div className="mb-2">
                 <span className="inline-flex rounded-full bg-[#fff1f4] px-2.5 py-1 text-[11px] font-semibold text-[#c0394f]">
