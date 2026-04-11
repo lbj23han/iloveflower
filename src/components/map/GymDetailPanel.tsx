@@ -4,6 +4,7 @@ import { CATEGORY_LABELS, BLOOM_STATUS_LABELS, FLOWER_TYPE_LABELS, FlowerSpotWit
 import ReviewSection from '@/components/gym/ReviewSection';
 import VoteButtons from '@/components/gym/VoteButtons';
 import StarRating from '@/components/ui/StarRating';
+import { getAccentStyle } from '@/lib/flowerTheme';
 
 interface Props {
   gym: FlowerSpotWithDetails;
@@ -42,6 +43,7 @@ export default function SpotDetailPanel({
   const bloomStatus = spot.bloom_status;
   const bloomLabel = bloomStatus ? (BLOOM_STATUS_LABELS as Record<string, string>)[bloomStatus.status] : null;
   const bloomPct = bloomStatus?.bloom_pct;
+  const accent = getAccentStyle(spot.flower_types, spot.category);
 
   const currentFestivals = spot.festivals.filter((f) => {
     if (!f.end_date) return true;
@@ -91,7 +93,7 @@ export default function SpotDetailPanel({
             {bloomPct != null && (
               <div className="space-y-1">
                 <div className="h-2 w-full overflow-hidden rounded-full bg-[#e5e7eb]">
-                  <div className="h-full rounded-full bg-[#ff6b81]" style={{ width: `${bloomPct}%` }} />
+                  <div className="h-full rounded-full" style={{ width: `${bloomPct}%`, backgroundColor: accent.strongBg }} />
                 </div>
                 <div className="text-right text-xs text-[#9ca3af]">{bloomPct}%</div>
               </div>
@@ -110,7 +112,11 @@ export default function SpotDetailPanel({
             <div className="mt-2 flex flex-wrap gap-1">
               {spot.flower_types.length > 0
                 ? spot.flower_types.map((t) => (
-                    <span key={t} className="rounded-full bg-[#fff1f4] px-2 py-0.5 text-xs font-semibold text-[#ff4d6d]">
+                    <span
+                      key={t}
+                      className="rounded-full px-2 py-0.5 text-xs font-semibold"
+                      style={{ backgroundColor: accent.bg, color: accent.text }}
+                    >
                       {(FLOWER_TYPE_LABELS as Record<string, string>)[t] ?? t}
                     </span>
                   ))
@@ -179,7 +185,13 @@ export default function SpotDetailPanel({
                   <div key={signal.label} className="flex items-center gap-2">
                     <span className="w-[108px] shrink-0 text-xs text-[#374151]">{signal.label}</span>
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#e5e7eb]">
-                      <div className="h-full rounded-full bg-[#ff6b81]" style={{ width: `${Math.min(100, (signal.count / totalReviews) * 100)}%` }} />
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.min(100, (signal.count / totalReviews) * 100)}%`,
+                          backgroundColor: accent.strongBg,
+                        }}
+                      />
                     </div>
                     <span className="w-8 text-right text-xs text-[#6b7280]">{signal.count}명</span>
                   </div>

@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { FlowerType, FLOWER_TYPE_LABELS, BloomStatusValue, BLOOM_STATUS_LABELS } from "@/types";
+import {
+  BloomStatusValue,
+  BLOOM_STATUS_LABELS,
+  FlowerSpotMapItem,
+  FlowerType,
+  FLOWER_TYPE_LABELS,
+} from "@/types";
 import { getOrCreateSession, getDeviceId } from "@/lib/session";
 import BrandLockup from "@/components/ui/BrandLockup";
 
@@ -12,8 +18,10 @@ const BLOOM_STATUSES = Object.entries(BLOOM_STATUS_LABELS) as Array<[BloomStatus
 
 function ReportForm() {
   const params = useSearchParams();
-  const spotId = params.get("spot_id");
-  const [spotName, setSpotName] = useState(params.get("spot_name") ?? "");
+  const initialSpotId = params.get("spot_id");
+  const initialSpotName = params.get("spot_name") ?? "";
+
+  const [spotName, setSpotName] = useState(initialSpotName);
   const [flowerType, setFlowerType] = useState<FlowerType | "">("");
   const [bloomStatus, setBloomStatus] = useState<BloomStatusValue | "">("");
   const [entryFee, setEntryFee] = useState("");
@@ -24,6 +32,61 @@ function ReportForm() {
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState(initialSpotName);
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<FlowerSpotMapItem[]>([]);
+  const [linkedSpot, setLinkedSpot] = useState<FlowerSpotMapItem | null>(
+    initialSpotId && initialSpotName
+      ? {
+          id: initialSpotId,
+          name: initialSpotName,
+          address: null,
+          lat: null,
+          lng: null,
+          flower_types: [],
+          category: "etc",
+          bloom_status: null,
+          bloom_pct: null,
+          has_night_light: false,
+          has_parking: false,
+          pet_friendly: false,
+          photo_spot: false,
+          entry_fee: 0,
+          vote_up: 0,
+          vote_down: 0,
+        }
+      : null,
+  );
+
+  useEffect(() => {
+    const keyword = searchQuery.trim();
+    if (keyword.length < 2) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+
+    const timer = window.setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`/api/gyms?q=${encodeURIComponent(keyword)}`);
+        const json = await res.json();
+        setSearchResults(json.spots ?? []);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
+
+  const linkedLabel = useMemo(() => {
+    if (!linkedSpot) return null;
+    return linkedSpot.address ? `${linkedSpot.name} · ${linkedSpot.address}` : linkedSpot.name;
+  }, [linkedSpot]);
 
   const submit = async () => {
     if (!spotName.trim() || submitting) return;
@@ -37,11 +100,11 @@ function ReportForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          spot_id: spotId ?? null,
+          spot_id: linkedSpot?.id ?? initialSpotId ?? null,
           spot_name: spotName.trim(),
           flower_type: flowerType || null,
           bloom_status: bloomStatus || null,
-          entry_fee: freeEntry ? 0 : (entryFee.trim() ? parseInt(entryFee, 10) : null),
+          entry_fee: freeEntry ? 0 : entryFee.trim() ? parseInt(entryFee, 10) : null,
           has_night_light: hasNightLight || null,
           has_parking: hasParking || null,
           pet_friendly: petFriendly || null,
@@ -68,9 +131,7 @@ function ReportForm() {
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
         <div className="text-4xl">🌸</div>
         <h2 className="text-lg font-bold text-[#111827]">제보 감사합니다!</h2>
-        <p className="text-sm text-[#6b7280]">
-          검토 후 지도에 반영될 예정이에요.
-        </p>
+        <p className="text-sm text-[#6b7280]">검토 후 지도에 반영될 예정이에요.</p>
         <Link
           href="/"
           className="mt-2 rounded-full bg-[#ff6b81] px-6 py-2.5 text-sm font-medium text-white"
@@ -83,7 +144,59 @@ function ReportForm() {
 
   return (
     <div className="mx-auto max-w-lg space-y-5 px-4 py-6">
-      {/* 장소 이름 */}
+      <div className="rounded-2xl border border-[#ffd6dc] bg-white/90 p-4">
+        <div className="mb-2 text-sm font-semibold text-[#111827]">기존 명소에 연결하기</div>
+        <p className="mb-3 text-xs text-[#6b7280]">
+          이미 등록된 명소라면 먼저 연결해두면 관리자 승인과 반영이 더 빨라져요.
+        </p>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="예: 여의도 벚꽃길, 석촌호수"
+          className="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 text-sm focus:border-[#ff6b81] focus:outline-none"
+        />
+        {linkedSpot && (
+          <div className="mt-3 flex items-start justify-between gap-3 rounded-xl bg-[#fff5f7] px-3 py-3">
+            <div className="min-w-0">
+              <div className="text-xs font-semibold text-[#ff4d6d]">연결된 명소</div>
+              <div className="mt-1 text-sm text-[#374151]">{linkedLabel}</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setLinkedSpot(null)}
+              className="shrink-0 rounded-full border border-[#ffd6dc] bg-white px-3 py-1 text-xs text-[#6b7280]"
+            >
+              해제
+            </button>
+          </div>
+        )}
+        {!linkedSpot && (searching || searchResults.length > 0) && (
+          <div className="mt-3 space-y-2">
+            {searching ? (
+              <div className="rounded-xl bg-[#f9fafb] px-3 py-3 text-sm text-[#9ca3af]">명소 검색 중...</div>
+            ) : (
+              searchResults.map((spot) => (
+                <button
+                  key={spot.id}
+                  type="button"
+                  onClick={() => {
+                    setLinkedSpot(spot);
+                    setSpotName(spot.name);
+                    setSearchQuery(spot.name);
+                    setSearchResults([]);
+                  }}
+                  className="block w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-3 text-left transition-colors hover:border-[#ff6b81]/40"
+                >
+                  <div className="text-sm font-semibold text-[#111827]">{spot.name}</div>
+                  {spot.address && <div className="mt-1 text-xs text-[#6b7280]">{spot.address}</div>}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
       <div>
         <label className="mb-1.5 block text-sm font-medium text-[#374151]">
           장소 이름 <span className="text-[#ff6b81]">*</span>
@@ -97,15 +210,13 @@ function ReportForm() {
         />
       </div>
 
-      {/* 꽃 종류 */}
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#374151]">
-          꽃 종류
-        </label>
+        <label className="mb-1.5 block text-sm font-medium text-[#374151]">꽃 종류</label>
         <div className="flex flex-wrap gap-2">
           {FLOWER_TYPES.map(([key, label]) => (
             <button
               key={key}
+              type="button"
               onClick={() => setFlowerType(flowerType === key ? "" : key)}
               className={`rounded-full border px-3 py-1.5 text-sm transition-all ${
                 flowerType === key
@@ -119,15 +230,13 @@ function ReportForm() {
         </div>
       </div>
 
-      {/* 개화 현황 */}
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#374151]">
-          개화 현황
-        </label>
+        <label className="mb-1.5 block text-sm font-medium text-[#374151]">개화 현황</label>
         <div className="flex flex-wrap gap-2">
           {BLOOM_STATUSES.map(([key, label]) => (
             <button
               key={key}
+              type="button"
               onClick={() => setBloomStatus(bloomStatus === key ? "" : key)}
               className={`rounded-full border px-3 py-1.5 text-sm transition-all ${
                 bloomStatus === key
@@ -141,11 +250,8 @@ function ReportForm() {
         </div>
       </div>
 
-      {/* 입장료 */}
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#374151]">
-          입장료
-        </label>
+        <label className="mb-1.5 block text-sm font-medium text-[#374151]">입장료</label>
         <div className="relative">
           <input
             type="number"
@@ -175,11 +281,8 @@ function ReportForm() {
         </label>
       </div>
 
-      {/* 편의 정보 */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#374151]">
-          편의 정보
-        </label>
+        <label className="mb-2 block text-sm font-medium text-[#374151]">편의 정보</label>
         <div className="space-y-2 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] px-4 py-3">
           {[
             { label: "야간 조명 있어요", state: hasNightLight, set: setHasNightLight },
@@ -199,27 +302,21 @@ function ReportForm() {
         </div>
       </div>
 
-      {/* 한마디 */}
       <div>
         <label className="mb-1.5 block text-sm font-medium text-[#374151]">
-          한마디{" "}
-          <span className="font-normal text-[#9ca3af]">(선택, 50자 이내)</span>
+          한마디 <span className="font-normal text-[#9ca3af]">(선택, 50자 이내)</span>
         </label>
         <input
           type="text"
           value={comment}
           onChange={(e) => setComment(e.target.value.slice(0, 50))}
-          placeholder="예: 주차 공간이 넉넉하고 산책로가 예뻐요"
+          placeholder="예: 산책로가 길고 저녁 조명이 예뻐요"
           className="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 text-sm focus:border-[#ff6b81] focus:outline-none"
         />
-        <div className="mt-1 text-right text-xs text-[#9ca3af]">
-          {comment.length}/50
-        </div>
+        <div className="mt-1 text-right text-xs text-[#9ca3af]">{comment.length}/50</div>
       </div>
 
-      <p className="text-xs text-[#9ca3af]">
-        익명으로 제보되며, 관리자 검토 후 지도에 반영됩니다.
-      </p>
+      <p className="text-xs text-[#9ca3af]">익명으로 제보되며, 관리자 검토 후 지도에 반영됩니다.</p>
 
       <button
         onClick={submit}
@@ -252,11 +349,7 @@ export default function ReportPage() {
         </div>
       </header>
       <Suspense
-        fallback={
-          <div className="p-6 text-center text-sm text-[#9ca3af]">
-            로딩 중...
-          </div>
-        }
+        fallback={<div className="p-6 text-center text-sm text-[#9ca3af]">로딩 중...</div>}
       >
         <ReportForm />
       </Suspense>

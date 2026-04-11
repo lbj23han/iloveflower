@@ -1,9 +1,35 @@
 const KAKAO_LOCAL_URL = 'https://dapi.kakao.com/v2/local/search/keyword.json';
 const REQUEST_DELAY_MS = 180;
 const MAX_RETRIES = 3;
-const SWIMMING_NOISE_KEYWORDS = ['워터파크', '워터월드', '해수욕장', '분수', '아쿠아리움'];
-const GYM_KEYWORDS = ['헬스', '피트니스', '휘트니스', '휘트니', 'gym', '짐', 'pt', '스포애니', '스포짐', '스포', '바디', '머슬', '버핏', '웨이트'];
-const GYM_FACILITY_KEYWORDS = ['체육', '체육관', '체력단련장', '스포츠센터', '스포츠클럽', '복합스포츠시설', '체육시설'];
+
+const FLOWER_TYPE_RULES = [
+  { type: 'cherry', keywords: ['벚꽃', '벚나무'] },
+  { type: 'plum', keywords: ['매화', '매실'] },
+  { type: 'forsythia', keywords: ['개나리'] },
+  { type: 'azalea', keywords: ['진달래', '철쭉', '영산홍'] },
+  { type: 'wisteria', keywords: ['등꽃', '등나무'] },
+  { type: 'rose', keywords: ['장미'] },
+  { type: 'cosmos', keywords: ['코스모스'] },
+  { type: 'sunflower', keywords: ['해바라기'] },
+  { type: 'tulip', keywords: ['튤립'] },
+  { type: 'lavender', keywords: ['라벤더'] },
+  { type: 'rape', keywords: ['유채꽃', '유채'] },
+];
+
+const NOISE_KEYWORDS = [
+  '꽃집',
+  '플라워샵',
+  '화원',
+  '부케',
+  '웨딩',
+  '장례',
+  '스튜디오',
+  '네일',
+  '미용',
+  '펜션',
+  '호텔',
+  '리조트',
+];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -39,28 +65,84 @@ async function requestKeywordSearch({ apiKey, query, rect, page = 1, size = 15 }
   }
 }
 
-function isExcludedPlace(placeName, categoryName) {
-  const text = `${placeName ?? ''} ${categoryName ?? ''}`.toLowerCase();
-  return SWIMMING_NOISE_KEYWORDS.some((keyword) => text.includes(keyword));
+function normalizeText(...parts) {
+  return parts
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
 }
 
-function normalizeCategory(placeName, categoryName, keyword) {
-  const text = `${placeName ?? ''} ${categoryName ?? ''} ${keyword}`.toLowerCase();
+function isExcludedPlace(placeName, categoryName, keyword) {
+  const text = normalizeText(placeName, categoryName, keyword);
+  return NOISE_KEYWORDS.some((noise) => text.includes(noise));
+}
 
-  if (text.includes('요가')) return 'yoga';
-  if (text.includes('필라테스') || text.includes('필라')) return 'pilates';
-  if (text.includes('크로스핏')) return 'crossfit';
-  if (text.includes('클라이밍')) return 'climbing';
-  if (!isExcludedPlace(placeName, categoryName) && (text.includes('수영') || text.includes('스윔') || text.includes('swim') || text.includes('풀') || text.includes('pool') || text.includes('물놀이') || text.includes('스쿠버') || text.includes('다이빙'))) return 'swimming';
-  if (GYM_KEYWORDS.some((keywordValue) => text.includes(keywordValue))) return 'gym';
-  if (GYM_FACILITY_KEYWORDS.some((keywordValue) => text.includes(keywordValue))) return 'gym';
+function inferFlowerTypes(placeName, categoryName, keyword) {
+  const text = normalizeText(placeName, categoryName, keyword);
+  const matched = FLOWER_TYPE_RULES
+    .filter((rule) => rule.keywords.some((value) => text.includes(value)))
+    .map((rule) => rule.type);
+
+  return matched.length > 0 ? [...new Set(matched)] : ['etc'];
+}
+
+function inferCategory(placeName, categoryName, keyword) {
+  const text = normalizeText(placeName, categoryName, keyword);
+
+  if (text.includes('카페') || text.includes('cafe')) return 'cafe';
+  if (text.includes('수목원') || text.includes('식물원') || text.includes('정원')) return 'botanical';
+  if (text.includes('농장') || text.includes('목장') || text.includes('팜')) return 'farm';
+  if (text.includes('사찰') || text.includes('절') || text.includes('암')) return 'temple';
+  if (text.includes('강') || text.includes('천') || text.includes('호수') || text.includes('저수지') || text.includes('하천')) return 'river';
+  if (text.includes('산') || text.includes('둘레길') || text.includes('등산')) return 'mountain';
+  if (text.includes('거리') || text.includes('가로수') || text.includes('꽃길') || text.includes('벚꽃길')) return 'street';
+  if (text.includes('공원') || text.includes('생태') || text.includes('유원지')) return 'park';
   return 'etc';
 }
 
+function inferFeatureFlags(placeName, categoryName, keyword) {
+  const text = normalizeText(placeName, categoryName, keyword);
+  return {
+    has_night_light: text.includes('야간') || text.includes('조명') || text.includes('빛축제'),
+    has_parking: text.includes('주차') || text.includes('드라이브') || text.includes('대형카페'),
+    pet_friendly: text.includes('반려') || text.includes('애견') || text.includes('펫'),
+    photo_spot: text.includes('포토') || text.includes('사진') || text.includes('전망') || text.includes('명소'),
+  };
+}
+
+function inferPeakMonths(flowerTypes) {
+  const first = flowerTypes[0];
+  const monthMap = {
+    cherry: [3, 4],
+    plum: [2, 3],
+    forsythia: [3, 4],
+    azalea: [4, 5],
+    wisteria: [4, 5],
+    rose: [5, 6],
+    cosmos: [9, 10],
+    sunflower: [7, 8],
+    tulip: [4, 5],
+    lavender: [6, 7],
+    rape: [4, 5],
+    etc: [null, null],
+  };
+
+  const [start, end] = monthMap[first] ?? [null, null];
+  return {
+    peak_month_start: start,
+    peak_month_end: end,
+  };
+}
+
 function mapKakaoPlace(place, keyword) {
-  if (isExcludedPlace(place.place_name, place.category_name)) {
+  if (isExcludedPlace(place.place_name, place.category_name, keyword)) {
     return null;
   }
+
+  const flowerTypes = inferFlowerTypes(place.place_name, place.category_name, keyword);
+  const category = inferCategory(place.place_name, place.category_name, keyword);
+  const flags = inferFeatureFlags(place.place_name, place.category_name, keyword);
+  const peakMonths = inferPeakMonths(flowerTypes);
 
   return {
     external_place_id: place.id,
@@ -68,9 +150,16 @@ function mapKakaoPlace(place, keyword) {
     address: place.road_address_name || place.address_name || null,
     lat: place.y ? Number(place.y) : null,
     lng: place.x ? Number(place.x) : null,
-    category: normalizeCategory(place.place_name, place.category_name, keyword),
+    flower_types: flowerTypes,
+    category,
+    peak_month_start: peakMonths.peak_month_start,
+    peak_month_end: peakMonths.peak_month_end,
+    has_night_light: flags.has_night_light,
+    has_parking: flags.has_parking,
+    pet_friendly: flags.pet_friendly,
+    photo_spot: flags.photo_spot,
+    entry_fee: 0,
     phone: place.phone || null,
-    opening_hours: null,
     website_url: place.place_url || null,
     source: 'kakao_local',
   };

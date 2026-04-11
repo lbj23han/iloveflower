@@ -153,6 +153,12 @@ const CITY_BOUNDS = {
     latStep: 0.04,
     lngStep: 0.05,
   },
+  guri: {
+    label: '구리',
+    bounds: { swLat: 37.5600, swLng: 127.0900, neLat: 37.6500, neLng: 127.1800 },
+    latStep: 0.02,
+    lngStep: 0.025,
+  },
 
   // ── 충청권 ───────────────────────────────────────────────
   cheongju: {
@@ -167,6 +173,18 @@ const CITY_BOUNDS = {
     latStep: 0.03,
     lngStep: 0.035,
   },
+  asan: {
+    label: '아산',
+    bounds: { swLat: 36.7000, swLng: 126.9000, neLat: 36.9300, neLng: 127.1500 },
+    latStep: 0.03,
+    lngStep: 0.035,
+  },
+  taean: {
+    label: '태안',
+    bounds: { swLat: 36.5300, swLng: 126.0500, neLat: 36.9500, neLng: 126.4500 },
+    latStep: 0.04,
+    lngStep: 0.05,
+  },
 
   // ── 경상권 ───────────────────────────────────────────────
   changwon: {
@@ -180,6 +198,24 @@ const CITY_BOUNDS = {
     bounds: { swLat: 35.7500, swLng: 127.0000, neLat: 35.9000, neLng: 127.2000 },
     latStep: 0.025,
     lngStep: 0.03,
+  },
+  goksung: {
+    label: '곡성',
+    bounds: { swLat: 35.1900, swLng: 127.1400, neLat: 35.4100, neLng: 127.4200 },
+    latStep: 0.03,
+    lngStep: 0.035,
+  },
+  gwangyang: {
+    label: '광양',
+    bounds: { swLat: 34.8800, swLng: 127.5000, neLat: 35.1800, neLng: 127.8200 },
+    latStep: 0.035,
+    lngStep: 0.04,
+  },
+  gochang: {
+    label: '고창',
+    bounds: { swLat: 35.2600, swLng: 126.4300, neLat: 35.6200, neLng: 126.8200 },
+    latStep: 0.04,
+    lngStep: 0.045,
   },
   pohang: {
     label: '포항',
@@ -200,6 +236,12 @@ const CITY_BOUNDS = {
     bounds: { swLat: 37.8000, swLng: 127.6500, neLat: 37.9500, neLng: 127.8800 },
     latStep: 0.025,
     lngStep: 0.03,
+  },
+  jeju: {
+    label: '제주',
+    bounds: { swLat: 33.2000, swLng: 126.1000, neLat: 33.6500, neLng: 126.9800 },
+    latStep: 0.05,
+    lngStep: 0.07,
   },
 };
 

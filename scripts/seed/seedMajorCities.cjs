@@ -4,7 +4,41 @@ const { loadLocalEnv } = require('./loadEnv.cjs');
 const { CITY_BOUNDS, tileBounds } = require('./cityBounds.cjs');
 const { requestKeywordSearch, mapKakaoPlace } = require('./kakaoLocal.cjs');
 
-const KEYWORDS = ['헬스장', '피트니스', 'PT', '필라테스', '크로스핏', '요가', '수영장'];
+const KEYWORDS = [
+  '벚꽃 명소',
+  '벚꽃 공원',
+  '벚꽃 카페',
+  '벚꽃 축제',
+  '벚꽃길',
+  '매화 명소',
+  '매화 축제',
+  '매화마을',
+  '개나리 명소',
+  '진달래 명소',
+  '철쭉 명소',
+  '철쭉 축제',
+  '철쭉 군락지',
+  '유채꽃밭',
+  '유채꽃 축제',
+  '튤립 공원',
+  '튤립 축제',
+  '장미 공원',
+  '장미원',
+  '장미 축제',
+  '라벤더 농장',
+  '라벤더 축제',
+  '코스모스 공원',
+  '코스모스 축제',
+  '해바라기 명소',
+  '해바라기 축제',
+  '꽃축제',
+  '꽃 정원',
+  '국가정원',
+  '수목원 꽃축제',
+  '정원 카페',
+  '플라워 카페',
+  '가든 카페',
+];
 const DEFAULT_CITY = 'all';
 const CHUNK_SIZE = 100;
 
@@ -25,7 +59,7 @@ function chunk(items, size) {
 
 async function syncChunk(supabase, rows) {
   const { data: upserted, error: upsertError } = await supabase
-    .from('gyms')
+    .from('flower_spots')
     .upsert(rows, { onConflict: 'external_place_id' })
     .select('id');
 
@@ -35,7 +69,7 @@ async function syncChunk(supabase, rows) {
 
   const externalIds = rows.map((row) => row.external_place_id);
   const { data: existing, error: existingError } = await supabase
-    .from('gyms')
+    .from('flower_spots')
     .select('id, external_place_id')
     .in('external_place_id', externalIds);
 
@@ -46,14 +80,14 @@ async function syncChunk(supabase, rows) {
   const updateRows = rows.filter((row) => existingMap.has(row.external_place_id));
 
   if (insertRows.length > 0) {
-    const { error } = await supabase.from('gyms').insert(insertRows);
+    const { error } = await supabase.from('flower_spots').insert(insertRows);
     if (error) throw error;
   }
 
   for (const row of updateRows) {
     const id = existingMap.get(row.external_place_id);
     const { error } = await supabase
-      .from('gyms')
+      .from('flower_spots')
       .update({ ...row, updated_at: new Date().toISOString() })
       .eq('id', id);
     if (error) throw error;
@@ -62,7 +96,7 @@ async function syncChunk(supabase, rows) {
   return { insertedOrUpdated: insertRows.length + updateRows.length };
 }
 
-async function collectCityGyms(apiKey, cityKey) {
+async function collectCitySpots(apiKey, cityKey) {
   const city = CITY_BOUNDS[cityKey];
   if (!city) {
     throw new Error(`Unknown city: ${cityKey}`);
@@ -131,7 +165,7 @@ async function main() {
 
   let grandTotal = 0;
   for (const city of cities) {
-    const rows = await collectCityGyms(apiKey, city);
+    const rows = await collectCitySpots(apiKey, city);
     let synced = 0;
 
     for (const group of chunk(rows, CHUNK_SIZE)) {

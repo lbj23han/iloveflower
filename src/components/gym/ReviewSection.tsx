@@ -24,7 +24,7 @@ type SignalKey = 'signal_crowded' | 'signal_photo_spot' | 'signal_accessible' | 
 const SIGNAL_OPTIONS: Array<{ key: SignalKey; label: string }> = [
   { key: 'signal_crowded', label: '사람이 많아요' },
   { key: 'signal_photo_spot', label: '포토스팟이에요' },
-  { key: 'signal_accessible', label: '접근이 편해요' },
+  { key: 'signal_accessible', label: '접근하기 편해요' },
   { key: 'signal_parking_ok', label: '주차 편해요' },
 ];
 
@@ -489,20 +489,25 @@ export default function ReviewSection({
                     review.signal_photo_spot ||
                     review.signal_accessible) && (
                     <div className="mb-2 flex flex-wrap gap-1.5">
-                      <SignalBadge
+                  <SignalBadge
                         signal={!!review.signal_crowded}
-                        label="헬린이가 많아요"
+                        label="사람이 많아요"
                         signalKey="signal_crowded"
                       />
                       <SignalBadge
                         signal={!!review.signal_photo_spot}
-                        label="영업 별로 안해요"
+                        label="포토스팟이에요"
                         signalKey="signal_photo_spot"
                       />
                       <SignalBadge
                         signal={!!review.signal_accessible}
-                        label="가성비가 좋아요"
+                        label="접근하기 편해요"
                         signalKey="signal_accessible"
+                      />
+                      <SignalBadge
+                        signal={!!review.signal_parking_ok}
+                        label="주차 편해요"
+                        signalKey="signal_parking_ok"
                       />
                     </div>
                   )}
@@ -572,18 +577,23 @@ export default function ReviewSection({
                 <div className="mb-2 flex flex-wrap gap-1.5">
                   <SignalBadge
                     signal={!!review.signal_crowded}
-                    label="헬린이가 많아요"
+                    label="사람이 많아요"
                     signalKey="signal_crowded"
                   />
                   <SignalBadge
                     signal={!!review.signal_photo_spot}
-                    label="영업 별로 안해요"
+                    label="포토스팟이에요"
                     signalKey="signal_photo_spot"
                   />
                   <SignalBadge
                     signal={!!review.signal_accessible}
-                    label="가성비가 좋아요"
+                    label="접근하기 편해요"
                     signalKey="signal_accessible"
+                  />
+                  <SignalBadge
+                    signal={!!review.signal_parking_ok}
+                    label="주차 편해요"
+                    signalKey="signal_parking_ok"
                   />
                 </div>
               )}

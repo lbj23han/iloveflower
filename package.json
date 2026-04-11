@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed:gyms": "node scripts/seed/seedMajorCities.cjs",
+    "seed:bloom-status": "node scripts/seed/seedInitialBloomStatus.cjs",
+    "seed:festivals": "node scripts/seed/seedFestivals.cjs",
     "reviews:fetch": "node scripts/reviews/fetchExternalReviews.cjs",
     "badges:evidence": "node scripts/badges/normalizeEvidence.cjs",
     "badges:ai-candidates": "node scripts/badges/classifyCandidatesWithAI.cjs",

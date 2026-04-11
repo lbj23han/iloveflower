@@ -57,6 +57,8 @@ function MarqueeTicker() {
 const DEFAULT_FILTERS: FilterState = {
   flower_type: "all",
   bloom_status: "all",
+  season: "all",
+  peak_month: "all",
   has_night_light: false,
   has_parking: false,
   pet_friendly: false,
@@ -447,6 +449,8 @@ export default function MapPage() {
         nextFilters.sort,
         nextFilters.flower_type,
         nextFilters.bloom_status,
+        nextFilters.season,
+        nextFilters.peak_month,
         Number(nextFilters.has_night_light),
         Number(nextFilters.has_parking),
         Number(nextFilters.pet_friendly),
@@ -585,8 +589,8 @@ export default function MapPage() {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error("Failed to search gyms");
-        const data: { gyms: FlowerSpotMapItem[] } = await res.json();
-        setSearchResults(data.gyms ?? []);
+        const data: { spots: FlowerSpotMapItem[] } = await res.json();
+        setSearchResults(data.spots ?? []);
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
           console.error(error);
@@ -680,7 +684,7 @@ export default function MapPage() {
     const fetchReviews = async () => {
       try {
         const params = new URLSearchParams({
-          gym_id: selectedGym.id,
+          spot_id: selectedGym.id,
           limit: "12",
         });
         const res = await fetch(`/api/reviews?${params}`, {
@@ -716,10 +720,16 @@ export default function MapPage() {
     !loading &&
     visibleGyms.length === 0;
   const activeFilterCount =
-    Number(false) +
-    Number(false) +
-    Number(false) +
     Number(filters.category !== "all") +
+    Number(filters.flower_type !== "all") +
+    Number(filters.bloom_status !== "all") +
+    Number(filters.season !== "all") +
+    Number(filters.peak_month !== "all") +
+    Number(filters.has_night_light) +
+    Number(filters.has_parking) +
+    Number(filters.pet_friendly) +
+    Number(filters.photo_spot) +
+    Number(filters.free_only) +
     Number(filters.sort !== "recommended");
   const leftPanelWidth =
     leftPanelMode === "detail"
@@ -993,7 +1003,7 @@ export default function MapPage() {
 
         {filterOpen && (
           <GlassPanel
-            className={`w-[min(360px,calc(100vw-2rem))] px-4 py-4 ${isDesktop ? "" : "mr-0"}`}
+            className={`max-h-[min(74vh,820px)] w-[min(388px,calc(100vw-1.25rem))] overflow-hidden px-4 py-4 ${isDesktop ? "" : "mr-0"}`}
           >
             <div className="mb-3 flex items-center justify-between">
               <div>
@@ -1001,7 +1011,7 @@ export default function MapPage() {
                   지금 보고 싶은 조건
                 </div>
                 <div className="text-[11px] text-[#6b7280]">
-                  카테고리와 분위기를 바로 바꿔보세요
+                  탐색, 시기, 편의 탭으로 나눠서 빠르게 골라보세요
                 </div>
               </div>
               <button

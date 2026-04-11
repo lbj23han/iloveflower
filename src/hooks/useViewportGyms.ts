@@ -29,6 +29,8 @@ export function useViewportSpots() {
           category: filters.category,
           flower_type: filters.flower_type,
           bloom_status: filters.bloom_status,
+          season: filters.season,
+          peak_month: String(filters.peak_month),
           has_night_light: String(filters.has_night_light),
           has_parking: String(filters.has_parking),
           pet_friendly: String(filters.pet_friendly),

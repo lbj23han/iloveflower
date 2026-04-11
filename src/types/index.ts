@@ -6,6 +6,7 @@ export type FlowerCategory =
   | "street"
   | "temple"
   | "farm"
+  | "cafe"
   | "etc";
 
 export const CATEGORY_LABELS: Record<FlowerCategory, string> = {
@@ -16,6 +17,7 @@ export const CATEGORY_LABELS: Record<FlowerCategory, string> = {
   street: "가로수길",
   temple: "사찰",
   farm: "농장/체험",
+  cafe: "카페",
   etc: "기타",
 };
 
@@ -63,6 +65,31 @@ export const BLOOM_STATUS_LABELS: Record<BloomStatusValue, string> = {
   peak: "만개",
   falling: "낙화 중",
   done: "종료",
+};
+
+export type SeasonFilter = "all" | "spring" | "summer" | "autumn" | "winter";
+
+export const SEASON_FILTER_LABELS: Record<SeasonFilter, string> = {
+  all: "전체",
+  spring: "봄",
+  summer: "여름",
+  autumn: "가을",
+  winter: "겨울",
+};
+
+export const PEAK_MONTH_LABELS: Record<number, string> = {
+  1: "1월",
+  2: "2월",
+  3: "3월",
+  4: "4월",
+  5: "5월",
+  6: "6월",
+  7: "7월",
+  8: "8월",
+  9: "9월",
+  10: "10월",
+  11: "11월",
+  12: "12월",
 };
 
 export interface FlowerSpot {
@@ -239,6 +266,8 @@ export interface Comment {
 export interface FilterState {
   flower_type: FlowerType | "all";
   bloom_status: BloomStatusValue | "all";
+  season: SeasonFilter;
+  peak_month: number | "all";
   has_night_light: boolean;
   has_parking: boolean;
   pet_friendly: boolean;

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { FlowerSpotMapItem, CATEGORY_LABELS, ViewportBounds } from '@/types';
+import { getAccentStyle } from '@/lib/flowerTheme';
 
 declare global {
   interface Window {
@@ -175,6 +176,7 @@ export default function KakaoMap({
       if (!spot.lat || !spot.lng) return;
       const isSelected = selectedSpotId === spot.id;
       const bloomColor = getBloomColor(spot.bloom_status);
+      const accent = getAccentStyle(spot.flower_types, spot.category);
       const categoryLabel = CATEGORY_LABELS[spot.category] ?? '기타';
       const flowerLabel = spot.flower_types[0] ? spot.flower_types[0] : null;
       const label = flowerLabel
@@ -183,7 +185,7 @@ export default function KakaoMap({
 
       const bg = isSelected ? '#111827' : 'rgba(255,255,255,0.96)';
       const color = isSelected ? '#ffffff' : '#111827';
-      const borderColor = isSelected ? '#111827' : bloomColor;
+      const borderColor = isSelected ? '#111827' : accent.border;
       const borderWidth = isSelected ? '2px' : '2px';
       const shadow = isSelected ? '0 8px 18px rgba(17,24,39,0.28)' : '0 4px 10px rgba(15,23,42,0.14)';
 
@@ -199,6 +201,7 @@ export default function KakaoMap({
           cursor:pointer; box-shadow:${shadow};
           font-family:-apple-system,sans-serif;
         ">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:${bloomColor};box-shadow:0 0 0 1px rgba(255,255,255,0.8)"></span>
           ${label}
         </div>
       `;

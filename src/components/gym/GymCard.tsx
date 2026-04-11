@@ -1,6 +1,7 @@
 'use client';
 
 import { FlowerSpotMapItem, CATEGORY_LABELS, BLOOM_STATUS_LABELS } from '@/types';
+import { getAccentStyle } from '@/lib/flowerTheme';
 
 interface Props {
   spot: FlowerSpotMapItem;
@@ -12,6 +13,7 @@ export default function SpotCard({ spot, onClick }: Props) {
   const flowerLabel = spot.flower_types[0]
     ? { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', wisteria: '등나무', rose: '장미', cosmos: '코스모스', sunflower: '해바라기', tulip: '튤립', lavender: '라벤더', rape: '유채꽃', etc: '기타' }[spot.flower_types[0]] ?? '기타'
     : null;
+  const accent = getAccentStyle(spot.flower_types, spot.category);
 
   return (
     <div
@@ -23,14 +25,20 @@ export default function SpotCard({ spot, onClick }: Props) {
           <div className="truncate font-bold text-[#111827]">{spot.name}</div>
           {spot.address && <div className="truncate text-xs text-[#9ca3af]">{spot.address}</div>}
         </div>
-        <span className="shrink-0 rounded-full bg-[#fff1f4] px-2 py-0.5 text-[10px] font-semibold text-[#ff4d6d]">
+        <span
+          className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+          style={{ backgroundColor: accent.bg, color: accent.text }}
+        >
           {CATEGORY_LABELS[spot.category]}
         </span>
       </div>
 
       <div className="mt-2 flex flex-wrap gap-1.5">
         {flowerLabel && (
-          <span className="rounded-full bg-[#fff1f4] px-2.5 py-1 text-xs font-medium text-[#ff4d6d]">
+          <span
+            className="rounded-full px-2.5 py-1 text-xs font-medium"
+            style={{ backgroundColor: accent.bg, color: accent.text }}
+          >
             {flowerLabel}
           </span>
         )}

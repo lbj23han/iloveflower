@@ -5,6 +5,7 @@ import { CATEGORY_LABELS, BLOOM_STATUS_LABELS, FLOWER_TYPE_LABELS } from '@/type
 import VoteButtons from '@/components/gym/VoteButtons';
 import ReviewSection from '@/components/gym/ReviewSection';
 import { getSpotDetailById } from '@/lib/spots';
+import { getAccentStyle } from '@/lib/flowerTheme';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -31,6 +32,7 @@ export default async function SpotDetailPage({ params }: Props) {
   const kakaoMapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(spot.name)}`;
   const bloomStatus = spot.bloom_status;
   const bloomLabel = bloomStatus ? (BLOOM_STATUS_LABELS as Record<string, string>)[bloomStatus.status] : null;
+  const accent = getAccentStyle(spot.flower_types, spot.category);
 
   return (
     <div className="min-h-screen bg-[#fff5f7] pb-8">
@@ -57,7 +59,11 @@ export default async function SpotDetailPage({ params }: Props) {
           {spot.flower_types.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-4">
               {spot.flower_types.map((t) => (
-                <span key={t} className="text-xs px-2.5 py-1 rounded-full bg-[#fff1f4] text-[#ff4d6d] font-medium">
+                <span
+                  key={t}
+                  className="text-xs px-2.5 py-1 rounded-full font-medium"
+                  style={{ backgroundColor: accent.bg, color: accent.text }}
+                >
                   {(FLOWER_TYPE_LABELS as Record<string, string>)[t] ?? t}
                 </span>
               ))}
@@ -73,7 +79,10 @@ export default async function SpotDetailPage({ params }: Props) {
               </div>
               {bloomStatus.bloom_pct != null && (
                 <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#e5e7eb]">
-                  <div className="h-full rounded-full bg-[#ff6b81]" style={{ width: `${bloomStatus.bloom_pct}%` }} />
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${bloomStatus.bloom_pct}%`, backgroundColor: accent.strongBg }}
+                  />
                 </div>
               )}
             </div>

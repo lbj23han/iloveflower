@@ -9,6 +9,8 @@ export async function getSpotMapItemsByBounds({
   category,
   flowerType,
   bloomStatus,
+  season,
+  peakMonth,
   hasNightLight,
   hasParking,
   petFriendly,
@@ -24,6 +26,8 @@ export async function getSpotMapItemsByBounds({
   category?: string;
   flowerType?: string;
   bloomStatus?: string;
+  season?: string;
+  peakMonth?: string;
   hasNightLight?: boolean;
   hasParking?: boolean;
   petFriendly?: boolean;
@@ -35,11 +39,36 @@ export async function getSpotMapItemsByBounds({
   const supabase = await createClient();
   const currentYear = new Date().getFullYear();
 
+  const seasonMonthsMap: Record<string, number[]> = {
+    spring: [3, 4, 5],
+    summer: [6, 7, 8],
+    autumn: [9, 10, 11],
+    winter: [12, 1, 2],
+  };
+
+  const getPeakMonths = (start: number | null, end: number | null) => {
+    if (!start && !end) return [];
+    if (start && !end) return [start];
+    if (!start && end) return [end];
+    if (start === end) return start ? [start] : [];
+
+    const months: number[] = [];
+    let month = start!;
+    while (true) {
+      months.push(month);
+      if (month === end) break;
+      month = month === 12 ? 1 : month + 1;
+      if (months.length > 12) break;
+    }
+    return months;
+  };
+
   let query = supabase
     .from('flower_spots')
     .select(`
       id, name, address, lat, lng, flower_types, category,
       has_night_light, has_parking, pet_friendly, photo_spot, entry_fee,
+      peak_month_start, peak_month_end,
       bloom_status!left (
         status, bloom_pct, year
       )
@@ -106,6 +135,21 @@ export async function getSpotMapItemsByBounds({
   }
   if (bloomStatus && bloomStatus !== 'all') {
     result = result.filter((s) => s.bloom_status === bloomStatus);
+  }
+  if (season && season !== 'all') {
+    result = result.filter((spot) => {
+      const source = spots.find((item) => item.id === spot.id);
+      const months = getPeakMonths(source?.peak_month_start ?? null, source?.peak_month_end ?? null);
+      return months.some((month) => seasonMonthsMap[season]?.includes(month));
+    });
+  }
+  if (peakMonth && peakMonth !== 'all') {
+    const targetMonth = Number(peakMonth);
+    result = result.filter((spot) => {
+      const source = spots.find((item) => item.id === spot.id);
+      const months = getPeakMonths(source?.peak_month_start ?? null, source?.peak_month_end ?? null);
+      return months.includes(targetMonth);
+    });
   }
 
   if (sort === 'bloom') {

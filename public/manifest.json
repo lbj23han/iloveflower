@@ -1,12 +1,12 @@
 {
-  "name": "헬린이맵",
-  "short_name": "헬린이맵",
-  "description": "눈치 안보고 운동하고 싶다면",
+  "name": "꽃놀이맵",
+  "short_name": "꽃놀이맵",
+  "description": "전국 꽃놀이 명소와 개화 현황을 지도에서 확인하세요.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#00C471",
+  "theme_color": "#ff6b81",
   "icons": [
-    { "src": "/icon-gymkidzone.png?v=2", "sizes": "1670x2400", "type": "image/png" }
+    { "src": "/icon.png?v=2", "sizes": "512x512", "type": "image/png" }
   ]
 }
