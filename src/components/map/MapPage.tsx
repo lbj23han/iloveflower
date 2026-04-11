@@ -95,7 +95,7 @@ function GlassPanel({
 }) {
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-[30px] border border-white/35 bg-white/58 shadow-[0_18px_50px_rgba(15,23,42,0.14)] backdrop-blur-xl ${className ?? ""}`}
+      className={`flex flex-col overflow-hidden rounded-[30px] border border-[#ffb3c0]/40 bg-[#fff0f2]/65 shadow-[0_18px_50px_rgba(15,23,42,0.14)] backdrop-blur-xl ${className ?? ""}`}
     >
       {children}
     </div>
@@ -122,7 +122,7 @@ function FavoriteToggleButton({
       } ${
         active
           ? "bg-[#fff1f4] text-[#ff4d6d] shadow-[0_8px_18px_rgba(255,77,109,0.18)]"
-          : "bg-white/72 text-[#6b7280] shadow-[0_8px_18px_rgba(15,23,42,0.10)]"
+          : "bg-[#fff0f2]/76 text-[#6b7280] shadow-[0_8px_18px_rgba(15,23,42,0.10)]"
       }`}
       aria-label={active ? "찜 해제" : "찜하기"}
       title={active ? "찜 해제" : "찜하기"}
@@ -189,7 +189,7 @@ function RankingContent({
             tabIndex={0}
             onClick={() => onSelect(gym)}
             onKeyDown={(event) => handleKeyDown(event, gym)}
-            className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-white/50 text-left rounded-2xl transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-[#fff0f2]/60 text-left rounded-2xl transition-colors"
           >
             <span className="text-xs font-bold text-[#9ca3af] w-5 shrink-0">
               #{i + 1}
@@ -272,11 +272,11 @@ function ListContent({
           tabIndex={0}
           onClick={() => onSelect(gym)}
           onKeyDown={(event) => handleKeyDown(event, gym)}
-          className={`w-full flex items-center gap-2 rounded-2xl border px-3 py-2.5 text-left transition-colors hover:bg-white/50 ${
+          className={`w-full flex items-center gap-2 rounded-2xl border px-3 py-2.5 text-left transition-colors hover:bg-[#fff0f2]/60 ${
             selectedId === gym.id
               ? gym.photo_spot
                 ? "border-[#92e0b6] bg-[#f3fff8]"
-                : "border-white/60 bg-white/60"
+                : "border-[#ffb3c0]/60 bg-[#fff0f2]/65"
               : gym.photo_spot
                 ? "border-[#d8f5e8] bg-white/42"
                 : "border-transparent"
@@ -334,7 +334,7 @@ function JudgeContent({
           <button
             key={gym.id}
             onClick={() => onSelect(gym)}
-            className="w-full flex items-start gap-2 px-3 py-2.5 hover:bg-white/50 text-left rounded-2xl transition-colors"
+            className="w-full flex items-start gap-2 px-3 py-2.5 hover:bg-[#fff0f2]/60 text-left rounded-2xl transition-colors"
           >
             <span className="text-[10px] font-bold text-[#9ca3af] w-5 shrink-0 pt-0.5">
               #{i + 1}
@@ -750,7 +750,7 @@ export default function MapPage() {
 
       {zoomHint && (
         <div
-          className="pointer-events-none absolute left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/35 bg-white/70 px-4 py-2 text-sm text-[#4b5563] shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl"
+          className="pointer-events-none absolute left-1/2 z-20 -translate-x-1/2 rounded-full border border-[#ffb3c0]/40 bg-[#fff0f2]/74 px-4 py-2 text-sm text-[#4b5563] shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl"
           style={{ top: overlayTop }}
         >
           {zoomHint}
@@ -764,7 +764,7 @@ export default function MapPage() {
               lastFetchKeyRef.current = null;
               queueViewportFetch(boundsRef.current!, filters, true);
             }}
-            className="rounded-full border border-white/50 bg-white/80 px-5 py-3 text-sm font-semibold text-[#111827] shadow-[0_16px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl disabled:cursor-default disabled:opacity-90"
+            className="rounded-full border border-[#ffb3c0]/55 bg-[#fff0f2]/84 px-5 py-3 text-sm font-semibold text-[#111827] shadow-[0_16px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl disabled:cursor-default disabled:opacity-90"
           >
             이 지역을 기반으로 검색하기
           </button>
@@ -777,7 +777,7 @@ export default function MapPage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 z-30 px-3 pt-3 md:px-4 md:pt-4">
         <div className="pointer-events-auto space-y-2">
           {/* 데스크탑 헤더 */}
-          <div className="hidden md:flex items-center justify-between rounded-[28px] border border-white/45 bg-white/72 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+          <div className="hidden md:flex items-center justify-between rounded-[28px] border border-[#ffb3c0]/50 bg-[#fff0f2]/76 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
             <BrandLockup
               title="꽃놀이맵"
               subtitle="전국 꽃놀이 명소를 지도에서 한눈에"
@@ -794,7 +794,7 @@ export default function MapPage() {
           </div>
 
           {/* 모바일 헤더: 한 줄 컴팩트 */}
-          <div className="flex md:hidden items-center justify-between rounded-[22px] border border-white/45 bg-white/72 px-3 py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+          <div className="flex md:hidden items-center justify-between rounded-[22px] border border-[#ffb3c0]/50 bg-[#fff0f2]/76 px-3 py-2 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
             <BrandLockup
               title="꽃놀이맵"
               iconSize={40}
@@ -817,7 +817,7 @@ export default function MapPage() {
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-white/40 bg-white/64 px-3 py-2 shadow-[0_12px_32px_rgba(15,23,42,0.10)] backdrop-blur-xl">
+          <div className="rounded-[24px] border border-[#ffb3c0]/45 bg-[#fff0f2]/68 px-3 py-2 shadow-[0_12px_32px_rgba(15,23,42,0.10)] backdrop-blur-xl">
             <MarqueeTicker />
           </div>
         </div>
@@ -840,7 +840,7 @@ export default function MapPage() {
             className={`flex h-[46px] w-[46px] items-center justify-center rounded-full border shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all ${
               searchOpen
                 ? "border-[#111827] bg-[#111827]/92 text-white"
-                : "border-white/45 bg-white/72 text-[#111827]"
+                : "border-[#ffb3c0]/50 bg-[#fff0f2]/76 text-[#111827]"
             }`}
             aria-label="시설 검색"
             title="시설 검색"
@@ -864,7 +864,7 @@ export default function MapPage() {
             className={`flex h-[46px] w-[46px] items-center justify-center rounded-full border text-[16px] shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all ${
               favoritesOnly
                 ? "border-[#ffccd5] bg-[#fff1f4]/96 text-[#ff4d6d]"
-                : "border-white/45 bg-white/72 text-[#111827]"
+                : "border-[#ffb3c0]/50 bg-[#fff0f2]/76 text-[#111827]"
             }`}
             aria-label={favoritesOnly ? "찜 필터 해제" : "찜한 시설만 보기"}
             title={favoritesOnly ? "찜 필터 해제" : "찜한 시설만 보기"}
@@ -891,7 +891,7 @@ export default function MapPage() {
                 ? "기본 위치 또는 현재 위치로 이동"
                 : "내 위치로 이동"
             }
-            className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-white/45 bg-white/72 text-[18px] text-[#111827] shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all hover:bg-white/84 disabled:cursor-default disabled:opacity-75"
+            className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-[#ffb3c0]/50 bg-[#fff0f2]/76 text-[18px] text-[#111827] shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all hover:bg-[#fff0f2]/86 disabled:cursor-default disabled:opacity-75"
             aria-label={
               geolocationLoading || locating
                 ? "현재 위치 찾는 중"
@@ -906,7 +906,7 @@ export default function MapPage() {
             className={`flex h-[46px] items-center gap-2 rounded-full border px-4 text-sm font-semibold shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all ${
               filterOpen
                 ? "border-[#111827] bg-[#111827]/92 text-white"
-                : "border-white/45 bg-white/72 text-[#111827]"
+                : "border-[#ffb3c0]/50 bg-[#fff0f2]/76 text-[#111827]"
             }`}
           >
             <span>필터</span>
@@ -952,20 +952,20 @@ export default function MapPage() {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="예: 스포애니, 팀버핏, 파크짐"
-              className="w-full rounded-2xl border border-white/55 bg-white/78 px-4 py-3 text-sm text-[#111827] focus:border-[#111827] focus:outline-none"
+              className="w-full rounded-2xl border border-[#ffb3c0]/55 bg-[#fff0f2]/82 px-4 py-3 text-sm text-[#111827] focus:border-[#111827] focus:outline-none"
             />
 
             <div className="mt-3 max-h-[320px] overflow-y-auto space-y-2">
               {searchLoading ? (
-                <div className="rounded-2xl border border-white/45 bg-white/60 px-4 py-4 text-center text-sm text-[#6b7280]">
+                <div className="rounded-2xl border border-[#ffb3c0]/50 bg-[#fff0f2]/65 px-4 py-4 text-center text-sm text-[#6b7280]">
                   검색 중...
                 </div>
               ) : searchQuery.trim().length < 2 ? (
-                <div className="rounded-2xl border border-white/45 bg-white/60 px-4 py-4 text-center text-sm text-[#9ca3af]">
+                <div className="rounded-2xl border border-[#ffb3c0]/50 bg-[#fff0f2]/65 px-4 py-4 text-center text-sm text-[#9ca3af]">
                   두 글자 이상 입력해 주세요
                 </div>
               ) : searchResults.length === 0 ? (
-                <div className="rounded-2xl border border-white/45 bg-white/60 px-4 py-4 text-center text-sm text-[#9ca3af]">
+                <div className="rounded-2xl border border-[#ffb3c0]/50 bg-[#fff0f2]/65 px-4 py-4 text-center text-sm text-[#9ca3af]">
                   검색 결과가 없어요
                 </div>
               ) : (
@@ -976,7 +976,7 @@ export default function MapPage() {
                       handleGymSelect(gym);
                       setSearchOpen(false);
                     }}
-                    className="w-full rounded-2xl border border-white/45 bg-white/68 px-4 py-3 text-left transition-colors hover:bg-white/82"
+                    className="w-full rounded-2xl border border-[#ffb3c0]/50 bg-[#fff0f2]/72 px-4 py-3 text-left transition-colors hover:bg-[#fff0f2]/86"
                   >
                     <div className="text-sm font-semibold text-[#111827]">
                       {gym.name}
@@ -1006,7 +1006,7 @@ export default function MapPage() {
               </div>
               <button
                 onClick={() => handleFilterChange(DEFAULT_FILTERS)}
-                className="rounded-full border border-white/45 bg-white/72 px-3 py-1.5 text-xs font-medium text-[#4b5563]"
+                className="rounded-full border border-[#ffb3c0]/50 bg-[#fff0f2]/76 px-3 py-1.5 text-xs font-medium text-[#4b5563]"
               >
                 초기화
               </button>
@@ -1138,7 +1138,7 @@ export default function MapPage() {
         ) : (
           <button
             onClick={() => setLeftPanelMode(selectedGym ? "detail" : "ranking")}
-            className="self-start rounded-2xl border border-white/40 bg-white/66 px-3 py-4 text-sm text-[#6b7280] shadow-[0_14px_36px_rgba(15,23,42,0.14)] backdrop-blur-xl transition-colors hover:text-[#111827]"
+            className="self-start rounded-2xl border border-[#ffb3c0]/45 bg-[#fff0f2]/70 px-3 py-4 text-sm text-[#6b7280] shadow-[0_14px_36px_rgba(15,23,42,0.14)] backdrop-blur-xl transition-colors hover:text-[#111827]"
           >
             ›
           </button>
@@ -1172,7 +1172,7 @@ export default function MapPage() {
         ) : (
           <button
             onClick={() => setRightJudgeOpen(true)}
-            className="self-end rounded-2xl border border-white/40 bg-white/66 px-3 py-4 text-sm text-[#6b7280] shadow-[0_14px_36px_rgba(15,23,42,0.14)] backdrop-blur-xl transition-colors hover:text-[#111827]"
+            className="self-end rounded-2xl border border-[#ffb3c0]/45 bg-[#fff0f2]/70 px-3 py-4 text-sm text-[#6b7280] shadow-[0_14px_36px_rgba(15,23,42,0.14)] backdrop-blur-xl transition-colors hover:text-[#111827]"
           >
             ‹
           </button>
@@ -1185,7 +1185,7 @@ export default function MapPage() {
           style={{ top: overlayTop }}
         >
           <GlassPanel className="h-full">
-            <div className="flex items-center justify-between border-b border-white/35 px-4 py-3">
+            <div className="flex items-center justify-between border-b border-[#ffb3c0]/40 px-4 py-3">
               <span className="text-sm font-semibold text-[#111827]">
                 {loading ? "검색 중..." : `주변 시설 ${gyms.length}곳`}
               </span>
@@ -1210,7 +1210,7 @@ export default function MapPage() {
 
       <button
         onClick={() => setMobileListOpen((prev) => !prev)}
-        className="absolute bottom-[calc(86px+env(safe-area-inset-bottom))] left-3 z-20 rounded-full border border-white/45 bg-white/70 px-4 py-2 text-sm font-semibold text-[#111827] shadow-[0_14px_36px_rgba(15,23,42,0.14)] backdrop-blur-xl lg:hidden"
+        className="absolute bottom-[calc(86px+env(safe-area-inset-bottom))] left-3 z-20 rounded-full border border-[#ffb3c0]/50 bg-[#fff0f2]/74 px-4 py-2 text-sm font-semibold text-[#111827] shadow-[0_14px_36px_rgba(15,23,42,0.14)] backdrop-blur-xl lg:hidden"
       >
         {mobileListOpen ? "지도" : "목록"}
       </button>
@@ -1222,7 +1222,7 @@ export default function MapPage() {
           className="absolute inset-x-3 z-40 lg:hidden"
           style={{ bottom: MOBILE_SHEET_BOTTOM + 14, maxHeight: "84vh" }}
         >
-          <GlassPanel className="max-h-[84vh] bg-white/68">
+          <GlassPanel className="max-h-[84vh] bg-[#fff0f2]/72">
             <div className="flex justify-center pt-3">
               <div className="h-1.5 w-12 rounded-full bg-[#d1d5db]" />
             </div>
@@ -1249,7 +1249,7 @@ export default function MapPage() {
 
       {supportOpen && (
         <div className="absolute inset-0 z-[60] flex items-center justify-center bg-[rgba(15,23,42,0.20)] px-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-md rounded-[28px] border border-white/50 bg-white/86 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+          <div className="w-full max-w-md rounded-[28px] border border-[#ffb3c0]/55 bg-[#fff0f2]/90 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <div className="text-lg font-extrabold tracking-tight text-[#111827]">
@@ -1261,14 +1261,14 @@ export default function MapPage() {
               </div>
               <button
                 onClick={() => setSupportOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/72 text-sm text-[#6b7280] shadow-sm"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff0f2]/76 text-sm text-[#6b7280] shadow-sm"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-3">
-              <div className="rounded-[22px] border border-white/55 bg-white/76 px-4 py-3">
+              <div className="rounded-[22px] border border-[#ffb3c0]/55 bg-[#fff0f2]/80 px-4 py-3">
                 <div className="text-xs font-bold text-[#111827]">계좌이체</div>
                 <div className="mt-1 text-sm font-semibold text-[#374151]">
                   신한은행 110366096624 이중한
@@ -1283,7 +1283,7 @@ export default function MapPage() {
                 </button>
               </div>
 
-              <div className="rounded-[22px] border border-white/55 bg-white/76 px-4 py-3">
+              <div className="rounded-[22px] border border-[#ffb3c0]/55 bg-[#fff0f2]/80 px-4 py-3">
                 <div className="text-xs font-bold text-[#111827]">문의</div>
                 <div className="mt-1 text-sm font-semibold text-[#374151]">
                   ljhan0215@gmail.com

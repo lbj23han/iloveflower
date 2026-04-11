@@ -33,8 +33,8 @@ export default async function SpotDetailPage({ params }: Props) {
   const bloomLabel = bloomStatus ? (BLOOM_STATUS_LABELS as Record<string, string>)[bloomStatus.status] : null;
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] pb-8">
-      <div className="bg-white border-b border-[#e5e7eb] sticky top-0 z-10">
+    <div className="min-h-screen bg-[#fff5f7] pb-8">
+      <div className="bg-white/95 border-b border-[#e5e7eb] sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/" className="text-[#6b7280] hover:text-[#111827]">← 뒤로</Link>
           <span className="font-semibold text-[#111827] truncate">{spot.name}</span>
@@ -42,7 +42,7 @@ export default async function SpotDetailPage({ params }: Props) {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-5 space-y-4">
-        <div className="bg-white rounded-xl p-5 border border-[#e5e7eb]">
+        <div className="bg-[#fff5f7] rounded-xl p-5 border border-[#ffd6dc]">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
               <h1 className="text-xl font-bold text-[#111827]">{spot.name}</h1>
@@ -113,7 +113,7 @@ export default async function SpotDetailPage({ params }: Props) {
             카카오맵으로 길찾기
           </a>
           <Link href={`/report?spot_id=${spot.id}&spot_name=${encodeURIComponent(spot.name)}`}
-            className="block w-full py-3 text-center border border-[#e5e7eb] text-[#6b7280] rounded-xl text-sm">
+            className="block w-full py-3 text-center border border-[#ffd6dc] text-[#6b7280] rounded-xl text-sm">
             정보 제보하기
           </Link>
         </div>

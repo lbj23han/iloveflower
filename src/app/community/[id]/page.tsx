@@ -203,7 +203,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
       <div className="mx-auto max-w-4xl px-4 pt-5">
         <main className="space-y-4">
-          <div className="rounded-[28px] border border-white/60 bg-white/84 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+          <div className="rounded-[28px] border border-[#ffb3c0]/60 bg-[#fff0f2]/86 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <div className="mb-3">
               <span className="inline-flex rounded-full bg-[#fff1f4] px-2.5 py-1 text-[11px] font-semibold text-[#c0394f]">
                 {POST_CATEGORY_LABELS[post.category]}
@@ -263,7 +263,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${
                         editCategory === category.value
                           ? 'border-[#111827] bg-[#111827] text-white'
-                          : 'border-[#ffd6dc] bg-white/80 text-[#4b5563]'
+                          : 'border-[#ffd6dc] bg-[#fff0f2]/84 text-[#4b5563]'
                       }`}
                     >
                       {category.label}
@@ -314,7 +314,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             )}
           </div>
 
-          <div className="rounded-[28px] border border-white/60 bg-white/84 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+          <div className="rounded-[28px] border border-[#ffb3c0]/60 bg-[#fff0f2]/86 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <div className="text-lg font-bold text-[#111827]">댓글 쓰기</div>
             <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_120px]">
               <div className="grid gap-3">
@@ -367,7 +367,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/60 bg-white/84 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+          <div className="rounded-[28px] border border-[#ffb3c0]/60 bg-[#fff0f2]/86 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <div className="border-b border-[#f3f4f6] px-5 py-4">
               <span className="text-sm font-semibold text-[#374151]">댓글 {comments.length}</span>
             </div>
