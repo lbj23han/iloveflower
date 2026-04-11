@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
       bloomStatus: searchParams.get('bloom_status') ?? undefined,
       season: searchParams.get('season') ?? undefined,
       peakMonth: searchParams.get('peak_month') ?? undefined,
+      festival: searchParams.get('festival') ?? undefined,
       hasNightLight: searchParams.get('has_night_light') === 'true',
       hasParking: searchParams.get('has_parking') === 'true',
       petFriendly: searchParams.get('pet_friendly') === 'true',

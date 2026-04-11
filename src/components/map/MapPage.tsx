@@ -59,6 +59,7 @@ const DEFAULT_FILTERS: FilterState = {
   bloom_status: "all",
   season: "all",
   peak_month: "all",
+  festival: "all",
   has_night_light: false,
   has_parking: false,
   pet_friendly: false,
@@ -134,7 +135,20 @@ function FavoriteToggleButton({
   );
 }
 
-const FLOWER_LABELS_MAP: Record<string, string> = { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', wisteria: '등나무', rose: '장미', cosmos: '코스모스', sunflower: '해바라기', tulip: '튤립', lavender: '라벤더', rape: '유채꽃', etc: '기타' };
+const FLOWER_LABELS_MAP: Record<string, string> = {
+  cherry: "벚꽃",
+  plum: "매화",
+  forsythia: "개나리",
+  azalea: "진달래",
+  wisteria: "등나무",
+  rose: "장미",
+  cosmos: "코스모스",
+  sunflower: "해바라기",
+  tulip: "튤립",
+  lavender: "라벤더",
+  rape: "유채꽃",
+  etc: "기타",
+};
 
 function BadgeChipsCompact({ gym }: { gym: FlowerSpotMapItem }) {
   if (!gym.flower_types || gym.flower_types.length === 0) return null;
@@ -142,7 +156,10 @@ function BadgeChipsCompact({ gym }: { gym: FlowerSpotMapItem }) {
   return (
     <div className="mt-1 flex flex-wrap gap-1">
       {gym.flower_types.slice(0, 2).map((key) => (
-        <span key={key} className="rounded-full border border-[#ffc9df] bg-[#fff1f6] px-2 py-0.5 text-[10px] font-semibold text-[#d63384]">
+        <span
+          key={key}
+          className="rounded-full border border-[#ffc9df] bg-[#fff1f6] px-2 py-0.5 text-[10px] font-semibold text-[#d63384]"
+        >
           {FLOWER_LABELS_MAP[key] ?? key}
         </span>
       ))}
@@ -161,12 +178,7 @@ function RankingContent({
   favoriteIds: string[];
   onToggleFavorite: (g: FlowerSpotMapItem) => void;
 }) {
-  const top = [...gyms]
-    .sort(
-      (a, b) =>
-        b.vote_up - a.vote_up,
-    )
-    .slice(0, 5);
+  const top = [...gyms].sort((a, b) => b.vote_up - a.vote_up).slice(0, 5);
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLDivElement>,
     gym: FlowerSpotMapItem,
@@ -322,9 +334,7 @@ function JudgeContent({
   gyms: FlowerSpotMapItem[];
   onSelect: (g: FlowerSpotMapItem) => void;
 }) {
-  const recent = [...gyms]
-    .sort((a, b) => b.vote_up - a.vote_up)
-    .slice(0, 8);
+  const recent = [...gyms].sort((a, b) => b.vote_up - a.vote_up).slice(0, 8);
   return (
     <div className="flex-1 overflow-y-auto py-1 px-1">
       {recent.length === 0 ? (
@@ -372,14 +382,24 @@ export default function MapPage() {
     loading: geolocationLoading,
     error: geolocationError,
   } = useGeolocation();
-  const { spots: gyms, fetchSpots, loading, zoomHint, hasFetched } = useViewportSpots();
+  const {
+    spots: gyms,
+    fetchSpots,
+    loading,
+    zoomHint,
+    hasFetched,
+  } = useViewportSpots();
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-  const [selectedGym, setSelectedGym] = useState<FlowerSpotMapItem | null>(null);
+  const [selectedGym, setSelectedGym] = useState<FlowerSpotMapItem | null>(
+    null,
+  );
   const [selectedGymDetail, setSelectedGymDetail] =
     useState<FlowerSpotWithDetails | null>(null);
   const [leftPanelMode, setLeftPanelMode] = useState<LeftPanelMode>("ranking");
   const [rightJudgeOpen, setRightJudgeOpen] = useState(true);
-  const [selectedGymReviews, setSelectedGymReviews] = useState<SpotReview[]>([]);
+  const [selectedGymReviews, setSelectedGymReviews] = useState<SpotReview[]>(
+    [],
+  );
   const [mobileListOpen, setMobileListOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -451,6 +471,7 @@ export default function MapPage() {
         nextFilters.bloom_status,
         nextFilters.season,
         nextFilters.peak_month,
+        nextFilters.festival,
         Number(nextFilters.has_night_light),
         Number(nextFilters.has_parking),
         Number(nextFilters.pet_friendly),
@@ -614,12 +635,22 @@ export default function MapPage() {
           return prev.filter((item) => item.id !== gym.id);
         }
 
-        const bloomStatus = "bloom_status" in gym && gym.bloom_status && typeof gym.bloom_status === "object"
-          ? (gym.bloom_status as import('@/types').BloomStatus).status
-          : ("bloom_status" in gym && typeof gym.bloom_status === "string" ? gym.bloom_status as import('@/types').BloomStatusValue : null);
-        const bloomPct = "bloom_status" in gym && gym.bloom_status && typeof gym.bloom_status === "object"
-          ? (gym.bloom_status as import('@/types').BloomStatus).bloom_pct
-          : ("bloom_pct" in gym ? (gym as FlowerSpotMapItem).bloom_pct : null);
+        const bloomStatus =
+          "bloom_status" in gym &&
+          gym.bloom_status &&
+          typeof gym.bloom_status === "object"
+            ? (gym.bloom_status as import("@/types").BloomStatus).status
+            : "bloom_status" in gym && typeof gym.bloom_status === "string"
+              ? (gym.bloom_status as import("@/types").BloomStatusValue)
+              : null;
+        const bloomPct =
+          "bloom_status" in gym &&
+          gym.bloom_status &&
+          typeof gym.bloom_status === "object"
+            ? (gym.bloom_status as import("@/types").BloomStatus).bloom_pct
+            : "bloom_pct" in gym
+              ? (gym as FlowerSpotMapItem).bloom_pct
+              : null;
         const nextFavorite: FlowerSpotMapItem = {
           id: gym.id,
           name: gym.name,
@@ -637,6 +668,12 @@ export default function MapPage() {
           entry_fee: gym.entry_fee,
           vote_up: gym.vote_up,
           vote_down: gym.vote_down,
+          festival_count:
+            "festival_count" in gym ? (gym.festival_count ?? 0) : 0,
+          has_active_festival:
+            "has_active_festival" in gym
+              ? (gym.has_active_festival ?? false)
+              : false,
         };
 
         return [nextFavorite, ...prev].slice(0, 100);
@@ -725,6 +762,7 @@ export default function MapPage() {
     Number(filters.bloom_status !== "all") +
     Number(filters.season !== "all") +
     Number(filters.peak_month !== "all") +
+    Number(filters.festival !== "all") +
     Number(filters.has_night_light) +
     Number(filters.has_parking) +
     Number(filters.pet_friendly) +
@@ -1021,10 +1059,7 @@ export default function MapPage() {
                 초기화
               </button>
             </div>
-            <SpotFilter
-              filters={filters}
-              onChange={handleFilterChange}
-            />
+            <SpotFilter filters={filters} onChange={handleFilterChange} />
           </GlassPanel>
         )}
       </div>

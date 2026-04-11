@@ -7,6 +7,7 @@ import {
   CATEGORY_LABELS,
   FLOWER_TYPE_LABELS,
   BLOOM_STATUS_LABELS,
+  FESTIVAL_FILTER_LABELS,
   PEAK_MONTH_LABELS,
   SEASON_FILTER_LABELS,
 } from '@/types';
@@ -27,6 +28,10 @@ const PEAK_MONTHS = Object.entries(PEAK_MONTH_LABELS).map(([month, label]) => [
   Number(month),
   label,
 ]) as [number, string][];
+const FESTIVAL_FILTERS = Object.entries(FESTIVAL_FILTER_LABELS) as [
+  FilterState['festival'],
+  string,
+][];
 
 type FilterSection = 'explore' | 'timing' | 'comfort';
 
@@ -57,12 +62,14 @@ function FilterChip({
 export default function SpotFilter({ filters, onChange }: Props) {
   const [activeSection, setActiveSection] = useState<FilterSection>('explore');
   const timingSummary = useMemo(() => {
+    const festivalLabel =
+      filters.festival === 'all' ? '축제 전체' : FESTIVAL_FILTER_LABELS[filters.festival];
     const seasonLabel =
       filters.season === 'all' ? '계절 전체' : SEASON_FILTER_LABELS[filters.season];
     const monthLabel =
       filters.peak_month === 'all' ? '절정 시기 전체' : PEAK_MONTH_LABELS[filters.peak_month];
-    return `${seasonLabel} · ${monthLabel}`;
-  }, [filters.peak_month, filters.season]);
+    return `${festivalLabel} · ${seasonLabel} · ${monthLabel}`;
+  }, [filters.festival, filters.peak_month, filters.season]);
 
   return (
     <div className="flex max-h-[min(68vh,720px)] flex-col">
@@ -152,6 +159,21 @@ export default function SpotFilter({ filters, onChange }: Props) {
               <div className="mt-1 text-sm font-semibold text-[#111827]">{timingSummary}</div>
               <div className="mt-1 text-[11px] text-[#9ca3af]">
                 절정 월 기준으로 계절과 시기를 걸러볼 수 있어요
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-2 text-xs font-semibold text-[#6b7280]">축제</div>
+              <div className="flex flex-wrap gap-1.5">
+                {FESTIVAL_FILTERS.map(([val, label]) => (
+                  <FilterChip
+                    key={val}
+                    active={filters.festival === val}
+                    onClick={() => onChange({ festival: val })}
+                  >
+                    {label}
+                  </FilterChip>
+                ))}
               </div>
             </div>
 

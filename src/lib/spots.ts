@@ -11,6 +11,7 @@ export async function getSpotMapItemsByBounds({
   bloomStatus,
   season,
   peakMonth,
+  festival,
   hasNightLight,
   hasParking,
   petFriendly,
@@ -28,6 +29,7 @@ export async function getSpotMapItemsByBounds({
   bloomStatus?: string;
   season?: string;
   peakMonth?: string;
+  festival?: string;
   hasNightLight?: boolean;
   hasParking?: boolean;
   petFriendly?: boolean;
@@ -69,6 +71,9 @@ export async function getSpotMapItemsByBounds({
       id, name, address, lat, lng, flower_types, category,
       has_night_light, has_parking, pet_friendly, photo_spot, entry_fee,
       peak_month_start, peak_month_end,
+      festivals!left (
+        id, name, start_date, end_date
+      ),
       bloom_status!left (
         status, bloom_pct, year
       )
@@ -108,8 +113,17 @@ export async function getSpotMapItemsByBounds({
 
   let result: FlowerSpotMapItem[] = spots.map((spot) => {
     const bloomRows = (spot.bloom_status as Array<{ status: string; bloom_pct: number | null; year: number }> | null) ?? [];
+    const festivalRows =
+      (spot.festivals as Array<{ id: string; name: string; start_date: string | null; end_date: string | null }> | null) ?? [];
     const currentBloom = bloomRows.find((b) => b.year === currentYear);
     const votes = voteMap.get(spot.id) ?? { up: 0, down: 0 };
+    const today = new Date().toISOString().slice(0, 10);
+    const hasActiveFestival = festivalRows.some((festivalRow) => {
+      if (!festivalRow.start_date && !festivalRow.end_date) return true;
+      const startsOk = !festivalRow.start_date || festivalRow.start_date <= today;
+      const endsOk = !festivalRow.end_date || festivalRow.end_date >= today;
+      return startsOk && endsOk;
+    });
     return {
       id: spot.id,
       name: spot.name,
@@ -127,6 +141,8 @@ export async function getSpotMapItemsByBounds({
       entry_fee: spot.entry_fee,
       vote_up: votes.up,
       vote_down: votes.down,
+      festival_count: festivalRows.length,
+      has_active_festival: hasActiveFestival,
     };
   });
 
@@ -150,6 +166,11 @@ export async function getSpotMapItemsByBounds({
       const months = getPeakMonths(source?.peak_month_start ?? null, source?.peak_month_end ?? null);
       return months.includes(targetMonth);
     });
+  }
+  if (festival && festival !== 'all') {
+    result = result.filter((spot) =>
+      festival === 'ongoing' ? spot.has_active_festival : spot.festival_count > 0
+    );
   }
 
   if (sort === 'bloom') {
@@ -226,5 +247,7 @@ export async function searchSpotsByName(query: string, limit = 12): Promise<Flow
     bloom_pct: null,
     vote_up: 0,
     vote_down: 0,
+    festival_count: 0,
+    has_active_festival: false,
   }));
 }

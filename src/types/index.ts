@@ -92,6 +92,14 @@ export const PEAK_MONTH_LABELS: Record<number, string> = {
   12: "12월",
 };
 
+export type FestivalFilter = "all" | "with_festival" | "ongoing";
+
+export const FESTIVAL_FILTER_LABELS: Record<FestivalFilter, string> = {
+  all: "전체",
+  with_festival: "축제 있는 곳",
+  ongoing: "진행 중 축제",
+};
+
 export interface FlowerSpot {
   id: string;
   external_place_id: string | null;
@@ -209,6 +217,8 @@ export interface FlowerSpotMapItem {
   entry_fee: number;
   vote_up: number;
   vote_down: number;
+  festival_count: number;
+  has_active_festival: boolean;
 }
 
 export type PostCategory =
@@ -268,6 +278,7 @@ export interface FilterState {
   bloom_status: BloomStatusValue | "all";
   season: SeasonFilter;
   peak_month: number | "all";
+  festival: FestivalFilter;
   has_night_light: boolean;
   has_parking: boolean;
   pet_friendly: boolean;

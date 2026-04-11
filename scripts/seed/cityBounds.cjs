@@ -179,6 +179,12 @@ const CITY_BOUNDS = {
     latStep: 0.03,
     lngStep: 0.035,
   },
+  dangjin: {
+    label: '당진',
+    bounds: { swLat: 36.7800, swLng: 126.4500, neLat: 37.0900, neLng: 126.8200 },
+    latStep: 0.035,
+    lngStep: 0.04,
+  },
   taean: {
     label: '태안',
     bounds: { swLat: 36.5300, swLng: 126.0500, neLat: 36.9500, neLng: 126.4500 },
@@ -217,6 +223,12 @@ const CITY_BOUNDS = {
     latStep: 0.04,
     lngStep: 0.045,
   },
+  hampyeong: {
+    label: '함평',
+    bounds: { swLat: 35.0200, swLng: 126.4200, neLat: 35.2500, neLng: 126.7200 },
+    latStep: 0.03,
+    lngStep: 0.035,
+  },
   pohang: {
     label: '포항',
     bounds: { swLat: 35.9400, swLng: 129.2700, neLat: 36.1800, neLng: 129.5100 },
@@ -230,6 +242,30 @@ const CITY_BOUNDS = {
     bounds: { swLat: 37.2900, swLng: 127.8400, neLat: 37.4400, neLng: 128.0600 },
     latStep: 0.03,
     lngStep: 0.035,
+  },
+  yangju: {
+    label: '양주',
+    bounds: { swLat: 37.7000, swLng: 126.9200, neLat: 37.9000, neLng: 127.1600 },
+    latStep: 0.03,
+    lngStep: 0.035,
+  },
+  samcheok: {
+    label: '삼척',
+    bounds: { swLat: 37.2700, swLng: 129.0000, neLat: 37.6200, neLng: 129.3700 },
+    latStep: 0.04,
+    lngStep: 0.045,
+  },
+  taebaek: {
+    label: '태백',
+    bounds: { swLat: 37.0400, swLng: 128.9000, neLat: 37.2300, neLng: 129.1200 },
+    latStep: 0.03,
+    lngStep: 0.035,
+  },
+  goseong: {
+    label: '고성',
+    bounds: { swLat: 38.1500, swLng: 128.3000, neLat: 38.4600, neLng: 128.6900 },
+    latStep: 0.04,
+    lngStep: 0.045,
   },
   chuncheon: {
     label: '춘천',

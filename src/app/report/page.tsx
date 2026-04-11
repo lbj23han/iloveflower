@@ -13,8 +13,12 @@ import {
 import { getOrCreateSession, getDeviceId } from "@/lib/session";
 import BrandLockup from "@/components/ui/BrandLockup";
 
-const FLOWER_TYPES = Object.entries(FLOWER_TYPE_LABELS) as Array<[FlowerType, string]>;
-const BLOOM_STATUSES = Object.entries(BLOOM_STATUS_LABELS) as Array<[BloomStatusValue, string]>;
+const FLOWER_TYPES = Object.entries(FLOWER_TYPE_LABELS) as Array<
+  [FlowerType, string]
+>;
+const BLOOM_STATUSES = Object.entries(BLOOM_STATUS_LABELS) as Array<
+  [BloomStatusValue, string]
+>;
 
 function ReportForm() {
   const params = useSearchParams();
@@ -55,6 +59,8 @@ function ReportForm() {
           entry_fee: 0,
           vote_up: 0,
           vote_down: 0,
+          festival_count: 0,
+          has_active_festival: false,
         }
       : null,
   );
@@ -85,7 +91,9 @@ function ReportForm() {
 
   const linkedLabel = useMemo(() => {
     if (!linkedSpot) return null;
-    return linkedSpot.address ? `${linkedSpot.name} · ${linkedSpot.address}` : linkedSpot.name;
+    return linkedSpot.address
+      ? `${linkedSpot.name} · ${linkedSpot.address}`
+      : linkedSpot.name;
   }, [linkedSpot]);
 
   const submit = async () => {
@@ -104,7 +112,11 @@ function ReportForm() {
           spot_name: spotName.trim(),
           flower_type: flowerType || null,
           bloom_status: bloomStatus || null,
-          entry_fee: freeEntry ? 0 : entryFee.trim() ? parseInt(entryFee, 10) : null,
+          entry_fee: freeEntry
+            ? 0
+            : entryFee.trim()
+              ? parseInt(entryFee, 10)
+              : null,
           has_night_light: hasNightLight || null,
           has_parking: hasParking || null,
           pet_friendly: petFriendly || null,
@@ -131,7 +143,9 @@ function ReportForm() {
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
         <div className="text-4xl">🌸</div>
         <h2 className="text-lg font-bold text-[#111827]">제보 감사합니다!</h2>
-        <p className="text-sm text-[#6b7280]">검토 후 지도에 반영될 예정이에요.</p>
+        <p className="text-sm text-[#6b7280]">
+          검토 후 지도에 반영될 예정이에요.
+        </p>
         <Link
           href="/"
           className="mt-2 rounded-full bg-[#ff6b81] px-6 py-2.5 text-sm font-medium text-white"
@@ -145,7 +159,9 @@ function ReportForm() {
   return (
     <div className="mx-auto max-w-lg space-y-5 px-4 py-6">
       <div className="rounded-2xl border border-[#ffd6dc] bg-white/90 p-4">
-        <div className="mb-2 text-sm font-semibold text-[#111827]">기존 명소에 연결하기</div>
+        <div className="mb-2 text-sm font-semibold text-[#111827]">
+          기존 명소에 연결하기
+        </div>
         <p className="mb-3 text-xs text-[#6b7280]">
           이미 등록된 명소라면 먼저 연결해두면 관리자 승인과 반영이 더 빨라져요.
         </p>
@@ -159,7 +175,9 @@ function ReportForm() {
         {linkedSpot && (
           <div className="mt-3 flex items-start justify-between gap-3 rounded-xl bg-[#fff5f7] px-3 py-3">
             <div className="min-w-0">
-              <div className="text-xs font-semibold text-[#ff4d6d]">연결된 명소</div>
+              <div className="text-xs font-semibold text-[#ff4d6d]">
+                연결된 명소
+              </div>
               <div className="mt-1 text-sm text-[#374151]">{linkedLabel}</div>
             </div>
             <button
@@ -174,7 +192,9 @@ function ReportForm() {
         {!linkedSpot && (searching || searchResults.length > 0) && (
           <div className="mt-3 space-y-2">
             {searching ? (
-              <div className="rounded-xl bg-[#f9fafb] px-3 py-3 text-sm text-[#9ca3af]">명소 검색 중...</div>
+              <div className="rounded-xl bg-[#f9fafb] px-3 py-3 text-sm text-[#9ca3af]">
+                명소 검색 중...
+              </div>
             ) : (
               searchResults.map((spot) => (
                 <button
@@ -188,8 +208,14 @@ function ReportForm() {
                   }}
                   className="block w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-3 text-left transition-colors hover:border-[#ff6b81]/40"
                 >
-                  <div className="text-sm font-semibold text-[#111827]">{spot.name}</div>
-                  {spot.address && <div className="mt-1 text-xs text-[#6b7280]">{spot.address}</div>}
+                  <div className="text-sm font-semibold text-[#111827]">
+                    {spot.name}
+                  </div>
+                  {spot.address && (
+                    <div className="mt-1 text-xs text-[#6b7280]">
+                      {spot.address}
+                    </div>
+                  )}
                 </button>
               ))
             )}
@@ -211,7 +237,9 @@ function ReportForm() {
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#374151]">꽃 종류</label>
+        <label className="mb-1.5 block text-sm font-medium text-[#374151]">
+          꽃 종류
+        </label>
         <div className="flex flex-wrap gap-2">
           {FLOWER_TYPES.map(([key, label]) => (
             <button
@@ -231,7 +259,9 @@ function ReportForm() {
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#374151]">개화 현황</label>
+        <label className="mb-1.5 block text-sm font-medium text-[#374151]">
+          개화 현황
+        </label>
         <div className="flex flex-wrap gap-2">
           {BLOOM_STATUSES.map(([key, label]) => (
             <button
@@ -251,7 +281,9 @@ function ReportForm() {
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#374151]">입장료</label>
+        <label className="mb-1.5 block text-sm font-medium text-[#374151]">
+          입장료
+        </label>
         <div className="relative">
           <input
             type="number"
@@ -282,14 +314,27 @@ function ReportForm() {
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#374151]">편의 정보</label>
+        <label className="mb-2 block text-sm font-medium text-[#374151]">
+          편의 정보
+        </label>
         <div className="space-y-2 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] px-4 py-3">
           {[
-            { label: "야간 조명 있어요", state: hasNightLight, set: setHasNightLight },
+            {
+              label: "야간 조명 있어요",
+              state: hasNightLight,
+              set: setHasNightLight,
+            },
             { label: "주차 가능해요", state: hasParking, set: setHasParking },
-            { label: "반려동물 동반 가능해요", state: petFriendly, set: setPetFriendly },
+            {
+              label: "반려동물 동반 가능해요",
+              state: petFriendly,
+              set: setPetFriendly,
+            },
           ].map(({ label, state, set }) => (
-            <label key={label} className="flex cursor-pointer items-center gap-2">
+            <label
+              key={label}
+              className="flex cursor-pointer items-center gap-2"
+            >
               <input
                 type="checkbox"
                 checked={state}
@@ -304,7 +349,8 @@ function ReportForm() {
 
       <div>
         <label className="mb-1.5 block text-sm font-medium text-[#374151]">
-          한마디 <span className="font-normal text-[#9ca3af]">(선택, 50자 이내)</span>
+          한마디{" "}
+          <span className="font-normal text-[#9ca3af]">(선택, 50자 이내)</span>
         </label>
         <input
           type="text"
@@ -313,10 +359,14 @@ function ReportForm() {
           placeholder="예: 산책로가 길고 저녁 조명이 예뻐요"
           className="w-full rounded-xl border border-[#e5e7eb] px-4 py-3 text-sm focus:border-[#ff6b81] focus:outline-none"
         />
-        <div className="mt-1 text-right text-xs text-[#9ca3af]">{comment.length}/50</div>
+        <div className="mt-1 text-right text-xs text-[#9ca3af]">
+          {comment.length}/50
+        </div>
       </div>
 
-      <p className="text-xs text-[#9ca3af]">익명으로 제보되며, 관리자 검토 후 지도에 반영됩니다.</p>
+      <p className="text-xs text-[#9ca3af]">
+        익명으로 제보되며, 관리자 검토 후 지도에 반영됩니다.
+      </p>
 
       <button
         onClick={submit}
@@ -349,7 +399,11 @@ export default function ReportPage() {
         </div>
       </header>
       <Suspense
-        fallback={<div className="p-6 text-center text-sm text-[#9ca3af]">로딩 중...</div>}
+        fallback={
+          <div className="p-6 text-center text-sm text-[#9ca3af]">
+            로딩 중...
+          </div>
+        }
       >
         <ReportForm />
       </Suspense>

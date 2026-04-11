@@ -51,6 +51,16 @@ export default function SpotCard({ spot, onClick }: Props) {
             {bloomLabel}
           </span>
         )}
+        {spot.has_active_festival && (
+          <span className="rounded-full bg-[#fff7ed] px-2.5 py-1 text-xs font-medium text-[#c2410c]">
+            진행 중 축제
+          </span>
+        )}
+        {!spot.has_active_festival && spot.festival_count > 0 && (
+          <span className="rounded-full bg-[#fef3c7] px-2.5 py-1 text-xs font-medium text-[#92400e]">
+            축제 {spot.festival_count}
+          </span>
+        )}
         {spot.entry_fee === 0 && (
           <span className="rounded-full bg-[#ecfbf3] px-2.5 py-1 text-xs font-medium text-[#00935d]">무료</span>
         )}
