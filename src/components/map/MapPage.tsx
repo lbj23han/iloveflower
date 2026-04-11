@@ -780,7 +780,7 @@ export default function MapPage() {
           <div className="hidden md:flex items-center justify-between rounded-[28px] border border-white/45 bg-white/72 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
             <BrandLockup
               title="꽃놀이맵"
-              subtitle="눈치 안보고 운동하고 싶다면, 지도에서 확인해보기"
+              subtitle="전국 꽃놀이 명소를 지도에서 한눈에"
               iconSize={64}
               iconWidth={48}
               iconHeight={68}
@@ -804,7 +804,7 @@ export default function MapPage() {
             <div className="flex shrink-0 items-center gap-1.5">
               <button
                 onClick={() => setSupportOpen(true)}
-                className="rounded-full border border-[#ffd9a8] bg-[#fff4e5]/92 px-3 py-1.5 text-xs font-semibold text-[#8b5a17]"
+                className="rounded-full border border-[#ffb3c0] bg-[#fff1f4]/92 px-3 py-1.5 text-xs font-semibold text-[#c0394f]"
               >
                 후원
               </button>
@@ -830,7 +830,7 @@ export default function MapPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSupportOpen(true)}
-            className="hidden md:flex h-[46px] items-center rounded-full border border-[#ffd9a8] bg-[#fff4e5]/92 px-4 text-xs font-semibold text-[#8b5a17] shadow-[0_12px_30px_rgba(255,184,77,0.18)] backdrop-blur-xl transition-all hover:bg-[#fff1db]"
+            className="hidden md:flex h-[46px] items-center rounded-full border border-[#ffb3c0] bg-[#fff1f4]/92 px-4 text-xs font-semibold text-[#c0394f] shadow-[0_12px_30px_rgba(255,107,129,0.18)] backdrop-blur-xl transition-all hover:bg-[#ffe4ea]"
           >
             후원
           </button>
@@ -1256,7 +1256,7 @@ export default function MapPage() {
                   후원하기
                 </div>
                 <div className="mt-1 text-xs text-[#6b7280]">
-                  프로틴 한 잔 값의 후원이 큰 도움이 됩니다
+                  커피 한 잔 값의 후원이 서비스 유지에 큰 힘이 됩니다
                 </div>
               </div>
               <button

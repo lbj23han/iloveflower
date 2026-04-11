@@ -165,12 +165,12 @@ function CommunityPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#dff7ec_0%,#eef4ff_38%,#f8fafc_100%)] pb-28">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#ffe4e6_0%,#fff1f4_38%,#f8fafc_100%)] pb-28">
       <header className="sticky top-0 z-10 px-3 pt-3 md:px-4 md:pt-4">
         <div className="mx-auto flex max-w-4xl items-center justify-between rounded-[28px] border border-white/55 bg-white/78 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
           <BrandLockup
             title="커뮤니티"
-            subtitle="운동 이야기와 팁을 편하게 나눠보세요"
+            subtitle="꽃놀이 이야기와 명소 팁을 나눠보세요"
             iconSize={56}
             iconWidth={40}
             iconHeight={56}
@@ -220,7 +220,7 @@ function CommunityPageContent() {
                   value={nickname}
                   onChange={(e) => setNicknameState(e.target.value.slice(0, 20))}
                   placeholder="닉네임"
-                  className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#00C471] focus:outline-none"
+                  className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                 />
                 <button
                   type="button"
@@ -237,7 +237,7 @@ function CommunityPageContent() {
                   value={postPassword}
                   onChange={(e) => setPostPassword(e.target.value.slice(0, 20))}
                   placeholder="글 비밀번호 (수정/삭제 시 필요)"
-                  className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-medium text-[#111827] focus:border-[#00C471] focus:outline-none"
+                  className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-medium text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                 />
                 <div className="mt-1 text-[11px] text-[#7b8aa0]">
                   비밀번호는 4자 이상 20자 이하로 입력해주세요.
@@ -257,7 +257,7 @@ function CommunityPageContent() {
                       onClick={() => setPostCategory(rawCategory)}
                       className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
                         active
-                          ? 'border-[#00C471] bg-[#00C471] text-white'
+                          ? 'border-[#ff6b81] bg-[#ff6b81] text-white'
                           : 'border-[#dbe4df] bg-white/80 text-[#4b5563]'
                       }`}
                     >
@@ -273,7 +273,7 @@ function CommunityPageContent() {
               value={title}
               onChange={(e) => setTitle(e.target.value.slice(0, 80))}
               placeholder="제목을 입력해주세요"
-              className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#00C471] focus:outline-none"
+              className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
             />
 
             <textarea
@@ -281,7 +281,7 @@ function CommunityPageContent() {
               onChange={(e) => setContent(e.target.value.slice(0, 500))}
               placeholder="내용을 입력해주세요"
               rows={6}
-              className="w-full resize-none rounded-[22px] border border-[#dbe4df] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#00C471] focus:outline-none"
+              className="w-full resize-none rounded-[22px] border border-[#dbe4df] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#ff6b81] focus:outline-none"
             />
 
             <button
@@ -308,7 +308,7 @@ function CommunityPageContent() {
               className="block rounded-[28px] border border-white/55 bg-white/80 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-[#d5e8de]"
             >
               <div className="mb-2">
-                <span className="inline-flex rounded-full bg-[#eef7f1] px-2.5 py-1 text-[11px] font-semibold text-[#0f8a59]">
+                <span className="inline-flex rounded-full bg-[#fff1f4] px-2.5 py-1 text-[11px] font-semibold text-[#c0394f]">
                   {POST_CATEGORY_LABELS[post.category]}
                 </span>
               </div>
@@ -341,7 +341,7 @@ export default function CommunityPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top,#dff7ec_0%,#eef4ff_38%,#f8fafc_100%)]">
+        <div className="min-h-screen bg-[radial-gradient(circle_at_top,#ffe4e6_0%,#fff1f4_38%,#f8fafc_100%)]">
           <div className="flex min-h-screen items-center justify-center text-sm text-[#9ca3af]">
             불러오는 중...
           </div>

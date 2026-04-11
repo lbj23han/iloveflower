@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --brand: #00C471;
-  --brand-dark: #00a35e;
+  --brand: #ff6b81;
+  --brand-dark: #e8546b;
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --border: #e5e7eb;
-  --surface: #f9fafb;
+  --surface: #fff1f4;
   --background: #ffffff;
   --foreground: #111827;
 }
@@ -37,7 +37,7 @@ body {
   font-weight: 700;
   font-size: 13px;
   border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  box-shadow: 0 1px 4px rgba(255,107,129,.35);
 }
 
 /* 스크롤바 */

@@ -4,14 +4,14 @@ const LAST_UPDATED = '2026년 4월 9일';
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#edf7ff_0%,#f6fbff_38%,#ffffff_100%)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#ffe4e6_0%,#fff1f4_38%,#ffffff_100%)]">
       <div className="mx-auto max-w-3xl px-4 py-6 pb-20">
         <div className="rounded-[30px] border border-white/60 bg-white/84 p-5 shadow-[0_18px_44px_rgba(15,23,42,0.10)] backdrop-blur-xl">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-xl font-bold text-[#111827]">개인정보처리방침</h1>
               <p className="mt-2 text-sm leading-6 text-[#4b5563]">
-                헬린이맵은 지도 탐색, 후기 작성, 커뮤니티 글쓰기, 시설 제보 기능을 제공하는 과정에서
+                꽃놀이맵은 지도 탐색, 후기 작성, 커뮤니티 글쓰기, 시설 제보 기능을 제공하는 과정에서
                 필요한 최소한의 정보만 처리하려고 노력합니다.
               </p>
               <p className="mt-2 text-xs text-[#9ca3af]">최종 업데이트: {LAST_UPDATED}</p>
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
             <h2 className="text-base font-semibold text-[#111827]">4. 제3자 제공 및 외부 서비스</h2>
             <div className="mt-3 space-y-3 text-sm leading-6 text-[#4b5563]">
               <p>
-                헬린이맵은 이용자가 작성한 내용을 정기적으로 외부에 판매하거나 제공하지 않습니다.
+                꽃놀이맵은 이용자가 작성한 내용을 정기적으로 외부에 판매하거나 제공하지 않습니다.
                 다만 서비스 운영을 위해 클라우드 데이터베이스와 지도 SDK 등 외부 인프라를 사용할 수 있습니다.
               </p>
               <p>현재 주요 운영 인프라는 Supabase와 Kakao Maps SDK입니다.</p>

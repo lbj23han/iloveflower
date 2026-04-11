@@ -205,7 +205,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         <main className="space-y-4">
           <div className="rounded-[28px] border border-white/60 bg-white/84 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <div className="mb-3">
-              <span className="inline-flex rounded-full bg-[#eef7f1] px-2.5 py-1 text-[11px] font-semibold text-[#0f8a59]">
+              <span className="inline-flex rounded-full bg-[#fff1f4] px-2.5 py-1 text-[11px] font-semibold text-[#c0394f]">
                 {POST_CATEGORY_LABELS[post.category]}
               </span>
             </div>
@@ -215,11 +215,11 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 value={postPassword}
                 onChange={(e) => setPostPassword(e.target.value.slice(0, 20))}
                 placeholder="글 비밀번호"
-                className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-medium text-[#111827] focus:border-[#00C471] focus:outline-none"
+                className="w-full rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-medium text-[#111827] focus:border-[#ff6b81] focus:outline-none"
               />
               <button
                 onClick={() => setEditing((prev) => !prev)}
-                className="rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#4b5563]"
+                className="rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-semibold text-[#4b5563]"
               >
                 {editing ? '수정 취소' : '글 수정'}
               </button>
@@ -243,12 +243,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     value={nickname}
                     onChange={(e) => setNicknameState(e.target.value.slice(0, 20))}
                     placeholder="닉네임"
-                    className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#00C471] focus:outline-none"
+                    className="w-full rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setNicknameState(refreshNickname())}
-                    className="rounded-[18px] border border-[#dbe4df] bg-white text-xl text-[#4b5563]"
+                    className="rounded-[18px] border border-[#ffd6dc] bg-white text-xl text-[#4b5563]"
                     aria-label="닉네임 다시 생성"
                   >
                     ⟳
@@ -263,7 +263,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${
                         editCategory === category.value
                           ? 'border-[#111827] bg-[#111827] text-white'
-                          : 'border-[#dbe4df] bg-white/80 text-[#4b5563]'
+                          : 'border-[#ffd6dc] bg-white/80 text-[#4b5563]'
                       }`}
                     >
                       {category.label}
@@ -275,20 +275,20 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value.slice(0, 80))}
-                  className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#00C471] focus:outline-none"
+                  className="w-full rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                 />
 
                 <textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value.slice(0, 500))}
                   rows={8}
-                  className="w-full rounded-[22px] border border-[#dbe4df] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#00C471] focus:outline-none"
+                  className="w-full rounded-[22px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#ff6b81] focus:outline-none"
                 />
 
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setEditing(false)}
-                    className="rounded-full border border-[#dbe4df] bg-white px-4 py-2 text-sm font-medium text-[#4b5563]"
+                    className="rounded-full border border-[#ffd6dc] bg-white px-4 py-2 text-sm font-medium text-[#4b5563]"
                   >
                     취소
                   </button>
@@ -324,12 +324,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     value={nickname}
                     onChange={(e) => setNicknameState(e.target.value.slice(0, 20))}
                     placeholder="닉네임"
-                    className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#00C471] focus:outline-none"
+                    className="w-full rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setNicknameState(refreshNickname())}
-                    className="rounded-[18px] border border-[#dbe4df] bg-white text-xl text-[#4b5563]"
+                    className="rounded-[18px] border border-[#ffd6dc] bg-white text-xl text-[#4b5563]"
                     aria-label="닉네임 다시 생성"
                   >
                     ⟳
@@ -353,7 +353,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   onChange={(e) => setText(e.target.value.slice(0, 200))}
                   placeholder="댓글을 입력해 주세요."
                   rows={3}
-                  className="w-full rounded-[22px] border border-[#dbe4df] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#00C471] focus:outline-none"
+                  className="w-full rounded-[22px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#ff6b81] focus:outline-none"
                 />
               </div>
 
@@ -401,14 +401,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     <div className="mt-3">
                       <button
                         onClick={() => setReplyTarget(comment)}
-                        className="rounded-full border border-[#dbe4df] bg-white px-3 py-1.5 text-xs font-semibold text-[#52607a]"
+                        className="rounded-full border border-[#ffd6dc] bg-white px-3 py-1.5 text-xs font-semibold text-[#52607a]"
                       >
                         답글 달기
                       </button>
                     </div>
 
                     {repliesByParent[comment.id]?.length ? (
-                      <div className="mt-4 space-y-3 border-l border-[#dbe4df] pl-4">
+                      <div className="mt-4 space-y-3 border-l border-[#ffd6dc] pl-4">
                         {repliesByParent[comment.id].map((reply) => (
                           <div
                             key={reply.id}
