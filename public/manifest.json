@@ -1,0 +1,12 @@
+{
+  "name": "헬린이맵",
+  "short_name": "헬린이맵",
+  "description": "눈치 안보고 운동하고 싶다면",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#00C471",
+  "icons": [
+    { "src": "/icon-gymkidzone.png?v=2", "sizes": "1670x2400", "type": "image/png" }
+  ]
+}
