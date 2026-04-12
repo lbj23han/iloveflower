@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.xn--js0bm6bu3m3qo.site" }],
+      "destination": "https://xn--js0bm6bu3m3qo.site/$1",
+      "permanent": true
+    }
+  ]
+}
