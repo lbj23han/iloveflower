@@ -13,6 +13,7 @@ export function useGeolocation() {
   const [coords, setCoords] = useState<Coords>(DEFAULT_COORDS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasLocation, setHasLocation] = useState(false);
 
   useEffect(() => {
     if (typeof navigator === 'undefined') {
@@ -26,15 +27,17 @@ export function useGeolocation() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setHasLocation(true);
         setLoading(false);
       },
       () => {
         setError('위치 권한이 거부되었습니다. 기본 위치를 사용합니다.');
+        setHasLocation(false);
         setLoading(false);
       },
       { timeout: 5000, maximumAge: 60000 }
     );
   }, []);
 
-  return { coords, loading, error };
+  return { coords, loading, error, hasLocation };
 }

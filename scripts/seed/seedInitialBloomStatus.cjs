@@ -2,17 +2,29 @@
 const { createClient } = require('@supabase/supabase-js');
 const { loadLocalEnv } = require('./loadEnv.cjs');
 
-function inferBloomStatus({ currentMonth, startMonth, endMonth }) {
+function getMonthPeriod(currentDay) {
+  if (currentDay <= 10) return 'early';
+  if (currentDay <= 20) return 'mid';
+  return 'late';
+}
+
+function inferBloomStatus({ currentMonth, currentDay, startMonth, endMonth }) {
   if (!startMonth || !endMonth) {
     return { status: 'blooming', bloom_pct: 60 };
   }
+
+  const period = getMonthPeriod(currentDay);
 
   if (currentMonth < startMonth - 1) {
     return { status: 'before', bloom_pct: 5 };
   }
 
   if (currentMonth === startMonth - 1) {
-    return { status: 'budding', bloom_pct: 30 };
+    if (period === 'late') {
+      return { status: 'budding', bloom_pct: 20 };
+    }
+
+    return { status: 'before', bloom_pct: 8 };
   }
 
   if (currentMonth < startMonth) {
@@ -20,23 +32,59 @@ function inferBloomStatus({ currentMonth, startMonth, endMonth }) {
   }
 
   if (currentMonth === startMonth && currentMonth === endMonth) {
-    return { status: 'peak', bloom_pct: 95 };
+    if (period === 'early') {
+      return { status: 'blooming', bloom_pct: 70 };
+    }
+
+    if (period === 'mid') {
+      return { status: 'peak', bloom_pct: 92 };
+    }
+
+    return { status: 'falling', bloom_pct: 45 };
   }
 
   if (currentMonth === startMonth) {
-    return { status: 'blooming', bloom_pct: 75 };
-  }
+    if (period === 'early') {
+      return { status: 'budding', bloom_pct: 35 };
+    }
 
-  if (currentMonth > startMonth && currentMonth < endMonth) {
-    return { status: 'peak', bloom_pct: 95 };
-  }
+    if (period === 'mid') {
+      return { status: 'blooming', bloom_pct: 70 };
+    }
 
-  if (currentMonth === endMonth) {
     return { status: 'peak', bloom_pct: 90 };
   }
 
+  if (currentMonth > startMonth && currentMonth < endMonth) {
+    if (period === 'early') {
+      return { status: 'blooming', bloom_pct: 82 };
+    }
+
+    if (period === 'mid') {
+      return { status: 'peak', bloom_pct: 95 };
+    }
+
+    return { status: 'peak', bloom_pct: 88 };
+  }
+
+  if (currentMonth === endMonth) {
+    if (period === 'early') {
+      return { status: 'peak', bloom_pct: 85 };
+    }
+
+    if (period === 'mid') {
+      return { status: 'falling', bloom_pct: 50 };
+    }
+
+    return { status: 'done', bloom_pct: 10 };
+  }
+
   if (currentMonth === endMonth + 1) {
-    return { status: 'falling', bloom_pct: 35 };
+    if (period === 'early') {
+      return { status: 'falling', bloom_pct: 20 };
+    }
+
+    return { status: 'done', bloom_pct: 0 };
   }
 
   return { status: 'done', bloom_pct: 0 };
@@ -67,6 +115,7 @@ async function main() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
+  const currentDay = now.getDate();
 
   const { data: spots, error: spotsError } = await supabase
     .from('flower_spots')
@@ -88,6 +137,7 @@ async function main() {
   const rows = (spots ?? []).map((spot) => {
     const inferred = inferBloomStatus({
       currentMonth,
+      currentDay,
       startMonth: spot.peak_month_start,
       endMonth: spot.peak_month_end,
     });
@@ -114,6 +164,8 @@ async function main() {
       {
         currentYear,
         currentMonth,
+        currentDay,
+        monthPeriod: getMonthPeriod(currentDay),
         spotRows: spots?.length ?? 0,
         bloomRowsInserted: inserted,
       },
