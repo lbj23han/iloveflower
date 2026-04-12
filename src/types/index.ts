@@ -371,6 +371,7 @@ export interface Post {
   category: PostCategory;
   nickname: string;
   anon_session_id: string;
+  device_hash: string | null;
   moderation_status: "visible" | "hidden" | "deleted";
   comment_count?: number;
   image_urls: string[];

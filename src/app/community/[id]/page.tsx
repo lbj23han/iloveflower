@@ -58,11 +58,13 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [pencilVerifyPw, setPencilVerifyPw] = useState('');
   const [pencilVerifying, setPencilVerifying] = useState(false);
   const [pencilPwError, setPencilPwError] = useState(false);
+  const [currentDeviceId, setCurrentDeviceId] = useState('');
 
   useEffect(() => {
     const session = getOrCreateSession();
     setNicknameState(session.nickname);
     setCurrentSessionId(session.sessionId);
+    getDeviceId().then(setCurrentDeviceId);
   }, []);
 
   useEffect(() => {
@@ -369,8 +371,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               </>
             )}
 
-            {/* 연필 버튼 — 본인 글일 때만 */}
-            {currentSessionId && currentSessionId === post.anon_session_id && !editing && (
+            {/* 편집 버튼 — 세션 또는 디바이스 일치 시 */}
+            {!editing && (currentSessionId === post.anon_session_id || (currentDeviceId && post.device_hash && currentDeviceId === post.device_hash)) && (
               <div className="mt-4">
                 {showPencilInput ? (
                   <div className="flex items-center gap-2">
@@ -393,7 +395,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     </button>
                     <button
                       onClick={() => { setShowPencilInput(false); setPencilVerifyPw(''); setPencilPwError(false); }}
-                      className="shrink-0 rounded-full border border-[#ffd6dc] bg-white px-3 py-2 text-xs text-[#9ca3af]"
+                      className="shrink-0 rounded-full border border-[#e5e7eb] bg-white px-3 py-2 text-xs text-[#9ca3af]"
                     >
                       취소
                     </button>
@@ -402,10 +404,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <div className="flex justify-end">
                     <button
                       onClick={() => setShowPencilInput(true)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ffd6dc] bg-white text-sm text-[#9ca3af] hover:border-[#ff6b81] hover:text-[#ff6b81]"
-                      title="글 수정"
+                      className="rounded-full border border-[#e5e7eb] bg-white px-3 py-1.5 text-xs text-[#9ca3af] hover:border-[#ff6b81] hover:text-[#c0394f]"
                     >
-                      ✏️
+                      편집
                     </button>
                   </div>
                 )}

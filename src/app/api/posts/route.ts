@@ -32,53 +32,26 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const category = req.nextUrl.searchParams.get('category');
   const categoryValues = getPostCategoryQueryValues(category);
+
   let query = supabase
     .from('posts')
-    .select('*')
+    .select('id, title, content, category, nickname, anon_session_id, device_hash, comment_count, image_urls, created_at, moderation_status')
     .eq('moderation_status', 'visible')
     .order('created_at', { ascending: false })
     .limit(50);
 
-  if (categoryValues?.length === 1) {
+  if (category === 'best') {
+    query = query.gte('comment_count', 5).order('comment_count', { ascending: false });
+  } else if (categoryValues?.length === 1) {
     query = query.eq('category', categoryValues[0]);
   } else if (categoryValues && categoryValues.length > 1) {
     query = query.in('category', categoryValues);
   }
 
   const { data, error } = await query;
-
   if (error) return NextResponse.json({ error: 'DB error' }, { status: 500 });
 
-  // 댓글 수 집계
-  const postIds = (data ?? []).map((p: { id: string }) => p.id);
-  const commentCountMap: Record<string, number> = {};
-
-  if (postIds.length > 0) {
-    const { data: counts } = await supabase
-      .from('comments')
-      .select('post_id')
-      .in('post_id', postIds)
-      .eq('moderation_status', 'visible');
-
-    (counts ?? []).forEach((c: { post_id: string }) => {
-      commentCountMap[c.post_id] = (commentCountMap[c.post_id] ?? 0) + 1;
-    });
-  }
-
-  const result = (data ?? []).map((p: { id: string; post_password_hash?: string | null }) => ({
-    ...sanitizePost(p),
-    comment_count: commentCountMap[p.id] ?? 0,
-  }));
-
-  if (category === 'best') {
-    return NextResponse.json(
-      result
-        .filter((post) => (post.comment_count ?? 0) >= 5)
-        .sort((a, b) => (b.comment_count ?? 0) - (a.comment_count ?? 0)),
-    );
-  }
-
-  return NextResponse.json(result);
+  return NextResponse.json(data ?? []);
 }
 
 export async function POST(req: NextRequest) {
