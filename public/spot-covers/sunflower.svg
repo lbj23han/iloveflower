@@ -1,0 +1,10 @@
+<svg width="1200" height="675" viewBox="0 0 1200 675" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="675" fill="#FFFCE9"/>
+  <rect y="520" width="1200" height="155" fill="#D9F0C2"/>
+  <path d="M340 675V260" stroke="#5AA44A" stroke-width="14"/>
+  <circle cx="340" cy="220" r="44" fill="#5A3A1A"/>
+  <g fill="#FFD84A"><circle cx="340" cy="135" r="30"/><circle cx="403" cy="157" r="30"/><circle cx="425" cy="220" r="30"/><circle cx="403" cy="283" r="30"/><circle cx="340" cy="305" r="30"/><circle cx="277" cy="283" r="30"/><circle cx="255" cy="220" r="30"/><circle cx="277" cy="157" r="30"/></g>
+  <path d="M820 675V220" stroke="#5AA44A" stroke-width="14"/>
+  <circle cx="820" cy="180" r="52" fill="#5A3A1A"/>
+  <g fill="#FFD84A"><circle cx="820" cy="84" r="33"/><circle cx="892" cy="108" r="33"/><circle cx="916" cy="180" r="33"/><circle cx="892" cy="252" r="33"/><circle cx="820" cy="276" r="33"/><circle cx="748" cy="252" r="33"/><circle cx="724" cy="180" r="33"/><circle cx="748" cy="108" r="33"/></g>
+</svg>

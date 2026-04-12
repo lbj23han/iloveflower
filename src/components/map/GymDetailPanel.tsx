@@ -1,10 +1,12 @@
 'use client';
 
+import Image from 'next/image';
 import { CATEGORY_LABELS, BLOOM_STATUS_LABELS, FLOWER_TYPE_LABELS, FlowerSpotWithDetails, SpotReview } from '@/types';
 import ReviewSection from '@/components/gym/ReviewSection';
 import VoteButtons from '@/components/gym/VoteButtons';
 import StarRating from '@/components/ui/StarRating';
 import { getAccentStyle } from '@/lib/flowerTheme';
+import { getSpotCoverImage } from '@/lib/spotCovers';
 
 interface Props {
   gym: FlowerSpotWithDetails;
@@ -44,6 +46,7 @@ export default function SpotDetailPanel({
   const bloomLabel = bloomStatus ? (BLOOM_STATUS_LABELS as Record<string, string>)[bloomStatus.status] : null;
   const bloomPct = bloomStatus?.bloom_pct;
   const accent = getAccentStyle(spot.flower_types, spot.category);
+  const coverImage = getSpotCoverImage(spot);
 
   const currentFestivals = spot.festivals.filter((f) => {
     if (!f.end_date) return true;
@@ -78,6 +81,18 @@ export default function SpotDetailPanel({
         </div>
 
         {/* 개화 현황 */}
+        <div className="mb-4 overflow-hidden rounded-[24px] border border-[#ffd6dc]/55 bg-[#fffafb]/76">
+          <div className="relative aspect-[16/9] w-full">
+            <Image
+              src={coverImage}
+              alt={`${spot.name} 대표 이미지`}
+              fill
+              className="object-cover"
+              sizes={mobile ? "100vw" : "480px"}
+            />
+          </div>
+        </div>
+
         {bloomStatus && (
           <div className="mb-4 rounded-[24px] border border-[#ffd6dc]/55 bg-[#fffafb]/76 px-4 py-4">
             <div className="mb-3 flex items-center justify-between">

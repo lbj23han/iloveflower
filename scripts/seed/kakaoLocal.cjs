@@ -1,9 +1,11 @@
 const KAKAO_LOCAL_URL = 'https://dapi.kakao.com/v2/local/search/keyword.json';
 const KAKAO_BLOG_SEARCH_URL = 'https://dapi.kakao.com/v2/search/blog';
 const KAKAO_CAFE_SEARCH_URL = 'https://dapi.kakao.com/v2/search/cafe';
-const REQUEST_DELAY_MS = 180;
-const MAX_RETRIES = 3;
+const REQUEST_DELAY_MS = 420;
+const MAX_RETRIES = 6;
+const RATE_LIMIT_BACKOFF_MS = 4000;
 const AI_BATCH_SIZE = 5;
+let lastRequestAt = 0;
 
 const FLOWER_TYPE_RULES = [
   { type: 'cherry', keywords: ['벚꽃', '벚나무'] },
@@ -71,32 +73,57 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function jitter(ms) {
+  return ms + Math.floor(Math.random() * 250);
+}
+
 async function requestKeywordSearch({ apiKey, query, rect, page = 1, size = 15 }) {
   const params = new URLSearchParams({
     query,
     page: String(page),
     size: String(size),
-    rect: `${rect.swLng},${rect.swLat},${rect.neLng},${rect.neLat}`,
   });
+
+  if (rect) {
+    params.set('rect', `${rect.swLng},${rect.swLat},${rect.neLng},${rect.neLat}`);
+  }
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
     try {
+      const elapsed = Date.now() - lastRequestAt;
+      if (elapsed < REQUEST_DELAY_MS) {
+        await sleep(REQUEST_DELAY_MS - elapsed);
+      }
+
       const response = await fetch(`${KAKAO_LOCAL_URL}?${params.toString()}`, {
         headers: {
           Authorization: `KakaoAK ${apiKey}`,
         },
       });
+      lastRequestAt = Date.now();
 
       if (!response.ok) {
-        throw new Error(`Kakao Local API responded with ${response.status}`);
+        const error = new Error(`Kakao Local API responded with ${response.status}`);
+        error.status = response.status;
+        error.retryAfter = response.headers.get('retry-after');
+        throw error;
       }
 
       const payload = await response.json();
-      await sleep(REQUEST_DELAY_MS);
+      await sleep(jitter(REQUEST_DELAY_MS));
       return payload;
     } catch (error) {
       if (attempt === MAX_RETRIES) throw error;
-      await sleep(REQUEST_DELAY_MS * attempt);
+
+      if (error?.status === 429) {
+        const retryAfterMs = Number(error.retryAfter || 0) * 1000;
+        const waitMs = retryAfterMs || jitter(RATE_LIMIT_BACKOFF_MS * attempt);
+        console.warn(`[kakao] 429 rate limit: ${query} page=${page} attempt=${attempt}/${MAX_RETRIES} wait=${waitMs}ms`);
+        await sleep(waitMs);
+        continue;
+      }
+
+      await sleep(jitter(REQUEST_DELAY_MS * attempt * 2));
     }
   }
 }
@@ -210,8 +237,10 @@ function inferPeakMonths(flowerTypes) {
   };
 }
 
-function mapKakaoPlace(place, keyword) {
-  if (isExcludedPlace(place.place_name, place.category_name, keyword)) {
+function mapKakaoPlace(place, keyword, options = {}) {
+  const { skipExclusion = false } = options;
+
+  if (!skipExclusion && isExcludedPlace(place.place_name, place.category_name, keyword)) {
     return null;
   }
 

@@ -16,9 +16,14 @@ function sanitizePost<T extends { post_password_hash?: string | null }>(post: T)
 
 function getPostCategoryQueryValues(category: string | null): PostCategory[] | null {
   if (!category) return null;
+  if (category === 'best') return null;
   if (isPostCategory(category)) return [category];
-  if (category === 'flower') return ['cherry', 'plum', 'azalea'];
-  if (category === 'autumn') return ['cosmos'];
+  if (category === 'spring') return ['spring', 'cherry', 'plum', 'azalea', 'rape'];
+  if (category === 'summer') return ['summer'];
+  if (category === 'autumn') return ['autumn', 'cosmos'];
+  if (category === 'winter') return ['winter'];
+  if (category === 'photo') return ['photo'];
+  if (category === 'cafe') return ['cafe'];
   if (category === 'free') return ['chat'];
   return null;
 }
@@ -64,6 +69,14 @@ export async function GET(req: NextRequest) {
     ...sanitizePost(p),
     comment_count: commentCountMap[p.id] ?? 0,
   }));
+
+  if (category === 'best') {
+    return NextResponse.json(
+      result
+        .filter((post) => (post.comment_count ?? 0) >= 5)
+        .sort((a, b) => (b.comment_count ?? 0) - (a.comment_count ?? 0)),
+    );
+  }
 
   return NextResponse.json(result);
 }

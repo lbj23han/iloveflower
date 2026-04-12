@@ -188,12 +188,11 @@ export const PEAK_MONTH_LABELS: Record<number, string> = {
   12: "12월",
 };
 
-export type FestivalFilter = "all" | "with_festival" | "ongoing";
+export type FestivalFilter = "all" | "only";
 
 export const FESTIVAL_FILTER_LABELS: Record<FestivalFilter, string> = {
   all: "전체",
-  with_festival: "축제 있는 곳",
-  ongoing: "진행 중 축제",
+  only: "축제",
 };
 
 export interface FlowerSpot {
@@ -319,6 +318,12 @@ export interface FlowerSpotMapItem {
 }
 
 export type PostCategory =
+  | "spring"
+  | "summer"
+  | "autumn"
+  | "winter"
+  | "photo"
+  | "cafe"
   | "cherry"
   | "plum"
   | "azalea"
@@ -328,6 +333,12 @@ export type PostCategory =
   | "chat";
 
 export const POST_CATEGORIES: PostCategory[] = [
+  "spring",
+  "summer",
+  "autumn",
+  "winter",
+  "photo",
+  "cafe",
   "cherry",
   "plum",
   "azalea",
@@ -338,11 +349,17 @@ export const POST_CATEGORIES: PostCategory[] = [
 ];
 
 export const POST_CATEGORY_LABELS: Record<PostCategory, string> = {
+  spring: "봄꽃",
+  summer: "여름꽃",
+  autumn: "가을꽃",
+  winter: "겨울꽃",
+  photo: "인생샷",
+  cafe: "인생카페",
   cherry: "벚꽃",
-  plum: "매화·봄꽃",
-  azalea: "진달래·철쭉",
-  rape: "유채꽃",
-  cosmos: "코스모스·가을꽃",
+  plum: "봄꽃",
+  azalea: "봄꽃",
+  rape: "봄꽃",
+  cosmos: "가을꽃",
   tips: "꽃놀이 팁",
   chat: "자유",
 };

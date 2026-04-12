@@ -4,90 +4,103 @@ const { loadLocalEnv } = require('./loadEnv.cjs');
 const { CITY_BOUNDS, tileBounds } = require('./cityBounds.cjs');
 const { requestKeywordSearch, mapKakaoPlace, filterSpotsWithAI } = require('./kakaoLocal.cjs');
 
-const KEYWORDS = [
+const KEYWORD_GROUPS = {
   // 봄꽃
-  '벚꽃 명소',
-  '벚꽃 공원',
-  '벚꽃 카페',
-  '벚꽃 축제',
-  '벚꽃길',
-  '매화 명소',
-  '매화 축제',
-  '매화마을',
-  '개나리 명소',
-  '진달래 명소',
-  '철쭉 명소',
-  '철쭉 축제',
-  '철쭉 군락지',
-  '유채꽃밭',
-  '유채꽃 축제',
-  '튤립 공원',
-  '튤립 축제',
-  '목련 명소',
-  '작약 명소',
-  '작약 축제',
-  '복숭아꽃 명소',
-  '복숭아꽃 축제',
+  spring: [
+    '벚꽃 명소',
+    '벚꽃 공원',
+    '벚꽃 카페',
+    '벚꽃 축제',
+    '벚꽃길',
+    '매화 명소',
+    '매화 축제',
+    '매화마을',
+    '개나리 명소',
+    '진달래 명소',
+    '철쭉 명소',
+    '철쭉 축제',
+    '철쭉 군락지',
+    '유채꽃밭',
+    '유채꽃 축제',
+    '튤립 공원',
+    '튤립 축제',
+    '목련 명소',
+    '작약 명소',
+    '작약 축제',
+    '복숭아꽃 명소',
+    '복숭아꽃 축제',
+  ],
   // 여름꽃
-  '수국 명소',
-  '수국 카페',
-  '수국 축제',
-  '수국 군락지',
-  '연꽃 명소',
-  '연꽃단지',
-  '연꽃 축제',
-  '능소화 명소',
-  '능소화 군락',
-  '해바라기 명소',
-  '해바라기 축제',
-  '라벤더 농장',
-  '라벤더 축제',
-  '장미 공원',
-  '장미원',
-  '장미 축제',
-  '나팔꽃 명소',
-  '안개꽃 명소',
-  '백일홍 명소',
-  '백일홍 축제',
-  '석류꽃 명소',
+  summer: [
+    '수국 명소',
+    '수국 카페',
+    '수국 축제',
+    '수국 군락지',
+    '연꽃 명소',
+    '연꽃단지',
+    '연꽃 축제',
+    '능소화 명소',
+    '능소화 군락',
+    '해바라기 명소',
+    '해바라기 축제',
+    '라벤더 농장',
+    '라벤더 축제',
+    '장미 공원',
+    '장미원',
+    '장미 축제',
+    '나팔꽃 명소',
+    '안개꽃 명소',
+    '백일홍 명소',
+    '백일홍 축제',
+    '석류꽃 명소',
+  ],
   // 가을꽃
-  '코스모스 공원',
-  '코스모스 축제',
-  '억새 명소',
-  '억새 축제',
-  '억새 군락지',
-  '핑크뮬리 명소',
-  '핑크뮬리 공원',
-  '메밀꽃 명소',
-  '메밀꽃 축제',
-  '국화 축제',
-  '국화 공원',
-  '구절초 명소',
-  '구절초 축제',
-  '채송화 명소',
-  '투구꽃 명소',
-  '추해당 명소',
+  autumn: [
+    '코스모스 공원',
+    '코스모스 축제',
+    '억새 명소',
+    '억새 축제',
+    '억새 군락지',
+    '핑크뮬리 명소',
+    '핑크뮬리 공원',
+    '메밀꽃 명소',
+    '메밀꽃 축제',
+    '국화 축제',
+    '국화 공원',
+    '구절초 명소',
+    '구절초 축제',
+    '채송화 명소',
+    '투구꽃 명소',
+    '추해당 명소',
+  ],
   // 겨울꽃/기타
-  '동백꽃 명소',
-  '동백 군락지',
-  '수선화 명소',
-  '수선화 축제',
-  '군자란 명소',
-  '시클라멘 명소',
-  '복수초 명소',
-  '복수초 축제',
-  '크리스마스로즈 명소',
-  '눈꽃 축제',
-  '설경 명소',
+  winter: [
+    '동백꽃 명소',
+    '동백 군락지',
+    '수선화 명소',
+    '수선화 축제',
+    '군자란 명소',
+    '시클라멘 명소',
+    '복수초 명소',
+    '복수초 축제',
+    '크리스마스로즈 명소',
+    '눈꽃 축제',
+    '설경 명소',
+  ],
   // 공통
-  '꽃축제',
-  '꽃 정원',
-  '국가정원',
-  '수목원 꽃축제',
-  '플라워 카페',
-];
+  common: [
+    '꽃축제',
+    '꽃 정원',
+    '국가정원',
+    '수목원 꽃축제',
+    '플라워 카페',
+  ],
+};
 const DEFAULT_CITY = 'all';
+const DEFAULT_KEYWORD_GROUPS = ['spring', 'summer', 'autumn', 'winter', 'common'];
 const CHUNK_SIZE = 100;
+const KEYWORD_COOLDOWN_MS = 180;
+const CITY_COOLDOWN_MS = 3500;
 
 function parseCities() {
   const cityArg = process.argv.find((arg) => arg.startsWith('--city='));
@@ -96,12 +109,23 @@ function parseCities() {
   return value.split(',').map((city) => city.trim()).filter(Boolean);
 }
 
+function parseKeywordGroups() {
+  const keywordArg = process.argv.find((arg) => arg.startsWith('--keywords='));
+  const value = keywordArg ? keywordArg.split('=')[1] : 'all';
+  if (!value || value === 'all') return DEFAULT_KEYWORD_GROUPS;
+  return value.split(',').map((group) => group.trim()).filter(Boolean);
+}
+
 function chunk(items, size) {
   const result = [];
   for (let index = 0; index < items.length; index += size) {
     result.push(items.slice(index, index + size));
   }
   return result;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function syncChunk(supabase, rows) {
@@ -143,7 +167,7 @@ async function syncChunk(supabase, rows) {
   return { insertedOrUpdated: insertRows.length + updateRows.length };
 }
 
-async function collectCitySpots(apiKey, cityKey) {
+async function collectCitySpots(apiKey, cityKey, keywords) {
   const city = CITY_BOUNDS[cityKey];
   if (!city) {
     throw new Error(`Unknown city: ${cityKey}`);
@@ -156,7 +180,7 @@ async function collectCitySpots(apiKey, cityKey) {
   console.log(`\n[seed] ${city.label}: ${tiles.length}개 타일 검색 시작`);
 
   for (const [tileIndex, tile] of tiles.entries()) {
-    for (const keyword of KEYWORDS) {
+    for (const keyword of keywords) {
       let page = 1;
       let isEnd = false;
 
@@ -180,6 +204,8 @@ async function collectCitySpots(apiKey, cityKey) {
 
         page += 1;
       }
+
+      await sleep(KEYWORD_COOLDOWN_MS);
     }
 
     console.log(`[seed] ${city.label}: ${tileIndex + 1}/${tiles.length} 타일 완료, unique=${deduped.size}`);
@@ -206,10 +232,16 @@ async function main() {
   }
 
   const cities = parseCities();
+  const keywordGroups = parseKeywordGroups();
   const invalidCities = cities.filter((city) => !CITY_BOUNDS[city]);
   if (invalidCities.length > 0) {
     throw new Error(`Unsupported cities: ${invalidCities.join(', ')}`);
   }
+  const invalidKeywordGroups = keywordGroups.filter((group) => !KEYWORD_GROUPS[group]);
+  if (invalidKeywordGroups.length > 0) {
+    throw new Error(`Unsupported keyword groups: ${invalidKeywordGroups.join(', ')}`);
+  }
+  const keywords = keywordGroups.flatMap((group) => KEYWORD_GROUPS[group]);
 
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -217,7 +249,7 @@ async function main() {
 
   let grandTotal = 0;
   for (const city of cities) {
-    const rows = await collectCitySpots(apiKey, city);
+    const rows = await collectCitySpots(apiKey, city, keywords);
     let synced = 0;
 
     for (const group of chunk(rows, CHUNK_SIZE)) {
@@ -227,6 +259,7 @@ async function main() {
 
     grandTotal += rows.length;
     console.log(`[seed] ${CITY_BOUNDS[city].label}: sync complete (${synced} rows processed)`);
+    await sleep(CITY_COOLDOWN_MS);
   }
 
   console.log(`\n[seed] all done. total unique rows processed=${grandTotal}`);

@@ -24,33 +24,36 @@ function timeAgo(dateStr: string): string {
 }
 
 type CommunityTab =
-  | 'all'
-  | 'cherry'
-  | 'plum'
-  | 'azalea'
-  | 'rape'
-  | 'cosmos'
+  | 'best'
+  | 'spring'
+  | 'summer'
+  | 'autumn'
+  | 'winter'
   | 'tips'
+  | 'photo'
+  | 'cafe'
   | 'free';
 
 const COMMUNITY_TABS: Array<{ value: CommunityTab; label: string }> = [
-  { value: 'all', label: '전체' },
-  { value: 'cherry', label: '벚꽃' },
-  { value: 'plum', label: '매화·봄꽃' },
-  { value: 'azalea', label: '진달래·철쭉' },
-  { value: 'rape', label: '유채꽃' },
-  { value: 'cosmos', label: '코스모스' },
+  { value: 'best', label: 'BEST' },
+  { value: 'spring', label: '봄꽃' },
+  { value: 'summer', label: '여름꽃' },
+  { value: 'autumn', label: '가을꽃' },
+  { value: 'winter', label: '겨울꽃' },
   { value: 'tips', label: '꽃놀이 팁' },
+  { value: 'photo', label: '인생샷' },
+  { value: 'cafe', label: '인생카페' },
   { value: 'free', label: '자유' },
 ];
 
-const GROUP_TO_POST_CATEGORY: Record<Exclude<CommunityTab, 'all'>, PostCategory> = {
-  cherry: 'cherry',
-  plum: 'plum',
-  azalea: 'azalea',
-  rape: 'rape',
-  cosmos: 'cosmos',
+const GROUP_TO_POST_CATEGORY: Record<Exclude<CommunityTab, 'best'>, PostCategory> = {
+  spring: 'spring',
+  summer: 'summer',
+  autumn: 'autumn',
+  winter: 'winter',
   tips: 'tips',
+  photo: 'photo',
+  cafe: 'cafe',
   free: 'chat',
 };
 
@@ -76,7 +79,7 @@ function CommunityPageContent() {
 
   const selectedCategory: CommunityTab = isCommunityTab(searchParams.get('category'))
     ? (searchParams.get('category') as CommunityTab)
-    : 'all';
+    : 'best';
 
   const isHotdeals = false;
 
@@ -86,7 +89,7 @@ function CommunityPageContent() {
   }, []);
 
   useEffect(() => {
-    if (selectedCategory !== 'all' && selectedCategory !== 'free') {
+    if (selectedCategory !== 'best') {
       setPostCategory(GROUP_TO_POST_CATEGORY[selectedCategory]);
     }
   }, [selectedCategory]);
@@ -97,9 +100,9 @@ function CommunityPageContent() {
     const fetchContent = async () => {
       setLoading(true);
       const query =
-        selectedCategory === 'all'
-          ? ''
-          : `?category=${encodeURIComponent(GROUP_TO_POST_CATEGORY[selectedCategory as Exclude<CommunityTab, 'all'>] ?? selectedCategory)}`;
+        selectedCategory === 'best'
+          ? '?category=best'
+          : `?category=${encodeURIComponent(GROUP_TO_POST_CATEGORY[selectedCategory])}`;
       const res = await fetch(`/api/posts${query}`);
       if (!active) return;
       if (res.ok) setPosts(await res.json());
@@ -112,11 +115,7 @@ function CommunityPageContent() {
 
   const handleTabChange = (category: CommunityTab) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (category === 'all') {
-      params.delete('category');
-    } else {
-      params.set('category', category);
-    }
+    params.set('category', category);
     router.replace(
       params.toString() ? `/community?${params.toString()}` : '/community',
       { scroll: false }
@@ -175,7 +174,7 @@ function CommunityPageContent() {
       }
 
       const post: Post = await res.json();
-      if (selectedCategory === 'all' || POST_CATEGORY_LABELS[post.category] === POST_CATEGORY_LABELS[postCategory]) {
+      if (selectedCategory === 'best' || post.category === postCategory) {
         setPosts((prev) => [post, ...prev]);
       }
       setTitle('');
@@ -183,7 +182,7 @@ function CommunityPageContent() {
       setPostPassword('');
       setImageUrls([]);
       setShowForm(false);
-      setPostCategory(selectedCategory === 'all' || selectedCategory === 'free' ? 'chat' : GROUP_TO_POST_CATEGORY[selectedCategory]);
+      setPostCategory(selectedCategory === 'best' ? 'chat' : GROUP_TO_POST_CATEGORY[selectedCategory]);
     } finally {
       setSubmitting(false);
     }
@@ -224,7 +223,7 @@ function CommunityPageContent() {
                 className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
                   active
                     ? 'border-[#111827] bg-[#111827] text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]'
-                    : tab.value === 'free'
+                    : tab.value === 'best'
                       ? 'border-[#f59e0b]/40 bg-[#fffbeb] text-[#b45309] hover:border-[#f59e0b]'
                       : 'border-[#ffd6dc]/55 bg-[#fffafb]/76 text-[#4b5563] hover:border-[#ffd6dc]'
                 }`}
@@ -273,8 +272,8 @@ function CommunityPageContent() {
             <div className="space-y-2">
               <div className="text-xs font-semibold text-[#4b5563]">카테고리</div>
               <div className="scrollbar-hide -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-                {COMMUNITY_TABS.filter((tab) => tab.value !== 'all' && tab.value !== 'free').map((tab) => {
-                  const rawCategory = GROUP_TO_POST_CATEGORY[tab.value as Exclude<CommunityTab, 'all' | 'free'>];
+                {COMMUNITY_TABS.filter((tab) => tab.value !== 'best').map((tab) => {
+                  const rawCategory = GROUP_TO_POST_CATEGORY[tab.value as Exclude<CommunityTab, 'best'>];
                   const active = postCategory === rawCategory;
                   return (
                     <button
@@ -363,9 +362,16 @@ function CommunityPageContent() {
               className="block rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/84 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-[#ffd6dc]"
             >
               <div className="mb-2">
-                <span className="inline-flex rounded-full bg-[#fff1f4] px-2.5 py-1 text-[11px] font-semibold text-[#c0394f]">
-                  {POST_CATEGORY_LABELS[post.category]}
-                </span>
+                <div className="flex items-center gap-2">
+                  {(post.comment_count ?? 0) >= 5 && (
+                    <span className="inline-flex rounded-full bg-[#fffbeb] px-2.5 py-1 text-[11px] font-semibold text-[#b45309]">
+                      BEST
+                    </span>
+                  )}
+                  <span className="inline-flex rounded-full bg-[#fff1f4] px-2.5 py-1 text-[11px] font-semibold text-[#c0394f]">
+                    {POST_CATEGORY_LABELS[post.category]}
+                  </span>
+                </div>
               </div>
               <h2 className="mb-1.5 line-clamp-2 text-sm font-medium leading-snug text-[#111827]">
                 {post.title}

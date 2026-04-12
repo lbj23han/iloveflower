@@ -264,6 +264,87 @@ function RankingContent({
   );
 }
 
+type FestivalItem = {
+  id: string;
+  name: string;
+  start_date: string | null;
+  end_date: string | null;
+  description: string | null;
+  source_url: string | null;
+  flower_spots: { id: string; name: string; address: string | null; lat: number | null; lng: number | null } | null;
+};
+
+function useFestivals() {
+  const [festivals, setFestivals] = useState<FestivalItem[]>([]);
+  useEffect(() => {
+    fetch('/api/festivals')
+      .then((r) => r.ok ? r.json() : [])
+      .then(setFestivals)
+      .catch(() => {});
+  }, []);
+  return festivals;
+}
+
+function formatDateRange(start: string | null, end: string | null) {
+  const fmt = (d: string) => d.slice(5).replace('-', '/');
+  if (start && end) return `${fmt(start)} ~ ${fmt(end)}`;
+  if (start) return `${fmt(start)} ~`;
+  if (end) return `~ ${fmt(end)}`;
+  return '';
+}
+
+function FestivalSection({
+  festivals,
+  onSpotSelect,
+}: {
+  festivals: FestivalItem[];
+  onSpotSelect: (id: string) => void;
+}) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (festivals.length === 0) return null;
+
+  return (
+    <div className="mb-2 px-1">
+      <div className="mb-1.5 px-2 text-[10px] font-bold text-[#c2410c] uppercase tracking-wide">
+        축제 ({festivals.length})
+      </div>
+      {festivals.map((f) => {
+        const isActive = (!f.start_date || f.start_date <= today) && (!f.end_date || f.end_date >= today);
+        return (
+          <button
+            key={f.id}
+            onClick={() => f.flower_spots?.id && onSpotSelect(f.flower_spots.id)}
+            className="w-full flex items-start gap-2 rounded-2xl px-3 py-2.5 text-left hover:bg-[#fff7ed]/70 transition-colors"
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {isActive && (
+                  <span className="shrink-0 rounded-full bg-[#fff7ed] px-1.5 py-0.5 text-[9px] font-bold text-[#c2410c]">
+                    진행중
+                  </span>
+                )}
+                <span className="text-xs font-semibold text-[#111827] truncate">{f.name}</span>
+              </div>
+              {f.flower_spots && (
+                <div className="text-[10px] text-[#9ca3af] truncate mt-0.5">
+                  {f.flower_spots.name}
+                  {f.flower_spots.address ? ` · ${f.flower_spots.address.slice(0, 16)}` : ''}
+                </div>
+              )}
+              {(f.start_date || f.end_date) && (
+                <div className="text-[10px] text-[#b45309] mt-0.5">
+                  {formatDateRange(f.start_date, f.end_date)}
+                </div>
+              )}
+            </div>
+          </button>
+        );
+      })}
+      <div className="my-2 h-px bg-gradient-to-r from-transparent via-[#ffd6dc]/50 to-transparent" />
+    </div>
+  );
+}
+
 function ListContent({
   gyms,
   loading,
@@ -272,6 +353,8 @@ function ListContent({
   favoriteIds,
   onToggleFavorite,
   emptyMessage = "등록된 명소가 없어요",
+  showFestivals = false,
+  onFestivalSpotSelect,
 }: {
   gyms: FlowerSpotMapItem[];
   loading: boolean;
@@ -280,7 +363,11 @@ function ListContent({
   favoriteIds: string[];
   onToggleFavorite: (g: FlowerSpotMapItem) => void;
   emptyMessage?: string;
+  showFestivals?: boolean;
+  onFestivalSpotSelect?: (id: string) => void;
 }) {
+  const festivals = useFestivals();
+
   if (loading && gyms.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center text-xs text-[#9ca3af]">
@@ -288,7 +375,7 @@ function ListContent({
       </div>
     );
   }
-  if (gyms.length === 0) {
+  if (gyms.length === 0 && (!showFestivals || festivals.length === 0)) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-xs text-[#9ca3af] gap-1">
         {emptyMessage}
@@ -311,6 +398,12 @@ function ListContent({
 
   return (
     <div className="flex-1 overflow-y-auto py-1 px-1">
+      {showFestivals && festivals.length > 0 && (
+        <FestivalSection
+          festivals={festivals}
+          onSpotSelect={onFestivalSpotSelect ?? (() => {})}
+        />
+      )}
       {gyms.map((gym) => (
         <div
           key={gym.id}
@@ -336,6 +429,17 @@ function ListContent({
               {gym.address}
             </div>
             <BadgeChipsCompact gym={gym} />
+            {(gym.has_active_festival || gym.festival_count > 0) && (
+              <div className="mt-1 flex flex-wrap gap-1">
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                  gym.has_active_festival
+                    ? 'bg-[#fff7ed] text-[#c2410c]'
+                    : 'bg-[#fef3c7] text-[#92400e]'
+                }`}>
+                  {gym.has_active_festival ? '진행 중 축제' : `축제 ${gym.festival_count}`}
+                </span>
+              </div>
+            )}
           </div>
           <div className="shrink-0 text-right">
             <div className="text-xs font-semibold text-[#4b5563]">
@@ -582,6 +686,27 @@ export default function MapPage() {
   );
   const favoriteIdSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
 
+  const handleFestivalSpotSelect = useCallback(
+    async (spotId: string) => {
+      // Try from already-loaded gyms first
+      const found = gyms.find((g) => g.id === spotId);
+      if (found) { handleGymSelect(found); return; }
+      // Otherwise fetch minimal info to navigate
+      try {
+        const res = await fetch(`/api/gyms/${spotId}`);
+        if (res.ok) {
+          const spot: FlowerSpotMapItem = await res.json();
+          setSelectedGym(spot);
+          setSelectedGymDetail(null);
+          if (viewportWidth >= 1024) setLeftPanelMode("detail");
+          setMobileListOpen(false);
+        }
+      } catch { /* ignore */ }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gyms, viewportWidth],
+  );
+
   const handleGymSelect = useCallback(
     (gym: FlowerSpotMapItem) => {
       // 이미 선택된 명소를 다시 클릭하면 선택 해제
@@ -794,6 +919,11 @@ export default function MapPage() {
   const overlayTop = isDesktop ? OVERLAY_TOP : MOBILE_OVERLAY_TOP;
   const sideInset = isDesktop ? SIDE_INSET : MOBILE_SIDE_INSET;
   const visibleGyms = favoritesOnly ? favoriteGyms : gyms;
+  const listTitle = loading
+    ? "검색 중..."
+    : filters.festival === "only"
+      ? `축제 명소 ${visibleGyms.length}곳`
+      : `주변 명소 ${gyms.length}곳`;
   const showMapSearchPrompt =
     !favoritesOnly &&
     !zoomHint &&
@@ -806,7 +936,7 @@ export default function MapPage() {
     Number(filters.bloom_status !== "all") +
     Number(filters.season !== "all") +
     Number(filters.peak_month !== "all") +
-    Number(filters.festival !== "all") +
+    Number(filters.festival === "only") +
     Number(filters.has_night_light) +
     Number(filters.has_parking) +
     Number(filters.pet_friendly) +
@@ -1190,6 +1320,8 @@ export default function MapPage() {
                 selectedId={selectedGym?.id}
                 favoriteIds={favoriteIds}
                 onToggleFavorite={handleToggleFavorite}
+                showFestivals
+                onFestivalSpotSelect={handleFestivalSpotSelect}
               />
             )}
             {leftPanelMode === "favorites" && (
@@ -1277,7 +1409,7 @@ export default function MapPage() {
           <GlassPanel className="h-full">
             <div className="flex items-center justify-between border-b border-[#ffd6dc]/40 px-4 py-3">
               <span className="text-sm font-semibold text-[#111827]">
-                {loading ? "검색 중..." : `주변 명소 ${gyms.length}곳`}
+                {listTitle}
               </span>
               <button
                 onClick={() => setMobileListOpen(false)}
@@ -1293,6 +1425,8 @@ export default function MapPage() {
               selectedId={selectedGym?.id}
               favoriteIds={favoriteIds}
               onToggleFavorite={handleToggleFavorite}
+              showFestivals
+              onFestivalSpotSelect={handleFestivalSpotSelect}
             />
           </GlassPanel>
         </div>

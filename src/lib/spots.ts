@@ -167,19 +167,35 @@ export async function getSpotMapItemsByBounds({
       return months.includes(targetMonth);
     });
   }
-  if (festival && festival !== 'all') {
-    result = result.filter((spot) =>
-      festival === 'ongoing' ? spot.has_active_festival : spot.festival_count > 0
-    );
+  if (festival === 'only') {
+    result = result.filter((spot) => spot.festival_count > 0);
   }
 
+  const compareFestivalPriority = (a: FlowerSpotMapItem, b: FlowerSpotMapItem) => {
+    if (a.has_active_festival !== b.has_active_festival) {
+      return Number(b.has_active_festival) - Number(a.has_active_festival);
+    }
+    if (a.festival_count !== b.festival_count) {
+      return b.festival_count - a.festival_count;
+    }
+    return 0;
+  };
+
   if (sort === 'bloom') {
-    result.sort((a, b) =>
-      (BLOOM_SORT_ORDER[a.bloom_status ?? 'done'] ?? 99) -
-      (BLOOM_SORT_ORDER[b.bloom_status ?? 'done'] ?? 99)
-    );
+    result.sort((a, b) => {
+      const festivalCompare = compareFestivalPriority(a, b);
+      if (festivalCompare !== 0) return festivalCompare;
+      return (
+        (BLOOM_SORT_ORDER[a.bloom_status ?? 'done'] ?? 99) -
+        (BLOOM_SORT_ORDER[b.bloom_status ?? 'done'] ?? 99)
+      );
+    });
   } else {
-    result.sort((a, b) => (b.vote_up - b.vote_down) - (a.vote_up - a.vote_down));
+    result.sort((a, b) => {
+      const festivalCompare = compareFestivalPriority(a, b);
+      if (festivalCompare !== 0) return festivalCompare;
+      return (b.vote_up - b.vote_down) - (a.vote_up - a.vote_down);
+    });
   }
 
   return result.slice(0, limit);

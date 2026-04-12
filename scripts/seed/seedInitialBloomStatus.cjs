@@ -98,6 +98,29 @@ function chunk(items, size) {
   return result;
 }
 
+async function fetchAllSpots(supabase) {
+  const pageSize = 1000;
+  const rows = [];
+
+  for (let from = 0; ; from += pageSize) {
+    const to = from + pageSize - 1;
+    const { data, error } = await supabase
+      .from('flower_spots')
+      .select('id, peak_month_start, peak_month_end')
+      .not('lat', 'is', null)
+      .not('lng', 'is', null)
+      .range(from, to);
+
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+
+    rows.push(...data);
+    if (data.length < pageSize) break;
+  }
+
+  return rows;
+}
+
 async function main() {
   loadLocalEnv();
 
@@ -117,14 +140,7 @@ async function main() {
   const currentMonth = now.getMonth() + 1;
   const currentDay = now.getDate();
 
-  const { data: spots, error: spotsError } = await supabase
-    .from('flower_spots')
-    .select('id, peak_month_start, peak_month_end')
-    .not('lat', 'is', null)
-    .not('lng', 'is', null)
-    .limit(20000);
-
-  if (spotsError) throw spotsError;
+  const spots = await fetchAllSpots(supabase);
 
   const { error: cleanupError } = await supabase
     .from('bloom_status')

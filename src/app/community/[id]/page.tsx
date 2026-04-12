@@ -21,12 +21,13 @@ function timeAgo(dateStr: string): string {
 }
 
 const EDIT_GROUPS: Array<{ label: string; value: PostCategory }> = [
-  { label: '벚꽃', value: 'cherry' },
-  { label: '매화·봄꽃', value: 'plum' },
-  { label: '진달래·철쭉', value: 'azalea' },
-  { label: '유채꽃', value: 'rape' },
-  { label: '코스모스', value: 'cosmos' },
+  { label: '봄꽃', value: 'spring' },
+  { label: '여름꽃', value: 'summer' },
+  { label: '가을꽃', value: 'autumn' },
+  { label: '겨울꽃', value: 'winter' },
   { label: '꽃놀이 팁', value: 'tips' },
+  { label: '인생샷', value: 'photo' },
+  { label: '인생카페', value: 'cafe' },
   { label: '자유', value: 'chat' },
 ];
 

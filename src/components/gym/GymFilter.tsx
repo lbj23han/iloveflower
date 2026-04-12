@@ -7,7 +7,6 @@ import {
   CATEGORY_LABELS,
   FLOWER_TYPE_LABELS,
   BLOOM_STATUS_LABELS,
-  FESTIVAL_FILTER_LABELS,
   PEAK_MONTH_LABELS,
   SEASON_FLOWER_TYPES,
 } from '@/types';
@@ -23,11 +22,6 @@ const PEAK_MONTHS = Object.entries(PEAK_MONTH_LABELS).map(([month, label]) => [
   Number(month),
   label,
 ]) as [number, string][];
-const FESTIVAL_FILTERS = Object.entries(FESTIVAL_FILTER_LABELS) as [
-  FilterState['festival'],
-  string,
-][];
-
 const SEASON_BUTTONS = [
   { key: 'spring', label: '봄꽃' },
   { key: 'summer', label: '여름꽃' },
@@ -192,6 +186,19 @@ export default function SpotFilter({ filters, onChange }: Props) {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {activeSection === 'timing' && (
+          <div className="space-y-5">
+            <div className="rounded-[22px] border border-[#ffd6dc]/45 bg-[#fffafb]/72 px-4 py-3">
+              <div className="text-[11px] font-semibold text-[#6b7280]">지금 선택된 시기</div>
+              <div className="mt-1 text-sm font-semibold text-[#111827]">{timingSummary}</div>
+              <div className="mt-1 text-[11px] text-[#9ca3af]">
+                절정 월 기준으로 명소를 걸러볼 수 있어요
+              </div>
+            </div>
+
             <div>
               <div className="mb-2 text-xs font-semibold text-[#6b7280]">개화 상태</div>
               <div className="flex flex-wrap gap-1.5">
@@ -204,18 +211,6 @@ export default function SpotFilter({ filters, onChange }: Props) {
                     {label}
                   </FilterChip>
                 ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeSection === 'timing' && (
-          <div className="space-y-5">
-            <div className="rounded-[22px] border border-[#ffd6dc]/45 bg-[#fffafb]/72 px-4 py-3">
-              <div className="text-[11px] font-semibold text-[#6b7280]">지금 선택된 시기</div>
-              <div className="mt-1 text-sm font-semibold text-[#111827]">{timingSummary}</div>
-              <div className="mt-1 text-[11px] text-[#9ca3af]">
-                절정 월 기준으로 명소를 걸러볼 수 있어요
               </div>
             </div>
 
@@ -245,24 +240,10 @@ export default function SpotFilter({ filters, onChange }: Props) {
         {activeSection === 'comfort' && (
           <div className="space-y-5">
             <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">축제</div>
-              <div className="flex flex-wrap gap-1.5">
-                {FESTIVAL_FILTERS.map(([val, label]) => (
-                  <FilterChip
-                    key={val}
-                    active={filters.festival === val}
-                    onClick={() => onChange({ festival: val })}
-                  >
-                    {label}
-                  </FilterChip>
-                ))}
-              </div>
-            </div>
-
-            <div>
               <div className="mb-2 text-xs font-semibold text-[#6b7280]">편의 정보</div>
               <div className="flex flex-wrap gap-1.5">
                 {[
+                  { key: 'festival', label: '축제' },
                   { key: 'has_night_light', label: '야간조명' },
                   { key: 'has_parking', label: '주차 가능' },
                   { key: 'pet_friendly', label: '반려동물' },
@@ -271,9 +252,15 @@ export default function SpotFilter({ filters, onChange }: Props) {
                 ].map(({ key, label }) => (
                   <FilterChip
                     key={key}
-                    active={Boolean(filters[key as keyof FilterState])}
+                    active={
+                      key === 'festival'
+                        ? filters.festival === 'only'
+                        : Boolean(filters[key as keyof FilterState])
+                    }
                     onClick={() =>
-                      onChange({ [key]: !filters[key as keyof FilterState] } as Partial<FilterState>)
+                      key === 'festival'
+                        ? onChange({ festival: filters.festival === 'only' ? 'all' : 'only' })
+                        : onChange({ [key]: !filters[key as keyof FilterState] } as Partial<FilterState>)
                     }
                   >
                     {label}
