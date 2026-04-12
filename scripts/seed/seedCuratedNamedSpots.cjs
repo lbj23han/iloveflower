@@ -5,8 +5,8 @@ const { CURATED_SEASONAL_CANDIDATES } = require('./curatedSeasonalCandidates.cjs
 const { requestKeywordSearch, mapKakaoPlace } = require('./kakaoLocal.cjs');
 
 const SEARCH_SIZE = 8;
-const QUERY_COOLDOWN_MS = 550;
-const SEASON_GAP_MS = 2500;
+const QUERY_COOLDOWN_MS = 900;
+const SEASON_GAP_MS = 4000;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -19,7 +19,7 @@ function normalizeText(value) {
 }
 
 function parseArgs(argv) {
-  const args = { seasons: null, limit: null };
+  const args = { seasons: null, limit: null, offset: 0 };
 
   for (const arg of argv) {
     if (arg.startsWith('--seasons=')) {
@@ -34,18 +34,24 @@ function parseArgs(argv) {
       const parsed = Number(arg.replace('--limit=', ''));
       if (Number.isFinite(parsed) && parsed > 0) args.limit = parsed;
     }
+
+    if (arg.startsWith('--offset=')) {
+      const parsed = Number(arg.replace('--offset=', ''));
+      if (Number.isFinite(parsed) && parsed >= 0) args.offset = parsed;
+    }
   }
 
   return args;
 }
 
-function pickCandidates(allCandidates, seasons, limit) {
+function pickCandidates(allCandidates, seasons, limit, offset = 0) {
   let rows = allCandidates;
   if (seasons && seasons.length > 0) {
     const wanted = new Set(seasons);
     rows = rows.filter((row) => wanted.has(row.season));
   }
 
+  if (offset) rows = rows.slice(offset);
   if (limit) rows = rows.slice(0, limit);
   return rows;
 }
@@ -179,8 +185,8 @@ async function main() {
     throw new Error('Required env keys are missing. Check .env.local');
   }
 
-  const { seasons, limit } = parseArgs(process.argv.slice(2));
-  const candidates = pickCandidates(CURATED_SEASONAL_CANDIDATES, seasons, limit);
+  const { seasons, limit, offset } = parseArgs(process.argv.slice(2));
+  const candidates = pickCandidates(CURATED_SEASONAL_CANDIDATES, seasons, limit, offset);
 
   const supabase = createClient(supabaseUrl, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -241,6 +247,7 @@ async function main() {
     JSON.stringify(
       {
         requested: candidates.length,
+        offset,
         resolved: rows.length,
         inserted: result.inserted,
         updated: result.updated,

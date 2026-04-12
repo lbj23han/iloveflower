@@ -70,7 +70,7 @@ export async function getSpotMapItemsByBounds({
     .select(`
       id, name, address, lat, lng, flower_types, category,
       has_night_light, has_parking, pet_friendly, photo_spot, entry_fee,
-      peak_month_start, peak_month_end, vote_up, vote_down,
+      peak_month_start, peak_month_end, vote_up, vote_down, cover_image_url,
       festivals!left (
         id, name, start_date, end_date
       ),
@@ -129,6 +129,7 @@ export async function getSpotMapItemsByBounds({
       vote_down: spot.vote_down ?? 0,
       festival_count: festivalRows.length,
       has_active_festival: hasActiveFestival,
+      cover_image_url: spot.cover_image_url ?? null,
     };
   });
 
@@ -204,11 +205,19 @@ export async function getSpotDetailById(id: string): Promise<FlowerSpotWithDetai
     { data: festivals },
     { data: votes },
     { data: reviews },
+    { data: approvedReports },
   ] = await Promise.all([
     supabase.from('bloom_status').select('*').eq('spot_id', id).eq('year', currentYear).order('created_at', { ascending: false }).limit(1),
     supabase.from('festivals').select('*').eq('spot_id', id).order('start_date', { ascending: true }),
     supabase.from('votes').select('vote_type').eq('spot_id', id),
     supabase.from('spot_reviews').select('rating').eq('spot_id', id).eq('moderation_status', 'visible'),
+    supabase
+      .from('spot_reports')
+      .select('image_urls, created_at')
+      .eq('spot_id', id)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(20),
   ]);
 
   const voteUp = (votes ?? []).filter((v) => v.vote_type === 'up').length;
@@ -222,6 +231,7 @@ export async function getSpotDetailById(id: string): Promise<FlowerSpotWithDetai
     ...spot,
     bloom_status: (bloomRows?.[0] ?? null) as FlowerSpotWithDetails['bloom_status'],
     festivals: festivals ?? [],
+    report_image_urls: (approvedReports ?? []).flatMap((row) => row.image_urls ?? []).filter(Boolean),
     vote_up: voteUp,
     vote_down: voteDown,
     review_count: (reviews ?? []).length,
@@ -251,5 +261,6 @@ export async function searchSpotsByName(query: string, limit = 12): Promise<Flow
     vote_down: 0,
     festival_count: 0,
     has_active_festival: false,
+    cover_image_url: null,
   }));
 }

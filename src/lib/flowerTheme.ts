@@ -131,6 +131,14 @@ const FLOWER_STYLES: Record<FlowerType, AccentStyle> = {
     strongBg: '#f472b6',
     strongText: '#831843',
   },
+  peach: {
+    border: '#fda4af',
+    bg: '#fff1f2',
+    text: '#e11d48',
+    softBg: '#fff1f2',
+    strongBg: '#fda4af',
+    strongText: '#881337',
+  },
   peachblossom: {
     border: '#fda4af',
     bg: '#fff1f2',
@@ -162,6 +170,14 @@ const FLOWER_STYLES: Record<FlowerType, AccentStyle> = {
     softBg: '#eff6ff',
     strongBg: '#93c5fd',
     strongText: '#1e3a8a',
+  },
+  phlox: {
+    border: '#f472b6',
+    bg: '#fdf2f8',
+    text: '#be185d',
+    softBg: '#fdf2f8',
+    strongBg: '#f472b6',
+    strongText: '#831843',
   },
   lotus: {
     border: '#86efac',

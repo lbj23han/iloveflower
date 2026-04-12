@@ -396,6 +396,9 @@ function ReportForm() {
           사진{" "}
           <span className="font-normal text-[#9ca3af]">(선택, 최대 5장)</span>
         </label>
+        <p className="mb-2 text-xs text-[#6b7280]">
+          실제 장소 사진을 올려주시면, 관리자 승인 후 명소 대표 이미지로 반영될 수 있어요.
+        </p>
         <div className="flex flex-wrap gap-2">
           {imageUrls.map((url, i) => (
             <div key={url} className="relative h-20 w-20 overflow-hidden rounded-xl border border-[#e5e7eb]">

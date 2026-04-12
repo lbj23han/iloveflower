@@ -31,7 +31,9 @@ export type FlowerType =
   | "tulip"
   | "rape"
   | "peony"
+  | "peach"
   | "peachblossom"
+  | "phlox"
   | "rose"
   | "sunflower"
   | "lavender"
@@ -69,7 +71,9 @@ export const FLOWER_TYPE_LABELS: Record<FlowerType, string> = {
   tulip: "튤립",
   rape: "유채꽃",
   peony: "작약",
+  peach: "복숭아꽃",
   peachblossom: "복숭아꽃",
+  phlox: "꽃잔디",
   rose: "장미",
   sunflower: "해바라기",
   lavender: "라벤더",
@@ -108,7 +112,8 @@ export const SEASON_FLOWER_TYPES: Record<string, FlowerType[]> = {
     "tulip",
     "rape",
     "peony",
-    "peachblossom",
+    "peach",
+    "phlox",
     "plum",
     "wisteria",
   ],
@@ -211,6 +216,7 @@ export interface FlowerSpot {
   pet_friendly: boolean;
   photo_spot: boolean;
   entry_fee: number;
+  cover_image_url?: string | null;
   phone: string | null;
   website_url: string | null;
   source: string | null;
@@ -274,6 +280,7 @@ export interface SpotReport {
   anon_session_id: string;
   status: "pending" | "approved" | "rejected";
   created_at: string;
+  flower_spots?: { name: string; address: string | null; cover_image_url?: string | null } | null;
 }
 
 export interface Vote {
@@ -289,6 +296,7 @@ export interface Vote {
 export interface FlowerSpotWithDetails extends FlowerSpot {
   bloom_status: BloomStatus | null;
   festivals: Festival[];
+  report_image_urls: string[];
   vote_up: number;
   vote_down: number;
   review_count: number;
@@ -315,6 +323,7 @@ export interface FlowerSpotMapItem {
   vote_down: number;
   festival_count: number;
   has_active_festival: boolean;
+  cover_image_url?: string | null;
 }
 
 export type PostCategory =

@@ -32,7 +32,10 @@ const CATEGORY_OPTIONS: Array<{ label: string; value: string }> = [
 
 export default function AdminPostsPage() {
   const router = useRouter();
-  const [secret, setSecret] = useState('');
+  const [secret] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem(ADMIN_SECRET_KEY) ?? '';
+  });
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('all');
@@ -55,11 +58,12 @@ export default function AdminPostsPage() {
   }, [router]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(ADMIN_SECRET_KEY);
+    const saved = secret || localStorage.getItem(ADMIN_SECRET_KEY);
     if (!saved) { router.replace('/admin_HJ'); return; }
-    setSecret(saved);
-    load(saved, 'all');
-  }, [load, router]);
+    queueMicrotask(() => {
+      void load(saved, 'all');
+    });
+  }, [load, router, secret]);
 
   const handleCategoryChange = (cat: string) => {
     setCategory(cat);

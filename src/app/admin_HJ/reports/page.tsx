@@ -16,10 +16,11 @@ type Report = {
   has_parking: boolean | null;
   pet_friendly: boolean | null;
   comment: string | null;
+  image_urls: string[];
   nickname: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
-  flower_spots: { name: string; address: string | null } | null;
+  flower_spots: { name: string; address: string | null; cover_image_url?: string | null } | null;
 };
 
 const ADMIN_SECRET_KEY = 'admin_secret_kkotmap';
@@ -34,6 +35,7 @@ export default function AdminReportsPage() {
   const [matchQueries, setMatchQueries] = useState<Record<string, string>>({});
   const [matchResults, setMatchResults] = useState<Record<string, FlowerSpotMapItem[]>>({});
   const [selectedMatches, setSelectedMatches] = useState<Record<string, FlowerSpotMapItem | null>>({});
+  const [selectedImages, setSelectedImages] = useState<Record<string, string | null>>({});
   const [searchingId, setSearchingId] = useState<string | null>(null);
 
   const load = useCallback(async (s: string, status: string) => {
@@ -79,13 +81,62 @@ export default function AdminReportsPage() {
     const res = await fetch(`/api/admin/reports/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
-      body: JSON.stringify({ action, spot_id_override: selectedMatches[id]?.id ?? null }),
+      body: JSON.stringify({
+        action,
+        spot_id_override: selectedMatches[id]?.id ?? null,
+        cover_image_url: selectedImages[id] ?? null,
+      }),
     });
     if (!res.ok) {
       const json = await res.json().catch(() => ({}));
       alert(json.error ?? '처리에 실패했습니다.');
     } else {
+      const json = await res.json().catch(() => ({}));
+      if (json.migrationWarning) alert(json.migrationWarning);
       setReports((prev) => prev.filter((r) => r.id !== id));
+    }
+    setActioning(null);
+  };
+
+  const setCover = async (reportId: string) => {
+    const cover = selectedImages[reportId];
+    if (!cover) {
+      alert('대표 사진으로 지정할 이미지를 먼저 선택해주세요.');
+      return;
+    }
+    const targetSpotId = selectedMatches[reportId]?.id ?? reports.find((report) => report.id === reportId)?.spot_id;
+    if (!targetSpotId) {
+      alert('먼저 기존 명소와 연결해주세요.');
+      return;
+    }
+
+    setActioning(reportId);
+    const res = await fetch(`/api/admin/reports/${reportId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+      body: JSON.stringify({
+        action: 'set_cover',
+        spot_id_override: targetSpotId,
+        cover_image_url: cover,
+      }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert(json.error ?? '대표 사진 교체에 실패했습니다.');
+    } else {
+      if (json.migrationWarning) alert(json.migrationWarning);
+      setReports((prev) =>
+        prev.map((report) =>
+          report.id === reportId
+            ? {
+                ...report,
+                flower_spots: report.flower_spots
+                  ? { ...report.flower_spots, cover_image_url: cover }
+                  : report.flower_spots,
+              }
+            : report,
+        ),
+      );
     }
     setActioning(null);
   };
@@ -139,6 +190,57 @@ export default function AdminReportsPage() {
                       <span className="shrink-0 rounded-full bg-[#fff1f4] px-2 py-0.5 text-xs text-[#ff4d6d]">{r.flower_type}</span>
                     )}
                   </div>
+                  {(r.flower_spots?.cover_image_url || r.image_urls?.length > 0) && (
+                    <div className="mb-4 rounded-2xl border border-[#ffe4e9] bg-[#fffafb] p-4">
+                      <div className="mb-3 text-sm font-semibold text-[#111827]">대표 사진 관리</div>
+                      {r.flower_spots?.cover_image_url ? (
+                        <div className="mb-3">
+                          <div className="mb-2 text-xs font-medium text-[#6b7280]">현재 대표 사진</div>
+                          <img
+                            src={r.flower_spots.cover_image_url}
+                            alt={`${r.spot_name} 현재 대표 사진`}
+                            className="h-32 w-full rounded-xl object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="mb-3 rounded-xl border border-dashed border-[#ffd6dc] bg-white px-3 py-3 text-xs text-[#9ca3af]">
+                          아직 대표 사진이 없습니다.
+                        </div>
+                      )}
+                      {r.image_urls?.length > 0 && (
+                        <div>
+                          <div className="mb-2 text-xs font-medium text-[#6b7280]">제보 사진 후보</div>
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {r.image_urls.map((url) => {
+                              const isSelected = selectedImages[r.id] === url;
+                              return (
+                                <button
+                                  key={url}
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedImages((prev) => ({
+                                      ...prev,
+                                      [r.id]: prev[r.id] === url ? null : url,
+                                    }))
+                                  }
+                                  className={`relative shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
+                                    isSelected ? 'border-[#ff6b81]' : 'border-transparent'
+                                  }`}
+                                >
+                                  <img src={url} alt={`${r.spot_name} 제보 사진`} className="h-24 w-24 object-cover" />
+                                  <span className={`absolute inset-x-0 bottom-0 px-2 py-1 text-[10px] font-medium ${
+                                    isSelected ? 'bg-[#ff6b81] text-white' : 'bg-black/55 text-white'
+                                  }`}>
+                                    {isSelected ? '대표 후보 선택됨' : '대표 후보로 선택'}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {r.bloom_status && (
                     <div className="mb-3">
                       <span className="rounded-full bg-[#ecfbf3] px-2.5 py-1 text-xs font-medium text-[#00935d]">
@@ -207,6 +309,16 @@ export default function AdminReportsPage() {
                         ✕ 반려
                       </button>
                     </div>
+                  )}
+                  {tab === 'approved' && r.image_urls?.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setCover(r.id)}
+                      disabled={actioning === r.id}
+                      className="w-full rounded-xl border border-[#ffd6dc] bg-white py-2.5 text-sm font-medium text-[#ff4d6d] disabled:opacity-50"
+                    >
+                      {actioning === r.id ? '처리 중...' : '선택한 제보 사진을 대표 사진으로 지정'}
+                    </button>
                   )}
                 </div>
               );

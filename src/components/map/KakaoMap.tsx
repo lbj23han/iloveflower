@@ -185,7 +185,7 @@ export default function KakaoMap({
       const categoryLabel = CATEGORY_LABELS[spot.category] ?? '기타';
       const flowerLabel = spot.flower_types[0] ? spot.flower_types[0] : null;
       const label = flowerLabel
-        ? { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', magnolia: '목련', wisteria: '등나무', tulip: '튤립', rape: '유채꽃', peony: '작약', peachblossom: '복숭아꽃', rose: '장미', sunflower: '해바라기', lavender: '라벤더', hydrangea: '수국', lotus: '연꽃', morningglory: '나팔꽃', babysbreath: '안개꽃', zinnia: '백일홍', neungsohwa: '능소화', pomegranateblossom: '석류꽃', cosmos: '코스모스', silvergrass: '억새', pinkmuhly: '핑크뮬리', buckwheat: '메밀꽃', mossrose: '채송화', aconite: '투구꽃', chuhaedang: '추해당', chrysanthemum: '국화·구절초', camellia: '동백꽃', narcissus: '수선화', clivia: '군자란', cyclamen: '시클라멘', adonis: '복수초', christmasrose: '크리스마스로즈', snowflower: '눈꽃', etc: categoryLabel }[flowerLabel] ?? categoryLabel
+        ? { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', magnolia: '목련', wisteria: '등나무', tulip: '튤립', rape: '유채꽃', peony: '작약', peach: '복숭아꽃', peachblossom: '복숭아꽃', phlox: '꽃잔디', rose: '장미', sunflower: '해바라기', lavender: '라벤더', hydrangea: '수국', lotus: '연꽃', morningglory: '나팔꽃', babysbreath: '안개꽃', zinnia: '백일홍', neungsohwa: '능소화', pomegranateblossom: '석류꽃', cosmos: '코스모스', silvergrass: '억새', pinkmuhly: '핑크뮬리', buckwheat: '메밀꽃', mossrose: '채송화', aconite: '투구꽃', chuhaedang: '추해당', chrysanthemum: '국화·구절초', camellia: '동백꽃', narcissus: '수선화', clivia: '군자란', cyclamen: '시클라멘', adonis: '복수초', christmasrose: '크리스마스로즈', snowflower: '눈꽃', etc: categoryLabel }[flowerLabel] ?? categoryLabel
         : categoryLabel;
 
       const bg = isSelected ? '#111827' : 'rgba(255,255,255,0.96)';

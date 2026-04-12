@@ -46,7 +46,7 @@ export default async function SpotDetailPage({ params }: Props) {
   if (!spot) notFound();
 
   const representativeImages = getRepresentativeImages(reviews);
-  const coverImage = getSpotCoverImage(spot);
+  const coverImage = getSpotCoverImage(spot, representativeImages);
   const kakaoMapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(spot.name)}`;
   const bloomStatus = spot.bloom_status;
   const bloomLabel = bloomStatus ? (BLOOM_STATUS_LABELS as Record<string, string>)[bloomStatus.status] : null;
@@ -62,13 +62,15 @@ export default async function SpotDetailPage({ params }: Props) {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-5 space-y-4">
-        <div className="overflow-hidden rounded-2xl border border-[#ffd6dc] bg-white">
-          <img
-            src={coverImage}
-            alt={`${spot.name} 대표 이미지`}
-            className="h-52 w-full object-cover"
-          />
-        </div>
+        {coverImage && (
+          <div className="overflow-hidden rounded-2xl border border-[#ffd6dc] bg-white">
+            <img
+              src={coverImage}
+              alt={`${spot.name} 대표 이미지`}
+              className="h-52 w-full object-cover"
+            />
+          </div>
+        )}
 
         {representativeImages.length > 0 && (
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">

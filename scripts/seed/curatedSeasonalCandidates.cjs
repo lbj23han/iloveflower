@@ -26,6 +26,16 @@ const CURATED_SEASONAL_CANDIDATES = [
   { season: 'spring', query: '선암사', keyword: '겹벚꽃 명소' },
   { season: 'spring', query: '맹방유채꽃마을', keyword: '유채꽃밭' },
   { season: 'spring', query: '유기방가옥', keyword: '수선화 명소' },
+  { season: 'spring', query: '여의서로', keyword: '벚꽃 명소' },
+  { season: 'spring', query: '전농로 왕벚꽃거리', keyword: '벚꽃 명소' },
+  { season: 'spring', query: '경화역공원', keyword: '벚꽃 명소' },
+  { season: 'spring', query: '반곡지', keyword: '복사꽃 명소' },
+  { season: 'spring', query: '원미산 진달래동산', keyword: '진달래 명소' },
+  { season: 'spring', query: '고려산', keyword: '진달래 명소' },
+  { season: 'spring', query: '강릉 경포대', keyword: '벚꽃 명소' },
+  { season: 'spring', query: '대청호 벚꽃길', keyword: '벚꽃길' },
+  { season: 'spring', query: '서울 어린이대공원', keyword: '튤립 명소' },
+  { season: 'spring', query: '마노르블랑', keyword: '유채꽃 명소' },
 
   // summer
   { season: 'summer', query: '태화강국가정원', keyword: '수국 명소' },
@@ -52,6 +62,17 @@ const CURATED_SEASONAL_CANDIDATES = [
   { season: 'summer', query: '거제 저구항 수국길', keyword: '수국 명소' },
   { season: 'summer', query: '보롬왓', keyword: '해바라기 명소' },
   { season: 'summer', query: '안면도 꽃지해안공원', keyword: '해바라기 명소' },
+  { season: 'summer', query: '공주 유구색동수국정원', keyword: '수국 축제' },
+  { season: 'summer', query: '서울식물원', keyword: '수국 명소' },
+  { season: 'summer', query: '북서울꿈의숲', keyword: '수국 명소' },
+  { season: 'summer', query: '무안 회산백련지', keyword: '연꽃 축제' },
+  { season: 'summer', query: '부여 궁남지', keyword: '연꽃 명소' },
+  { season: 'summer', query: '양평 세미원', keyword: '연꽃 명소' },
+  { season: 'summer', query: '제주 마노르블랑', keyword: '수국 명소' },
+  { season: 'summer', query: '장생포 고래문화마을', keyword: '수국 축제' },
+  { season: 'summer', query: '서울대공원', keyword: '장미원' },
+  { season: 'summer', query: '고양 호수공원', keyword: '연꽃 명소' },
+  { season: 'summer', query: '월드컵공원', keyword: '수국 명소' },
 
   // autumn
   { season: 'autumn', query: '올림픽공원', keyword: '코스모스 공원' },
@@ -78,6 +99,16 @@ const CURATED_SEASONAL_CANDIDATES = [
   { season: 'autumn', query: '황매산군립공원', keyword: '억새 명소' },
   { season: 'autumn', query: '합천 신소양체육공원', keyword: '핑크뮬리 명소' },
   { season: 'autumn', query: '하동 북천 메밀꽃밭', keyword: '메밀꽃 명소' },
+  { season: 'autumn', query: '하늘공원', keyword: '억새 명소' },
+  { season: 'autumn', query: '서울숲', keyword: '코스모스 명소' },
+  { season: 'autumn', query: '양재천', keyword: '코스모스 명소' },
+  { season: 'autumn', query: '안성팜랜드', keyword: '코스모스 명소' },
+  { season: 'autumn', query: '영남알프스 간월재', keyword: '억새 명소' },
+  { season: 'autumn', query: '소래습지생태공원', keyword: '핑크뮬리 명소' },
+  { season: 'autumn', query: '제주 따라비오름', keyword: '억새 명소' },
+  { season: 'autumn', query: '마산가고파국화축제', keyword: '국화 축제' },
+  { season: 'autumn', query: '함안 강나루생태공원', keyword: '핑크뮬리 명소' },
+  { season: 'autumn', query: '구리한강시민공원', keyword: '코스모스 명소' },
 
   // winter
   { season: 'winter', query: '카멜리아힐', keyword: '동백꽃 명소' },
@@ -101,6 +132,14 @@ const CURATED_SEASONAL_CANDIDATES = [
   { season: 'winter', query: '노리매공원', keyword: '매화 명소' },
   { season: 'winter', query: '동백포레스트', keyword: '동백꽃 명소' },
   { season: 'winter', query: '휴애리 자연생활공원', keyword: '수선화 축제' },
+  { season: 'winter', query: '신안 선도 수선화정원', keyword: '수선화 명소' },
+  { season: 'winter', query: '노리매 매화공원', keyword: '매화 명소' },
+  { season: 'winter', query: '다산초당', keyword: '동백꽃 명소' },
+  { season: 'winter', query: '제주 허브동산', keyword: '시클라멘 명소' },
+  { season: 'winter', query: '천리포수목원', keyword: '겨울꽃 명소' },
+  { season: 'winter', query: '한림공원', keyword: '수선화 축제' },
+  { season: 'winter', query: '오륙도해맞이공원', keyword: '수선화 명소' },
+  { season: 'winter', query: '강진 다산초당', keyword: '동백꽃 명소' },
 ];
 
 module.exports = { CURATED_SEASONAL_CANDIDATES };

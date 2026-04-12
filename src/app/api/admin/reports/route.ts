@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
     .select(`
       id, spot_id, spot_name, flower_type, bloom_status,
       entry_fee, has_night_light, has_parking, pet_friendly,
-      comment, nickname, status, created_at,
-      flower_spots:spot_id (name, address)
+      comment, image_urls, nickname, status, created_at,
+      flower_spots:spot_id (name, address, cover_image_url)
     `)
     .eq('status', status)
     .order('created_at', { ascending: false })

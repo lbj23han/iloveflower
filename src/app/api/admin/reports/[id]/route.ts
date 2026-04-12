@@ -6,14 +6,37 @@ function checkAuth(req: NextRequest) {
   return secret === process.env.ADMIN_SECRET;
 }
 
+async function updateSpotCoverImage(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  spotId: string,
+  coverImageUrl: string | null,
+) {
+  if (!coverImageUrl) return null;
+  const { error } = await supabase
+    .from('flower_spots')
+    .update({ cover_image_url: coverImageUrl })
+    .eq('id', spotId);
+
+  if (!error) return null;
+
+  if (
+    error.message.includes('cover_image_url')
+    || error.message.includes("column 'cover_image_url' does not exist")
+  ) {
+    return '대표 사진 컬럼이 아직 DB에 없습니다. 마이그레이션을 먼저 적용해주세요.';
+  }
+
+  throw error;
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!checkAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { id } = await params;
-  const { action, spot_id_override } = await req.json();
-  if (action !== 'approve' && action !== 'reject') {
+  const { action, spot_id_override, cover_image_url } = await req.json();
+  if (action !== 'approve' && action !== 'reject' && action !== 'set_cover') {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   }
 
@@ -31,11 +54,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const effectiveSpotId = spot_id_override || report.spot_id || null;
 
-  if (action === 'approve' && !effectiveSpotId) {
+  if ((action === 'approve' || action === 'set_cover') && !effectiveSpotId) {
     return NextResponse.json(
-      { error: '승인하려면 기존 명소와 먼저 연결해주세요.' },
+      { error: '기존 명소와 먼저 연결해주세요.' },
       { status: 400 },
     );
+  }
+
+  if (action === 'set_cover' && !cover_image_url) {
+    return NextResponse.json(
+      { error: '대표 사진으로 지정할 이미지를 먼저 선택해주세요.' },
+      { status: 400 },
+    );
+  }
+
+  if (action === 'set_cover' && effectiveSpotId) {
+    try {
+      const migrationWarning = await updateSpotCoverImage(supabase, effectiveSpotId, cover_image_url);
+      return NextResponse.json({ ok: true, migrationWarning });
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : '대표 사진 교체에 실패했습니다.' },
+        { status: 500 },
+      );
+    }
   }
 
   const { error: updateError } = await supabase
@@ -73,6 +115,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       await supabase.from('flower_spots').update(updates).eq('id', effectiveSpotId);
     }
 
+    let migrationWarning: string | null = null;
+    try {
+      migrationWarning = await updateSpotCoverImage(supabase, effectiveSpotId, cover_image_url ?? null);
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : '대표 사진 반영에 실패했습니다.' },
+        { status: 500 },
+      );
+    }
+
     if (report.bloom_status) {
       const year = new Date().getFullYear();
       const { data: currentBloom } = await supabase
@@ -98,6 +150,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         await supabase.from('bloom_status').insert(payload);
       }
     }
+
+    return NextResponse.json({ ok: true, migrationWarning });
   }
 
   return NextResponse.json({ ok: true });
