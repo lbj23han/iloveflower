@@ -77,7 +77,7 @@ const DEFAULT_FILTERS: FilterState = {
   category: "all",
 };
 
-type LeftPanelMode = "ranking" | "list" | "favorites" | "detail" | "closed";
+type LeftPanelMode = "ranking" | "list" | "festivals" | "favorites" | "detail" | "closed";
 const FAVORITES_STORAGE_KEY = "favorite_gyms";
 
 const FILTER_BUTTON_TOP = "calc(126px + 4.5vh)";
@@ -341,6 +341,69 @@ function FestivalSection({
         );
       })}
       <div className="my-2 h-px bg-gradient-to-r from-transparent via-[#ffd6dc]/50 to-transparent" />
+    </div>
+  );
+}
+
+function FestivalTabContent({ onSpotSelect }: { onSpotSelect: (id: string) => void }) {
+  const festivals = useFestivals();
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (festivals.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-xs text-[#9ca3af]">
+        불러오는 중...
+      </div>
+    );
+  }
+
+  const active = festivals.filter((f) => (!f.start_date || f.start_date <= today) && (!f.end_date || f.end_date >= today));
+  const upcoming = festivals.filter((f) => f.start_date && f.start_date > today);
+
+  const FestivalRow = ({ f }: { f: FestivalItem }) => (
+    <button
+      key={f.id}
+      onClick={() => f.flower_spots?.id && onSpotSelect(f.flower_spots.id)}
+      className="w-full flex items-start gap-2 rounded-2xl px-3 py-2.5 text-left hover:bg-[#fff7ed]/70 transition-colors"
+    >
+      <div className="flex-1 min-w-0">
+        <div className="text-xs font-semibold text-[#111827] truncate">{f.name}</div>
+        {f.flower_spots && (
+          <div className="text-[10px] text-[#9ca3af] truncate mt-0.5">
+            {f.flower_spots.name}
+            {f.flower_spots.address ? ` · ${f.flower_spots.address.slice(0, 18)}` : ''}
+          </div>
+        )}
+        {(f.start_date || f.end_date) && (
+          <div className="text-[10px] text-[#b45309] mt-0.5">
+            {formatDateRange(f.start_date, f.end_date)}
+          </div>
+        )}
+      </div>
+    </button>
+  );
+
+  return (
+    <div className="flex-1 overflow-y-auto py-1 px-1">
+      {active.length > 0 && (
+        <div className="mb-2">
+          <div className="px-3 py-1.5 text-[10px] font-bold text-[#c2410c] uppercase tracking-wide">
+            진행중 ({active.length})
+          </div>
+          {active.map((f) => <FestivalRow key={f.id} f={f} />)}
+        </div>
+      )}
+      {upcoming.length > 0 && (
+        <div>
+          {active.length > 0 && (
+            <div className="my-1.5 h-px bg-gradient-to-r from-transparent via-[#ffd6dc]/50 to-transparent" />
+          )}
+          <div className="px-3 py-1.5 text-[10px] font-bold text-[#9ca3af] uppercase tracking-wide">
+            예정 ({upcoming.length})
+          </div>
+          {upcoming.map((f) => <FestivalRow key={f.id} f={f} />)}
+        </div>
+      )}
     </div>
   );
 }
@@ -1271,6 +1334,16 @@ export default function MapPage() {
                 목록
               </button>
               <button
+                onClick={() => setLeftPanelMode("festivals")}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                  leftPanelMode === "festivals"
+                    ? "bg-[#c2410c] text-white"
+                    : "text-[#6b7280] hover:text-[#111827]"
+                }`}
+              >
+                축제
+              </button>
+              <button
                 onClick={() => setLeftPanelMode("favorites")}
                 className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
                   leftPanelMode === "favorites"
@@ -1320,9 +1393,10 @@ export default function MapPage() {
                 selectedId={selectedGym?.id}
                 favoriteIds={favoriteIds}
                 onToggleFavorite={handleToggleFavorite}
-                showFestivals
-                onFestivalSpotSelect={handleFestivalSpotSelect}
               />
+            )}
+            {leftPanelMode === "festivals" && (
+              <FestivalTabContent onSpotSelect={handleFestivalSpotSelect} />
             )}
             {leftPanelMode === "favorites" && (
               <ListContent

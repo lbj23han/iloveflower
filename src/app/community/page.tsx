@@ -352,7 +352,9 @@ function CommunityPageContent() {
           <div className="py-10 text-center text-sm text-[#9ca3af]">불러오는 중...</div>
         ) : posts.length === 0 ? (
           <div className="rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/84 px-6 py-10 text-center text-sm text-[#9ca3af] shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-            아직 글이 없어요. 첫 글을 남겨보세요!
+            {selectedCategory === 'best'
+              ? <>아직 BEST로 선정된 글이 없어요.<br />도전해보세요!</>
+              : '아직 글이 없어요. 첫 글을 남겨보세요!'}
           </div>
         ) : (
           posts.map((post) => (

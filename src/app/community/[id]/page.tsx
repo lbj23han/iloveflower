@@ -40,7 +40,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [nickname, setNicknameState] = useState('');
-  const [postPassword, setPostPassword] = useState('');
   const [text, setText] = useState('');
   const [replyTarget, setReplyTarget] = useState<Comment | null>(null);
   const [submittingComment, setSubmittingComment] = useState(false);
@@ -50,10 +49,20 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState<PostCategory>('chat');
+  // 수정/삭제용 비밀번호 — 버튼 클릭 시 인라인으로 입력
+  const [editPassword, setEditPassword] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState('');
+  const [showPencilInput, setShowPencilInput] = useState(false);
+  const [pencilVerifyPw, setPencilVerifyPw] = useState('');
+  const [pencilVerifying, setPencilVerifying] = useState(false);
+  const [pencilPwError, setPencilPwError] = useState(false);
 
   useEffect(() => {
     const session = getOrCreateSession();
     setNicknameState(session.nickname);
+    setCurrentSessionId(session.sessionId);
   }, []);
 
   useEffect(() => {
@@ -79,6 +88,29 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     setEditContent(post.content);
     setEditCategory(normalizePostCategoryForEdit(post.category));
   }, [post]);
+
+  const verifyPencilPassword = async () => {
+    if (!post || !pencilVerifyPw.trim() || pencilVerifying) return;
+    setPencilVerifying(true);
+    setPencilPwError(false);
+    try {
+      const res = await fetch(`/api/posts/${post.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pencilVerifyPw.trim() }),
+      });
+      if (!res.ok) {
+        setPencilPwError(true);
+        return;
+      }
+      setEditPassword(pencilVerifyPw.trim());
+      setShowPencilInput(false);
+      setPencilVerifyPw('');
+      setEditing(true);
+    } finally {
+      setPencilVerifying(false);
+    }
+  };
 
   const submitComment = async () => {
     if (!text.trim() || !nickname.trim() || submittingComment) return;
@@ -118,9 +150,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   const submitPostEdit = async () => {
-    if (!post || !editTitle.trim() || !editContent.trim() || !nickname.trim() || !postPassword.trim() || savingPost) {
-      return;
-    }
+    if (!post || !editTitle.trim() || !editContent.trim() || !nickname.trim() || savingPost) return;
 
     setSavingPost(true);
     const savedNickname = setNickname(nickname);
@@ -134,41 +164,40 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           content: editContent.trim(),
           category: editCategory,
           nickname: savedNickname,
-          password: postPassword.trim(),
+          password: editPassword.trim(),
         }),
       });
 
       if (!res.ok) {
         const { error } = await res.json();
-        alert(error || '글 수정에 실패했습니다.');
+        alert(error || '비밀번호가 틀렸거나 수정에 실패했습니다.');
         return;
       }
 
       const updated = await res.json();
       setPost(updated);
       setEditing(false);
+      setEditPassword('');
     } finally {
       setSavingPost(false);
     }
   };
 
   const deletePost = async () => {
-    if (!post || !postPassword.trim() || deletingPost) return;
-    if (!window.confirm('정말 이 글을 삭제할까요? 댓글도 함께 삭제됩니다.')) return;
+    if (!post || !deletePassword.trim() || deletingPost) return;
 
     setDeletingPost(true);
     try {
       const res = await fetch(`/api/posts/${post.id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          password: postPassword.trim(),
-        }),
+        body: JSON.stringify({ password: deletePassword.trim() }),
       });
 
       if (!res.ok) {
         const { error } = await res.json();
-        alert(error || '글 삭제에 실패했습니다.');
+        alert(error || '비밀번호가 틀렸거나 삭제에 실패했습니다.');
+        setDeletingPost(false);
         return;
       }
 
@@ -205,35 +234,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       <div className="mx-auto max-w-4xl px-4 pt-5">
         <main className="space-y-4">
           <div className="rounded-[28px] border border-[#ffd6dc]/60 bg-[#fffafb]/86 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-            <div className="mb-3">
+            <div className="mb-3 flex items-center justify-between">
               <span className="inline-flex rounded-full bg-[#fff1f4] px-2.5 py-1 text-[11px] font-semibold text-[#c0394f]">
                 {POST_CATEGORY_LABELS[post.category]}
               </span>
-            </div>
-            <div className="mb-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_120px_120px]">
-              <input
-                type="password"
-                value={postPassword}
-                onChange={(e) => setPostPassword(e.target.value.slice(0, 20))}
-                placeholder="글 비밀번호"
-                className="w-full rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-medium text-[#111827] focus:border-[#ff6b81] focus:outline-none"
-              />
-              <button
-                onClick={() => setEditing((prev) => !prev)}
-                className="rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-semibold text-[#4b5563]"
-              >
-                {editing ? '수정 취소' : '글 수정'}
-              </button>
-              <button
-                onClick={deletePost}
-                disabled={!postPassword.trim() || deletingPost}
-                className="rounded-[18px] bg-[#111827] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
-              >
-                {deletingPost ? '삭제 중...' : '글 삭제'}
-              </button>
-            </div>
-            <div className="mb-4 text-[11px] text-[#7b8aa0]">
-              작성할 때 설정한 비밀번호로 글 수정과 삭제를 할 수 있어요.
             </div>
 
             {editing ? (
@@ -286,21 +290,59 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   className="w-full rounded-[22px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#ff6b81] focus:outline-none"
                 />
 
-                <div className="flex justify-end gap-2">
+
+                <div className="flex items-center justify-between gap-2">
                   <button
-                    onClick={() => setEditing(false)}
-                    className="rounded-full border border-[#ffd6dc] bg-white px-4 py-2 text-sm font-medium text-[#4b5563]"
+                    onClick={() => { setShowDeleteConfirm((v) => !v); if (!showDeleteConfirm) setDeletePassword(editPassword); }}
+                    className="rounded-full border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-50"
                   >
-                    취소
+                    삭제
                   </button>
-                  <button
-                    onClick={submitPostEdit}
-                    disabled={savingPost || !editTitle.trim() || !editContent.trim() || !nickname.trim()}
-                    className="rounded-full bg-[#111827] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                  >
-                    {savingPost ? '저장 중...' : '수정 저장'}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setEditing(false); setEditPassword(''); setShowDeleteConfirm(false); }}
+                      className="rounded-full border border-[#ffd6dc] bg-white px-4 py-2 text-sm font-medium text-[#4b5563]"
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={submitPostEdit}
+                      disabled={savingPost || !editTitle.trim() || !editContent.trim() || !nickname.trim()}
+                      className="rounded-full bg-[#111827] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      {savingPost ? '저장 중...' : '수정 저장'}
+                    </button>
+                  </div>
                 </div>
+
+                {showDeleteConfirm && (
+                  <div className="rounded-[18px] border border-red-100 bg-red-50 p-4 space-y-2">
+                    <div className="text-xs font-semibold text-red-500">정말 삭제할까요? 댓글도 함께 삭제됩니다.</div>
+                    <input
+                      type="password"
+                      autoComplete="new-password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value.slice(0, 20))}
+                      placeholder="비밀번호 재확인"
+                      className="w-full rounded-[14px] border border-red-200 bg-white px-3 py-2 text-sm focus:border-red-400 focus:outline-none"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); }}
+                        className="flex-1 rounded-full border border-[#e5e7eb] bg-white py-2 text-xs font-semibold text-[#4b5563]"
+                      >
+                        취소
+                      </button>
+                      <button
+                        onClick={deletePost}
+                        disabled={!deletePassword.trim() || deletingPost}
+                        className="flex-1 rounded-full bg-red-500 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                      >
+                        {deletingPost ? '삭제 중...' : '삭제 확인'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -325,6 +367,49 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <span>{timeAgo(post.created_at)}</span>
                 </div>
               </>
+            )}
+
+            {/* 연필 버튼 — 본인 글일 때만 */}
+            {currentSessionId && currentSessionId === post.anon_session_id && !editing && (
+              <div className="mt-4">
+                {showPencilInput ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="password"
+                      autoComplete="new-password"
+                      value={pencilVerifyPw}
+                      onChange={(e) => { setPencilVerifyPw(e.target.value.slice(0, 20)); setPencilPwError(false); }}
+                      onKeyDown={(e) => e.key === 'Enter' && verifyPencilPassword()}
+                      placeholder="비밀번호 입력"
+                      className={`flex-1 rounded-[14px] border px-3 py-2 text-sm focus:outline-none ${pencilPwError ? 'border-red-400 focus:border-red-400' : 'border-[#ffd6dc] focus:border-[#ff6b81]'}`}
+                    />
+                    {pencilPwError && <span className="shrink-0 text-xs text-red-500">틀렸어요</span>}
+                    <button
+                      onClick={verifyPencilPassword}
+                      disabled={!pencilVerifyPw.trim() || pencilVerifying}
+                      className="shrink-0 rounded-full bg-[#111827] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                    >
+                      {pencilVerifying ? '확인 중' : '확인'}
+                    </button>
+                    <button
+                      onClick={() => { setShowPencilInput(false); setPencilVerifyPw(''); setPencilPwError(false); }}
+                      className="shrink-0 rounded-full border border-[#ffd6dc] bg-white px-3 py-2 text-xs text-[#9ca3af]"
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setShowPencilInput(true)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ffd6dc] bg-white text-sm text-[#9ca3af] hover:border-[#ff6b81] hover:text-[#ff6b81]"
+                      title="글 수정"
+                    >
+                      ✏️
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

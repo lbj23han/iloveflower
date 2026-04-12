@@ -70,7 +70,7 @@ export async function getSpotMapItemsByBounds({
     .select(`
       id, name, address, lat, lng, flower_types, category,
       has_night_light, has_parking, pet_friendly, photo_spot, entry_fee,
-      peak_month_start, peak_month_end,
+      peak_month_start, peak_month_end, vote_up, vote_down,
       festivals!left (
         id, name, start_date, end_date
       ),
@@ -94,30 +94,16 @@ export async function getSpotMapItemsByBounds({
   const { data: spots, error } = await query;
   if (error || !spots) throw new Error(error?.message ?? 'Failed to fetch spots');
 
-  const spotIds = spots.map((s) => s.id);
-  const { data: votesData } = await supabase
-    .from('votes')
-    .select('spot_id, vote_type')
-    .in('spot_id', spotIds);
-
-  const voteMap = new Map<string, { up: number; down: number }>();
-  for (const v of votesData ?? []) {
-    if (!voteMap.has(v.spot_id)) voteMap.set(v.spot_id, { up: 0, down: 0 });
-    if (v.vote_type === 'up') voteMap.get(v.spot_id)!.up += 1;
-    else voteMap.get(v.spot_id)!.down += 1;
-  }
-
   const BLOOM_SORT_ORDER: Record<string, number> = {
     peak: 0, blooming: 1, falling: 2, budding: 3, before: 4, done: 5,
   };
 
+  const today = new Date().toISOString().slice(0, 10);
   let result: FlowerSpotMapItem[] = spots.map((spot) => {
     const bloomRows = (spot.bloom_status as Array<{ status: string; bloom_pct: number | null; year: number }> | null) ?? [];
     const festivalRows =
       (spot.festivals as Array<{ id: string; name: string; start_date: string | null; end_date: string | null }> | null) ?? [];
     const currentBloom = bloomRows.find((b) => b.year === currentYear);
-    const votes = voteMap.get(spot.id) ?? { up: 0, down: 0 };
-    const today = new Date().toISOString().slice(0, 10);
     const hasActiveFestival = festivalRows.some((festivalRow) => {
       if (!festivalRow.start_date && !festivalRow.end_date) return true;
       const startsOk = !festivalRow.start_date || festivalRow.start_date <= today;
@@ -139,8 +125,8 @@ export async function getSpotMapItemsByBounds({
       pet_friendly: spot.pet_friendly,
       photo_spot: spot.photo_spot,
       entry_fee: spot.entry_fee,
-      vote_up: votes.up,
-      vote_down: votes.down,
+      vote_up: spot.vote_up ?? 0,
+      vote_down: spot.vote_down ?? 0,
       festival_count: festivalRows.length,
       has_active_festival: hasActiveFestival,
     };
