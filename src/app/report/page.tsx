@@ -34,6 +34,8 @@ function ReportForm() {
   const [hasParking, setHasParking] = useState(false);
   const [petFriendly, setPetFriendly] = useState(false);
   const [comment, setComment] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -96,6 +98,30 @@ function ReportForm() {
       : linkedSpot.name;
   }, [linkedSpot]);
 
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of Array.from(files).slice(0, 5 - imageUrls.length)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/upload?folder=reports", { method: "POST", body: fd });
+        if (res.ok) {
+          const { url } = await res.json();
+          uploaded.push(url);
+        }
+      }
+      setImageUrls((prev) => [...prev, ...uploaded].slice(0, 5));
+    } catch {
+      alert("이미지 업로드에 실패했습니다.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
   const submit = async () => {
     if (!spotName.trim() || submitting) return;
     setSubmitting(true);
@@ -121,6 +147,7 @@ function ReportForm() {
           has_parking: hasParking || null,
           pet_friendly: petFriendly || null,
           comment: comment.trim() || null,
+          image_urls: imageUrls,
           anon_session_id: sessionId,
           device_id: deviceId,
           nickname,
@@ -364,13 +391,40 @@ function ReportForm() {
         </div>
       </div>
 
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-[#374151]">
+          사진{" "}
+          <span className="font-normal text-[#9ca3af]">(선택, 최대 5장)</span>
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {imageUrls.map((url, i) => (
+            <div key={url} className="relative h-20 w-20 overflow-hidden rounded-xl border border-[#e5e7eb]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="h-full w-full object-cover" />
+              <button
+                type="button"
+                onClick={() => setImageUrls((prev) => prev.filter((_, idx) => idx !== i))}
+                className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-[10px] text-white"
+              >✕</button>
+            </div>
+          ))}
+          {imageUrls.length < 5 && (
+            <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#e5e7eb] text-[#9ca3af] hover:border-[#ff6b81]/50">
+              <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} disabled={uploading} />
+              <span className="text-xl">{uploading ? "…" : "+"}</span>
+              <span className="text-[10px]">{uploading ? "업로드 중" : "사진 추가"}</span>
+            </label>
+          )}
+        </div>
+      </div>
+
       <p className="text-xs text-[#9ca3af]">
         익명으로 제보되며, 관리자 검토 후 지도에 반영됩니다.
       </p>
 
       <button
         onClick={submit}
-        disabled={!spotName.trim() || submitting}
+        disabled={!spotName.trim() || submitting || uploading}
         className="w-full rounded-xl bg-[#ff6b81] py-3.5 text-sm font-semibold text-white disabled:opacity-50"
       >
         {submitting ? "제출 중..." : "익명으로 제보하기"}

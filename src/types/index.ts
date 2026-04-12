@@ -194,6 +194,7 @@ export interface SpotReport {
   has_parking: boolean | null;
   pet_friendly: boolean | null;
   comment: string | null;
+  image_urls: string[];
   nickname: string;
   anon_session_id: string;
   status: "pending" | "approved" | "rejected";

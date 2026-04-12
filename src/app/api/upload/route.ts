@@ -29,7 +29,10 @@ export async function POST(req: NextRequest) {
 
   const ext = file.type.split('/')[1].replace('jpeg', 'jpg');
   const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-  const path = `community/${filename}`;
+  const allowedFolders = ['community', 'reports', 'spot-reviews'];
+  const folderParam = req.nextUrl.searchParams.get('folder') ?? 'community';
+  const folder = allowedFolders.includes(folderParam) ? folderParam : 'community';
+  const path = `${folder}/${filename}`;
 
   const supabase = await createServiceClient();
   const arrayBuffer = await file.arrayBuffer();

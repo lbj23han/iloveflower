@@ -23,12 +23,28 @@ async function getReviews(spotId: string) {
   return data ?? [];
 }
 
+function getRepresentativeImages(reviews: Awaited<ReturnType<typeof getReviews>>) {
+  // rating 높고 이미지 있는 리뷰 우선, 최대 6장
+  const withImages = reviews
+    .filter((r) => r.image_urls?.length > 0)
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+  const urls: string[] = [];
+  for (const r of withImages) {
+    for (const url of r.image_urls ?? []) {
+      if (!urls.includes(url)) urls.push(url);
+      if (urls.length >= 6) return urls;
+    }
+  }
+  return urls;
+}
+
 export default async function SpotDetailPage({ params }: Props) {
   const { id } = await params;
   const [spot, reviews] = await Promise.all([getSpotDetailById(id), getReviews(id)]);
 
   if (!spot) notFound();
 
+  const representativeImages = getRepresentativeImages(reviews);
   const kakaoMapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(spot.name)}`;
   const bloomStatus = spot.bloom_status;
   const bloomLabel = bloomStatus ? (BLOOM_STATUS_LABELS as Record<string, string>)[bloomStatus.status] : null;
@@ -44,6 +60,20 @@ export default async function SpotDetailPage({ params }: Props) {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-5 space-y-4">
+        {representativeImages.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {representativeImages.map((url, i) => (
+              <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                <img
+                  src={url}
+                  alt={`${spot.name} 사진 ${i + 1}`}
+                  className="h-44 w-44 rounded-2xl object-cover shadow-sm"
+                />
+              </a>
+            ))}
+          </div>
+        )}
+
         <div className="bg-[#fff5f7] rounded-xl p-5 border border-[#ffd6dc]">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
