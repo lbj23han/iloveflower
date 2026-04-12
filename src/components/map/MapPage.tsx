@@ -54,10 +54,18 @@ function MarqueeTicker() {
   );
 }
 
+function getCurrentSeason(): FilterState["season"] {
+  const month = new Date().getMonth() + 1;
+  if (month >= 3 && month <= 5) return "spring";
+  if (month >= 6 && month <= 8) return "summer";
+  if (month >= 9 && month <= 11) return "autumn";
+  return "winter";
+}
+
 const DEFAULT_FILTERS: FilterState = {
   flower_type: "all",
   bloom_status: "all",
-  season: "all",
+  season: getCurrentSeason(),
   peak_month: "all",
   festival: "all",
   has_night_light: false,
@@ -140,13 +148,37 @@ const FLOWER_LABELS_MAP: Record<string, string> = {
   plum: "매화",
   forsythia: "개나리",
   azalea: "진달래",
+  magnolia: "목련",
   wisteria: "등나무",
   rose: "장미",
+  peony: "작약",
+  peachblossom: "복숭아꽃",
   cosmos: "코스모스",
+  silvergrass: "억새",
+  pinkmuhly: "핑크뮬리",
+  buckwheat: "메밀꽃",
   sunflower: "해바라기",
   tulip: "튤립",
   lavender: "라벤더",
   rape: "유채꽃",
+  hydrangea: "수국",
+  lotus: "연꽃",
+  morningglory: "나팔꽃",
+  babysbreath: "안개꽃",
+  zinnia: "백일홍",
+  neungsohwa: "능소화",
+  pomegranateblossom: "석류꽃",
+  mossrose: "채송화",
+  aconite: "투구꽃",
+  chuhaedang: "추해당",
+  chrysanthemum: "국화·구절초",
+  camellia: "동백꽃",
+  narcissus: "수선화",
+  clivia: "군자란",
+  cyclamen: "시클라멘",
+  adonis: "복수초",
+  christmasrose: "크리스마스로즈",
+  snowflower: "눈꽃",
   etc: "기타",
 };
 
@@ -381,6 +413,7 @@ export default function MapPage() {
     coords,
     loading: geolocationLoading,
     error: geolocationError,
+    hasLocation,
   } = useGeolocation();
   const {
     spots: gyms,
@@ -412,6 +445,10 @@ export default function MapPage() {
     lat: number;
     lng: number;
   } | null>(null);
+  const [currentPosition, setCurrentPosition] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [locating, setLocating] = useState(false);
   const [favoriteGyms, setFavoriteGyms] = useState<FlowerSpotMapItem[]>([]);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
@@ -428,6 +465,11 @@ export default function MapPage() {
   useEffect(() => {
     getOrCreateSession();
   }, []);
+
+  useEffect(() => {
+    if (!hasLocation) return;
+    setCurrentPosition(coords);
+  }, [coords, hasLocation]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -576,10 +618,12 @@ export default function MapPage() {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setLocationTarget({
+        const nextPosition = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
-        });
+        };
+        setCurrentPosition(nextPosition);
+        setLocationTarget(nextPosition);
         setLocationFocusToken((prev) => prev + 1);
         setLocating(false);
       },
@@ -782,6 +826,7 @@ export default function MapPage() {
         <KakaoMap
           center={coords}
           spots={visibleGyms.filter((g) => g.lat && g.lng)}
+          currentPosition={currentPosition}
           onBoundsChanged={handleBoundsChanged}
           onSpotSelect={handleGymSelect}
           selectedSpotId={selectedGym?.id}
@@ -939,14 +984,14 @@ export default function MapPage() {
                 ? "기본 위치 또는 현재 위치로 이동"
                 : "내 위치로 이동"
             }
-            className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-[#ffd6dc]/50 bg-[#fffafb]/76 text-[18px] text-[#111827] shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all hover:bg-[#fffafb]/86 disabled:cursor-default disabled:opacity-75"
+            className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-[#ffd6dc]/50 bg-[#fffafb]/76 text-[12px] font-bold tracking-[0.02em] text-[#111827] shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all hover:bg-[#fffafb]/86 disabled:cursor-default disabled:opacity-75"
             aria-label={
               geolocationLoading || locating
                 ? "현재 위치 찾는 중"
                 : "내 위치로 이동"
             }
           >
-            {locating ? "…" : "◎"}
+            {locating ? "..." : "GPS"}
           </button>
 
           <button

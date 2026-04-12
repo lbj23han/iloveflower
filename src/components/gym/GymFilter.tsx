@@ -68,6 +68,17 @@ export default function SpotFilter({ filters, onChange }: Props) {
     return filters.peak_month === 'all' ? '절정 시기 전체' : PEAK_MONTH_LABELS[filters.peak_month];
   }, [filters.peak_month]);
 
+  const visibleFlowerTypes = useMemo(() => {
+    if (filters.season === 'all') {
+      return Object.entries(FLOWER_TYPE_LABELS) as [string, string][];
+    }
+
+    return (SEASON_FLOWER_TYPES[filters.season] ?? []).map((flowerKey) => [
+      flowerKey,
+      FLOWER_TYPE_LABELS[flowerKey],
+    ]) as [string, string][];
+  }, [filters.season]);
+
   return (
     <div className="flex max-h-[min(68vh,720px)] flex-col">
       <div className="mb-4 rounded-[22px] border border-[#ffd6dc]/50 bg-[#fff6f8]/76 p-1">
@@ -98,37 +109,72 @@ export default function SpotFilter({ filters, onChange }: Props) {
           <div className="space-y-5">
             <div>
               <div className="mb-2 text-xs font-semibold text-[#6b7280]">꽃 종류</div>
-              {filters.season === 'all' ? (
+              <div className="rounded-[24px] border border-[#ffd6dc]/45 bg-[#fffafb]/72 p-3">
                 <div className="flex flex-wrap gap-1.5">
-                  {SEASON_BUTTONS.map(({ key, label }) => (
-                    <FilterChip
-                      key={key}
-                      active={false}
-                      onClick={() => onChange({ season: key, flower_type: 'all' })}
-                    >
-                      {label}
-                    </FilterChip>
-                  ))}
+                  {SEASON_BUTTONS.map(({ key, label }) => {
+                    const active = filters.season === key;
+
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() =>
+                          onChange({
+                            season: active ? 'all' : key,
+                            flower_type: 'all',
+                          })
+                        }
+                        className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                          active
+                            ? 'bg-[#ff6b81] text-white shadow-[0_8px_20px_rgba(255,107,129,0.18)]'
+                            : 'border border-white/55 bg-white/82 text-[#374151]'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
-              ) : (
-                <div className="flex flex-wrap gap-1.5">
-                  <FilterChip
-                    active={false}
-                    onClick={() => onChange({ season: 'all', flower_type: 'all' })}
-                  >
-                    ← 전체
-                  </FilterChip>
-                  {(SEASON_FLOWER_TYPES[filters.season] ?? []).map((flowerKey) => (
-                    <FilterChip
-                      key={flowerKey}
-                      active={filters.flower_type === flowerKey}
-                      onClick={() => onChange({ flower_type: flowerKey })}
-                    >
-                      {FLOWER_TYPE_LABELS[flowerKey]}
-                    </FilterChip>
-                  ))}
-                </div>
-              )}
+
+                {filters.season !== 'all' && (
+                  <>
+                    <div className="my-3 h-px w-full bg-gradient-to-r from-transparent via-[#ffd6dc] to-transparent" />
+
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="text-[11px] font-semibold text-[#6b7280]">
+                        선택한 계절 안에서 더 좁혀볼 수 있어요
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onChange({ season: 'all', flower_type: 'all' })}
+                        className="text-[11px] font-semibold text-[#ff6b81]"
+                      >
+                        전체 해제
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      <FilterChip
+                        active={filters.flower_type === 'all'}
+                        onClick={() => onChange({ flower_type: 'all' })}
+                      >
+                        전체
+                      </FilterChip>
+                      {visibleFlowerTypes.map(([flowerKey, label]) => (
+                        <FilterChip
+                          key={flowerKey}
+                          active={filters.flower_type === flowerKey}
+                          onClick={() =>
+                            onChange({ flower_type: flowerKey as FilterState['flower_type'] })
+                          }
+                        >
+                          {label}
+                        </FilterChip>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             <div>

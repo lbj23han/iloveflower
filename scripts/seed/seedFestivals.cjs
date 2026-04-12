@@ -320,6 +320,82 @@ const FESTIVALS = [
       { name: '순천정원박람회' },
     ],
   },
+  // ── 가을·겨울 축제 ───────────────────────────────────────
+  {
+    name: '서울억새축제',
+    start_date: '2026-10-10',
+    end_date: '2026-10-18',
+    description: '하늘공원 일대에서 열리는 대표 억새 축제',
+    source_url: 'https://parks.seoul.go.kr',
+    candidates: [
+      { name: '하늘공원' },
+      { name: '월드컵공원' },
+    ],
+  },
+  {
+    name: '민둥산억새꽃축제',
+    start_date: '2026-09-20',
+    end_date: '2026-11-02',
+    description: '정선 민둥산에서 열리는 대표 억새 축제',
+    source_url: 'https://www.jeongseon.go.kr',
+    candidates: [
+      { name: '민둥산' },
+    ],
+  },
+  {
+    name: '효석문화제 메밀꽃축제',
+    start_date: '2026-09-05',
+    end_date: '2026-09-13',
+    description: '평창 봉평 일대 메밀꽃과 함께하는 대표 가을 축제',
+    source_url: 'https://www.pc.go.kr',
+    candidates: [
+      { name: '봉평' },
+      { name: '효석문화마을' },
+      { name: '메밀꽃' },
+    ],
+  },
+  {
+    name: '함평 대한민국 국향대전',
+    start_date: '2026-10-20',
+    end_date: '2026-11-05',
+    description: '함평 엑스포공원 일대에서 열리는 대형 국화 축제',
+    source_url: 'https://www.hampyeong.go.kr',
+    candidates: [
+      { name: '함평엑스포' },
+      { name: '함평자연생태공원' },
+    ],
+  },
+  {
+    name: '제주 휴애리 매화축제',
+    start_date: '2026-02-15',
+    end_date: '2026-03-15',
+    description: '제주 휴애리에서 열리는 초봄 매화 축제',
+    source_url: 'https://www.hueree.com',
+    candidates: [
+      { name: '휴애리' },
+    ],
+  },
+  {
+    name: '제주 휴애리 수선화축제',
+    start_date: '2026-01-10',
+    end_date: '2026-03-15',
+    description: '제주 휴애리 자연생활공원에서 열리는 겨울 수선화 축제',
+    source_url: 'https://www.hueree.com',
+    candidates: [
+      { name: '휴애리' },
+    ],
+  },
+  {
+    name: '제주 카멜리아힐 동백축제',
+    start_date: '2026-12-01',
+    end_date: '2027-02-28',
+    description: '카멜리아힐에서 즐기는 겨울 동백 축제',
+    source_url: 'https://www.camelliahill.co.kr',
+    candidates: [
+      { name: '카멜리아힐' },
+      { name: '동백수목원' },
+    ],
+  },
 ];
 
 async function findSpotForFestival(supabase, candidates) {

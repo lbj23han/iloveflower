@@ -377,6 +377,12 @@ const CITY_BOUNDS = {
     latStep: 0.03,
     lngStep: 0.035,
   },
+  jeongseon: {
+    label: '정선',
+    bounds: { swLat: 37.1500, swLng: 128.3500, neLat: 37.6200, neLng: 128.9500 },
+    latStep: 0.05,
+    lngStep: 0.06,
+  },
   goseong: {
     label: '고성',
     bounds: { swLat: 38.1500, swLng: 128.3000, neLat: 38.4600, neLng: 128.6900 },

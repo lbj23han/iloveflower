@@ -26,18 +26,36 @@ export type FlowerType =
   | "plum"
   | "forsythia"
   | "azalea"
+  | "magnolia"
   | "wisteria"
   | "tulip"
   | "rape"
+  | "peony"
+  | "peachblossom"
   | "rose"
   | "sunflower"
   | "lavender"
   | "hydrangea"
   | "lotus"
+  | "morningglory"
+  | "babysbreath"
+  | "zinnia"
   | "neungsohwa"
+  | "pomegranateblossom"
   | "cosmos"
+  | "silvergrass"
+  | "pinkmuhly"
+  | "buckwheat"
+  | "mossrose"
+  | "aconite"
+  | "chuhaedang"
   | "chrysanthemum"
   | "camellia"
+  | "narcissus"
+  | "clivia"
+  | "cyclamen"
+  | "adonis"
+  | "christmasrose"
   | "snowflower"
   | "etc";
 
@@ -46,28 +64,86 @@ export const FLOWER_TYPE_LABELS: Record<FlowerType, string> = {
   plum: "매화",
   forsythia: "개나리",
   azalea: "진달래·철쭉",
+  magnolia: "목련",
   wisteria: "등나무",
   tulip: "튤립",
   rape: "유채꽃",
+  peony: "작약",
+  peachblossom: "복숭아꽃",
   rose: "장미",
   sunflower: "해바라기",
   lavender: "라벤더",
   hydrangea: "수국",
   lotus: "연꽃",
+  morningglory: "나팔꽃",
+  babysbreath: "안개꽃",
+  zinnia: "백일홍",
   neungsohwa: "능소화",
+  pomegranateblossom: "석류꽃",
   cosmos: "코스모스",
-  chrysanthemum: "국화",
+  silvergrass: "억새",
+  pinkmuhly: "핑크뮬리",
+  buckwheat: "메밀꽃",
+  mossrose: "채송화",
+  aconite: "투구꽃",
+  chuhaedang: "추해당",
+  chrysanthemum: "국화·구절초",
   camellia: "동백꽃",
+  narcissus: "수선화",
+  clivia: "군자란",
+  cyclamen: "시클라멘",
+  adonis: "복수초",
+  christmasrose: "크리스마스로즈",
   snowflower: "눈꽃",
   etc: "기타",
 };
 
 // 계절별 꽃 타입 그룹
 export const SEASON_FLOWER_TYPES: Record<string, FlowerType[]> = {
-  spring: ["cherry", "plum", "forsythia", "azalea", "wisteria", "tulip", "rape"],
-  summer: ["rose", "sunflower", "lavender", "hydrangea", "lotus", "neungsohwa"],
-  autumn: ["cosmos", "chrysanthemum"],
-  winter: ["camellia", "snowflower"],
+  spring: [
+    "cherry",
+    "forsythia",
+    "azalea",
+    "magnolia",
+    "tulip",
+    "rape",
+    "peony",
+    "peachblossom",
+    "plum",
+    "wisteria",
+  ],
+  summer: [
+    "rose",
+    "sunflower",
+    "lotus",
+    "hydrangea",
+    "morningglory",
+    "babysbreath",
+    "zinnia",
+    "neungsohwa",
+    "pomegranateblossom",
+    "lavender",
+  ],
+  autumn: [
+    "cosmos",
+    "silvergrass",
+    "pinkmuhly",
+    "buckwheat",
+    "mossrose",
+    "aconite",
+    "chuhaedang",
+    "chrysanthemum",
+  ],
+  winter: [
+    "camellia",
+    "narcissus",
+    "plum",
+    "clivia",
+    "cyclamen",
+    "adonis",
+    "christmasrose",
+    "snowflower",
+  ],
 };
 
 export type BloomStatusValue =

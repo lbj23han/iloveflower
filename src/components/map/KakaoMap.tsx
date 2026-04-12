@@ -51,6 +51,7 @@ function getBloomColor(status: string | null) {
 interface Props {
   center: { lat: number; lng: number };
   spots: FlowerSpotMapItem[];
+  currentPosition?: { lat: number; lng: number } | null;
   onBoundsChanged: (bounds: ViewportBounds) => void;
   onSpotSelect: (spot: FlowerSpotMapItem) => void;
   selectedSpotId?: string | null;
@@ -63,6 +64,7 @@ interface Props {
 export default function KakaoMap({
   center,
   spots,
+  currentPosition,
   onBoundsChanged,
   onSpotSelect,
   selectedSpotId,
@@ -74,6 +76,7 @@ export default function KakaoMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<KakaoMapType | null>(null);
   const overlaysRef = useRef<KakaoOverlay[]>([]);
+  const currentLocationOverlayRef = useRef<KakaoOverlay | null>(null);
   const clustererRef = useRef<KakaoClusterer | null>(null);
   const initializedRef = useRef(false);
   const panOffsetRef = useRef(panOffset);
@@ -170,6 +173,8 @@ export default function KakaoMap({
 
     overlaysRef.current.forEach((o) => o.setMap(null));
     overlaysRef.current = [];
+    currentLocationOverlayRef.current?.setMap(null);
+    currentLocationOverlayRef.current = null;
     clustererRef.current?.clear();
 
     spots.forEach((spot) => {
@@ -180,7 +185,7 @@ export default function KakaoMap({
       const categoryLabel = CATEGORY_LABELS[spot.category] ?? '기타';
       const flowerLabel = spot.flower_types[0] ? spot.flower_types[0] : null;
       const label = flowerLabel
-        ? { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', wisteria: '등나무', tulip: '튤립', rape: '유채꽃', rose: '장미', sunflower: '해바라기', lavender: '라벤더', hydrangea: '수국', lotus: '연꽃', neungsohwa: '능소화', cosmos: '코스모스', chrysanthemum: '국화', camellia: '동백꽃', snowflower: '눈꽃', etc: categoryLabel }[flowerLabel] ?? categoryLabel
+        ? { cherry: '벚꽃', plum: '매화', forsythia: '개나리', azalea: '진달래', magnolia: '목련', wisteria: '등나무', tulip: '튤립', rape: '유채꽃', peony: '작약', peachblossom: '복숭아꽃', rose: '장미', sunflower: '해바라기', lavender: '라벤더', hydrangea: '수국', lotus: '연꽃', morningglory: '나팔꽃', babysbreath: '안개꽃', zinnia: '백일홍', neungsohwa: '능소화', pomegranateblossom: '석류꽃', cosmos: '코스모스', silvergrass: '억새', pinkmuhly: '핑크뮬리', buckwheat: '메밀꽃', mossrose: '채송화', aconite: '투구꽃', chuhaedang: '추해당', chrysanthemum: '국화·구절초', camellia: '동백꽃', narcissus: '수선화', clivia: '군자란', cyclamen: '시클라멘', adonis: '복수초', christmasrose: '크리스마스로즈', snowflower: '눈꽃', etc: categoryLabel }[flowerLabel] ?? categoryLabel
         : categoryLabel;
 
       const bg = isSelected ? '#111827' : 'rgba(255,255,255,0.96)';
@@ -215,7 +220,38 @@ export default function KakaoMap({
       overlay.setMap(mapRef.current!);
       overlaysRef.current.push(overlay);
     });
-  }, [spots, selectedSpotId]);
+
+    if (currentPosition?.lat && currentPosition?.lng) {
+      const content = document.createElement('div');
+      content.style.pointerEvents = 'none';
+      content.innerHTML = `
+        <div style="position:relative;width:20px;height:20px;">
+          <span style="
+            position:absolute;inset:-8px;
+            border-radius:999px;
+            background:rgba(59,130,246,0.18);
+            border:1px solid rgba(59,130,246,0.28);
+          "></span>
+          <span style="
+            position:absolute;inset:4px;
+            border-radius:999px;
+            background:#3b82f6;
+            border:2px solid #ffffff;
+            box-shadow:0 4px 12px rgba(59,130,246,0.35);
+          "></span>
+        </div>
+      `;
+
+      const currentOverlay = new maps.CustomOverlay({
+        position: new maps.LatLng(currentPosition.lat, currentPosition.lng),
+        content,
+        yAnchor: 0.5,
+      });
+
+      currentOverlay.setMap(mapRef.current!);
+      currentLocationOverlayRef.current = currentOverlay;
+    }
+  }, [currentPosition?.lat, currentPosition?.lng, spots, selectedSpotId]);
 
   useEffect(() => {
     if (!selectedSpotId) { lastFocusedKeyRef.current = null; return; }
