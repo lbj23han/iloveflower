@@ -48,23 +48,6 @@ export async function getSpotMapItemsByBounds({
     winter: [12, 1, 2],
   };
 
-  const getPeakMonths = (start: number | null, end: number | null) => {
-    if (!start && !end) return [];
-    if (start && !end) return [start];
-    if (!start && end) return [end];
-    if (start === end) return start ? [start] : [];
-
-    const months: number[] = [];
-    let month = start!;
-    while (true) {
-      months.push(month);
-      if (month === end) break;
-      month = month === 12 ? 1 : month + 1;
-      if (months.length > 12) break;
-    }
-    return months;
-  };
-
   let query = supabase
     .from('flower_spots')
     .select(`
@@ -90,6 +73,30 @@ export async function getSpotMapItemsByBounds({
   if (petFriendly) query = query.eq('pet_friendly', true);
   if (photoSpot) query = query.eq('photo_spot', true);
   if (freeOnly) query = query.eq('entry_fee', 0);
+
+  // DB 레벨 필터 — JS 후처리 제거
+  if (flowerType && flowerType !== 'all') {
+    query = query.contains('flower_types', [flowerType]);
+  }
+  if (season && season !== 'all') {
+    const months = seasonMonthsMap[season] ?? [];
+    if (months.length > 0) {
+      // peak_month_start ~ peak_month_end 범위가 해당 계절과 겹치는 것
+      // 겨울(12,1,2)은 월 역전이 있으므로 OR로 처리
+      if (season === 'winter') {
+        query = query.or(
+          'peak_month_start.gte.12,peak_month_end.lte.2,and(peak_month_start.lte.2,peak_month_end.gte.1)'
+        );
+      } else {
+        const [s, e] = [Math.min(...months), Math.max(...months)];
+        query = query.lte('peak_month_start', e).gte('peak_month_end', s);
+      }
+    }
+  }
+  if (peakMonth && peakMonth !== 'all') {
+    const m = Number(peakMonth);
+    query = query.lte('peak_month_start', m).gte('peak_month_end', m);
+  }
 
   const { data: spots, error } = await query;
   if (error || !spots) throw new Error(error?.message ?? 'Failed to fetch spots');
@@ -133,26 +140,8 @@ export async function getSpotMapItemsByBounds({
     };
   });
 
-  if (flowerType && flowerType !== 'all') {
-    result = result.filter((s) => s.flower_types.includes(flowerType as FlowerSpotMapItem['flower_types'][number]));
-  }
   if (bloomStatus && bloomStatus !== 'all') {
     result = result.filter((s) => s.bloom_status === bloomStatus);
-  }
-  if (season && season !== 'all') {
-    result = result.filter((spot) => {
-      const source = spots.find((item) => item.id === spot.id);
-      const months = getPeakMonths(source?.peak_month_start ?? null, source?.peak_month_end ?? null);
-      return months.some((month) => seasonMonthsMap[season]?.includes(month));
-    });
-  }
-  if (peakMonth && peakMonth !== 'all') {
-    const targetMonth = Number(peakMonth);
-    result = result.filter((spot) => {
-      const source = spots.find((item) => item.id === spot.id);
-      const months = getPeakMonths(source?.peak_month_start ?? null, source?.peak_month_end ?? null);
-      return months.includes(targetMonth);
-    });
   }
   if (festival === 'only') {
     result = result.filter((spot) => spot.festival_count > 0);

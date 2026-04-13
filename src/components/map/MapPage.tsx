@@ -55,7 +55,30 @@ function MarqueeTicker() {
 }
 
 
+function getCurrentSeason(): FilterState["season"] {
+  const month = new Date().getMonth() + 1;
+  if (month >= 3 && month <= 5) return "spring";
+  if (month >= 6 && month <= 8) return "summer";
+  if (month >= 9 && month <= 11) return "autumn";
+  return "winter";
+}
+
 const DEFAULT_FILTERS: FilterState = {
+  flower_type: "all",
+  bloom_status: "all",
+  season: getCurrentSeason(),
+  peak_month: "all",
+  festival: "all",
+  has_night_light: false,
+  has_parking: false,
+  pet_friendly: false,
+  photo_spot: false,
+  free_only: false,
+  sort: "recommended",
+  category: "all",
+};
+
+const RESET_FILTERS: FilterState = {
   flower_type: "all",
   bloom_status: "all",
   season: "all",
@@ -1286,7 +1309,7 @@ export default function MapPage() {
                 </div>
               </div>
               <button
-                onClick={() => handleFilterChange(DEFAULT_FILTERS)}
+                onClick={() => handleFilterChange(RESET_FILTERS)}
                 className="rounded-full border border-[#ffd6dc]/50 bg-[#fffafb]/76 px-3 py-1.5 text-xs font-medium text-[#4b5563]"
               >
                 초기화
