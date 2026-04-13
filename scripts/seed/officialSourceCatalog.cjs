@@ -1,0 +1,45 @@
+const OFFICIAL_SPOT_SOURCES = [
+  { name: '석촌호수', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ef5d5a84-cf86-4721-8d9d-df18ff8a4783', source: 'official_tourism_curated' },
+  { name: '하늘공원', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=c8cdaa17-55fb-4340-b15a-4401cb8b4635', source: 'official_tourism_curated' },
+  { name: '카멜리아힐', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=e4f4a116-be4b-46fa-a289-11e223fa597a', source: 'official_tourism_curated' },
+  { name: '보문호', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=36e0a76a-b95f-48c9-9fca-3ca109eb9712', source: 'official_tourism_curated' },
+  { name: '오동도', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=5a3c2f21-8c57-4b27-8b46-4ffef8c3c9fb', source: 'official_tourism_curated' },
+  { name: '양평 세미원', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=fc6f31ef-c1e6-4c3b-84bf-06b7e298d0d0', source: 'official_tourism_curated' },
+  { name: '부여 궁남지', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=0d53057c-d837-45dd-b11c-c2446d95a6cf', source: 'official_tourism_curated' },
+  { name: '무안 회산백련지', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=32f6d2d9-3e79-4938-a69e-c895c5b4f0be', source: 'official_tourism_curated' },
+  { name: '서울식물원', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=9bd1c5df-a584-4c88-8c57-b37ce781f924', source: 'official_tourism_curated' },
+  { name: '서울숲', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=59cd93b5-8cf0-4ea2-b9e4-1fbb98ec6053', source: 'official_tourism_curated' },
+  { name: '태화강국가정원', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=da874a89-2a76-47a8-b979-7b5f4604a1f9', source: 'official_tourism_curated' },
+  { name: '아침고요수목원', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=7a3c5bf4-7f47-49ec-8829-677323d245dd', source: 'official_tourism_curated' },
+  { name: '제이드가든', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=ea8d386c-5df5-4ec8-99c1-cd14b286be4a', source: 'official_tourism_curated' },
+  { name: '순천만국가정원', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3c763e2f-19cb-4ea7-a8bc-a40d2dd9b1d7', source: 'official_tourism_curated' },
+  { name: '허브아일랜드', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3240cb8c-b44e-4ab5-b2e4-3b3c53645aaf', source: 'official_tourism_curated' },
+  { name: '에버랜드 장미원', website_url: 'https://www.everland.com', source: 'official_festival_curated' },
+  { name: '서울대공원', website_url: 'https://grandpark.seoul.go.kr', source: 'official_festival_curated' },
+  { name: '광양 매화마을', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=3ff5d648-a4dd-466c-85a7-c4ea8a29f7c9', source: 'official_tourism_curated' },
+  { name: '거제 지심도', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=5b112e2b-2fe0-4095-a66f-1b9ddf2f7e7f', source: 'official_tourism_curated' },
+  { name: '선운사', website_url: 'https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=9fab64c0-cf5f-4f7d-9ed0-4f6a58831533', source: 'official_tourism_curated' },
+];
+
+const OFFICIAL_FESTIVAL_SOURCES = [
+  { name: '송파구 호수벚꽃축제', source_url: 'https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=e50b142c-6ec2-4374-a7ca-a10ece200d48' },
+  { name: '호수의 가을과 겨울,그리고 루미나리에', source_url: 'https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=1852e51d-5c6b-465b-ad7f-bcb72ad556a6' },
+  { name: '서울억새축제', source_url: 'https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=ca3f2d0b-7c3d-4e8f-8fb3-0d99c9b1d86e' },
+  { name: '민둥산억새꽃축제', source_url: 'https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=8eb8339c-4dc0-4d18-ac03-4c2a8ce28b80' },
+  { name: '효석문화제 메밀꽃축제', source_url: 'https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=7ef0e4d8-bafd-4e9f-a63f-c040f9f3f9f1' },
+  { name: '태안 세계튤립꽃박람회', source_url: 'https://ffestival.co.kr/?pn=festival&skey=%ED%8A%A4%EB%A6%BD' },
+  { name: '고양국제꽃박람회', source_url: 'https://www.flower.or.kr/main' },
+  { name: '군포철쭉축제', source_url: 'https://www.gunpo.go.kr/www/index.do' },
+  { name: '곡성세계장미축제', source_url: 'https://www.gokseong.go.kr/tour/festivity/rose' },
+  { name: '광양매화축제', source_url: 'https://www.gwangyang.go.kr/tour/' },
+  { name: '제주 카멜리아힐 동백축제', source_url: 'https://www.camelliahill.co.kr/' },
+  { name: '제주 휴애리 수국축제', source_url: 'https://www.hueree.com/' },
+  { name: '제주 휴애리 동백축제', source_url: 'https://www.hueree.com/' },
+  { name: '공주 유구색동수국정원 꽃축제', source_url: 'https://www.gongju.go.kr/tour/' },
+  { name: '울산 장생포 수국 페스티벌', source_url: 'https://www.ulsan.go.kr/' },
+];
+
+module.exports = {
+  OFFICIAL_SPOT_SOURCES,
+  OFFICIAL_FESTIVAL_SOURCES,
+};

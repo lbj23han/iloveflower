@@ -40,6 +40,7 @@ const FLOWER_TYPES = [
   'pomegranateblossom',
   'lavender',
   'cosmos',
+  'foliage',
   'silvergrass',
   'pinkmuhly',
   'buckwheat',

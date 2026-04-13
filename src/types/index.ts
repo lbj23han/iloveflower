@@ -45,6 +45,7 @@ export type FlowerType =
   | "neungsohwa"
   | "pomegranateblossom"
   | "cosmos"
+  | "foliage"
   | "silvergrass"
   | "pinkmuhly"
   | "buckwheat"
@@ -85,6 +86,7 @@ export const FLOWER_TYPE_LABELS: Record<FlowerType, string> = {
   neungsohwa: "능소화",
   pomegranateblossom: "석류꽃",
   cosmos: "코스모스",
+  foliage: "단풍",
   silvergrass: "억새",
   pinkmuhly: "핑크뮬리",
   buckwheat: "메밀꽃",
@@ -131,6 +133,7 @@ export const SEASON_FLOWER_TYPES: Record<string, FlowerType[]> = {
   ],
   autumn: [
     "cosmos",
+    "foliage",
     "silvergrass",
     "pinkmuhly",
     "buckwheat",

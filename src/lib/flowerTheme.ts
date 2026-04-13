@@ -83,6 +83,14 @@ const FLOWER_STYLES: Record<FlowerType, AccentStyle> = {
     strongBg: '#f9a8d4',
     strongText: '#831843',
   },
+  foliage: {
+    border: '#fb923c',
+    bg: '#fff7ed',
+    text: '#c2410c',
+    softBg: '#fff7ed',
+    strongBg: '#fb923c',
+    strongText: '#7c2d12',
+  },
   silvergrass: {
     border: '#cbd5e1',
     bg: '#f8fafc',

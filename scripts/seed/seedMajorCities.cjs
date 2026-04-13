@@ -73,6 +73,19 @@ const KEYWORD_GROUPS = {
     '투구꽃 명소',
     '추해당 명소',
   ],
+  // 단풍
+  foliage: [
+    '단풍 명소',
+    '단풍길',
+    '단풍 공원',
+    '단풍 축제',
+    '단풍 군락지',
+    '단풍 드라이브',
+    '단풍 산책로',
+    '단풍나무 명소',
+    '가을 단풍',
+    '단풍 출사지',
+  ],
   // 겨울꽃/기타
   winter: [
     '동백꽃 명소',
@@ -97,7 +110,7 @@ const KEYWORD_GROUPS = {
   ],
 };
 const DEFAULT_CITY = 'all';
-const DEFAULT_KEYWORD_GROUPS = ['spring', 'summer', 'autumn', 'winter', 'common'];
+const DEFAULT_KEYWORD_GROUPS = ['spring', 'summer', 'autumn', 'winter', 'common', 'foliage'];
 const CHUNK_SIZE = 100;
 const KEYWORD_COOLDOWN_MS = 180;
 const CITY_COOLDOWN_MS = 3500;

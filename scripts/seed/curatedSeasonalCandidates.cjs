@@ -76,6 +76,13 @@ const CURATED_SEASONAL_CANDIDATES = [
 
   // autumn
   { season: 'autumn', query: '올림픽공원', keyword: '코스모스 공원' },
+  { season: 'autumn', query: '광릉수목원', keyword: '단풍 명소' },
+  { season: 'autumn', query: '내장산국립공원', keyword: '단풍 명소' },
+  { season: 'autumn', query: '설악산국립공원', keyword: '단풍 명소' },
+  { season: 'autumn', query: '남이섬', keyword: '단풍 명소' },
+  { season: 'autumn', query: '주왕산국립공원', keyword: '단풍 명소' },
+  { season: 'autumn', query: '화담숲', keyword: '단풍 명소' },
+  { season: 'autumn', query: '덕수궁 돌담길', keyword: '단풍길' },
   { season: 'autumn', query: '하동 북천 코스모스 메밀꽃 축제', keyword: '코스모스 축제' },
   { season: 'autumn', query: '드라마촬영장 핑크뮬리', keyword: '핑크뮬리 명소' },
   { season: 'autumn', query: '양주 나리공원', keyword: '핑크뮬리 공원' },
