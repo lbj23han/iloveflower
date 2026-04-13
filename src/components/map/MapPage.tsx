@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
   CATEGORY_LABELS,
+  FLOWER_TYPE_LABELS,
   FilterState,
   FlowerSpotMapItem,
   FlowerSpotWithDetails,
@@ -159,46 +160,6 @@ function FavoriteToggleButton({
   );
 }
 
-const FLOWER_LABELS_MAP: Record<string, string> = {
-  cherry: "벚꽃",
-  plum: "매화",
-  forsythia: "개나리",
-  azalea: "진달래",
-  magnolia: "목련",
-  wisteria: "등나무",
-  rose: "장미",
-  peony: "작약",
-  peach: "복숭아꽃",
-  peachblossom: "복숭아꽃",
-  phlox: "꽃잔디",
-  cosmos: "코스모스",
-  silvergrass: "억새",
-  pinkmuhly: "핑크뮬리",
-  buckwheat: "메밀꽃",
-  sunflower: "해바라기",
-  tulip: "튤립",
-  lavender: "라벤더",
-  rape: "유채꽃",
-  hydrangea: "수국",
-  lotus: "연꽃",
-  morningglory: "나팔꽃",
-  babysbreath: "안개꽃",
-  zinnia: "백일홍",
-  neungsohwa: "능소화",
-  pomegranateblossom: "석류꽃",
-  mossrose: "채송화",
-  aconite: "투구꽃",
-  chuhaedang: "추해당",
-  chrysanthemum: "국화·구절초",
-  camellia: "동백꽃",
-  narcissus: "수선화",
-  clivia: "군자란",
-  cyclamen: "시클라멘",
-  adonis: "복수초",
-  christmasrose: "크리스마스로즈",
-  snowflower: "눈꽃",
-  etc: "기타",
-};
 
 function BadgeChipsCompact({ gym }: { gym: FlowerSpotMapItem }) {
   if (!gym.flower_types || gym.flower_types.length === 0) return null;
@@ -210,7 +171,7 @@ function BadgeChipsCompact({ gym }: { gym: FlowerSpotMapItem }) {
           key={key}
           className="rounded-full border border-[#ffc9df] bg-[#fff1f6] px-2 py-0.5 text-[10px] font-semibold text-[#d63384]"
         >
-          {FLOWER_LABELS_MAP[key] ?? key}
+          {FLOWER_TYPE_LABELS[key as keyof typeof FLOWER_TYPE_LABELS] ?? key}
         </span>
       ))}
     </div>
