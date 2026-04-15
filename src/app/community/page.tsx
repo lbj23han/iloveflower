@@ -123,20 +123,25 @@ function CommunityPageContent() {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || imageUrls.length >= 4) return;
+    const files = e.target.files;
+    if (!files?.length || imageUrls.length >= 4) return;
     setUploadingImage(true);
-    const formData = new FormData();
-    formData.append('file', file);
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      if (res.ok) {
-        const { url } = await res.json();
-        setImageUrls((prev) => [...prev, url]);
-      } else {
-        const { error } = await res.json();
-        alert(error || '업로드 실패');
+      const toUpload = Array.from(files).slice(0, 4 - imageUrls.length);
+      const uploaded: string[] = [];
+      for (const file of toUpload) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (res.ok) {
+          const { url } = await res.json();
+          uploaded.push(url);
+        } else {
+          const { error } = await res.json();
+          alert(error || '업로드 실패');
+        }
       }
+      setImageUrls((prev) => [...prev, ...uploaded].slice(0, 4));
     } finally {
       setUploadingImage(false);
       e.target.value = '';
@@ -315,7 +320,7 @@ function CommunityPageContent() {
                 {imageUrls.length < 4 && (
                   <label className={`cursor-pointer rounded-full border border-[#ffd6dc] bg-white px-3 py-1.5 text-xs font-semibold text-[#c0394f] ${uploadingImage ? 'opacity-50' : ''}`}>
                     {uploadingImage ? '업로드 중...' : '+ 사진 추가'}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
+                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
                   </label>
                 )}
               </div>

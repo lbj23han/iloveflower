@@ -41,7 +41,9 @@ function timeAgo(dateStr: string) {
 }
 
 function pickBestReviews(reviews: Review[]) {
+  // rating >= 1 (좋아요 최소 1개 기준), 이미지 있는 것 우선, 최대 3개
   return [...reviews]
+    .filter((r) => (r.rating ?? 0) >= 1)
     .sort(
       (a, b) =>
         (b.rating ?? 0) * 20 +
@@ -72,21 +74,23 @@ function sortReviews(reviews: Review[], mode: SortMode) {
   );
 }
 
-async function filesToDataUrls(files: FileList) {
-  const pickedFiles = Array.from(files).slice(0, 5);
-  const results = await Promise.all(
-    pickedFiles.map(
-      (file) =>
-        new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result ?? ""));
-          reader.onerror = () =>
-            reject(new Error("이미지를 읽을 수 없습니다."));
-          reader.readAsDataURL(file);
-        }),
-    ),
-  );
-  return results.filter(Boolean);
+async function uploadFiles(files: FileList, existingCount: number): Promise<string[]> {
+  const toUpload = Array.from(files).slice(0, 5 - existingCount);
+  const urls: string[] = [];
+  for (const file of toUpload) {
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await fetch('/api/upload?folder=spot-reviews', { method: 'POST', body: fd });
+      if (res.ok) {
+        const { url } = await res.json();
+        urls.push(url);
+      }
+    } catch {
+      // 개별 실패 무시
+    }
+  }
+  return urls;
 }
 
 function SignalBadge({
@@ -129,6 +133,7 @@ export default function ReviewSection({
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const session = getOrCreateSession();
@@ -168,16 +173,18 @@ export default function ReviewSection({
     }
   };
 
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const handleImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files?.length) return;
+    if (!files?.length || imageUrls.length >= 5) return;
+    setUploadingImage(true);
     try {
-      const nextUrls = await filesToDataUrls(files);
-      setImageUrls((prev) => [...prev, ...nextUrls].slice(0, 5));
-    } catch (error) {
-      console.error(error);
-      alert("이미지를 불러오지 못했습니다.");
+      const uploaded = await uploadFiles(files, imageUrls.length);
+      if (uploaded.length === 0) { alert("이미지 업로드에 실패했습니다."); return; }
+      setImageUrls((prev) => [...prev, ...uploaded].slice(0, 5));
     } finally {
+      setUploadingImage(false);
       event.target.value = "";
     }
   };
@@ -278,6 +285,17 @@ export default function ReviewSection({
       : "border-[#e5e7eb] bg-white";
 
   return (
+    <>
+    {lightboxUrl && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+        onClick={() => setLightboxUrl(null)}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={lightboxUrl} alt="원본 이미지" className="max-h-full max-w-full rounded-xl object-contain" onClick={e => e.stopPropagation()} />
+        <button onClick={() => setLightboxUrl(null)} className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white text-lg">✕</button>
+      </div>
+    )}
     <div
       className={`min-h-[460px] overflow-hidden rounded-[28px] border ${panelTone}`}
     >
@@ -428,16 +446,16 @@ export default function ReviewSection({
             )}
 
             <div className="mt-3 flex items-center justify-between gap-2">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#e5e7eb] bg-white/80 px-4 py-2 text-xs font-semibold text-[#374151] hover:bg-white/100">
+              <label className={`inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#e5e7eb] bg-white/80 px-4 py-2 text-xs font-semibold text-[#374151] hover:bg-white/100 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
                 <input
                   type="file"
                   accept="image/*"
                   multiple
                   className="hidden"
                   onChange={handleImageChange}
+                  disabled={uploadingImage || imageUrls.length >= 5}
                 />
-                이미지 추가하기{" "}
-                {imageUrls.length > 0 ? `(${imageUrls.length}/5)` : ""}
+                {uploadingImage ? '업로드 중...' : `이미지 추가하기${imageUrls.length > 0 ? ` (${imageUrls.length}/5)` : ''}`}
               </label>
               <span className="text-xs text-[#9ca3af]">
                 익명 작성 · 비밀번호로 삭제
@@ -517,8 +535,9 @@ export default function ReviewSection({
                   {!!review.image_urls?.length && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {review.image_urls.map((imageUrl, imageIndex) => (
-                        <div
+                        <button
                           key={`${review.id}-best-${imageIndex}`}
+                          onClick={() => setLightboxUrl(imageUrl)}
                           className="relative h-24 w-24 overflow-hidden rounded-2xl border border-white/60 bg-white/70"
                         >
                           <Image
@@ -528,7 +547,7 @@ export default function ReviewSection({
                             className="object-cover"
                             unoptimized
                           />
-                        </div>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -603,8 +622,9 @@ export default function ReviewSection({
               {!!review.image_urls?.length && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {review.image_urls.map((imageUrl, index) => (
-                    <div
+                    <button
                       key={`${review.id}-${index}`}
+                      onClick={() => setLightboxUrl(imageUrl)}
                       className="relative h-28 w-28 overflow-hidden rounded-2xl border border-white/55 bg-white/70"
                     >
                       <Image
@@ -614,7 +634,7 @@ export default function ReviewSection({
                         className="object-cover"
                         unoptimized
                       />
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -641,5 +661,6 @@ export default function ReviewSection({
         </div>
       )}
     </div>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { CATEGORY_LABELS, BLOOM_STATUS_LABELS, FLOWER_TYPE_LABELS } from '@/types';
 import VoteButtons from '@/components/gym/VoteButtons';
 import ReviewSection from '@/components/gym/ReviewSection';
+import SpotImageGallery from '@/components/gym/SpotImageGallery';
 import { getSpotDetailById } from '@/lib/spots';
 import { getAccentStyle } from '@/lib/flowerTheme';
 import { getSpotCoverImage } from '@/lib/spotCovers';
@@ -62,29 +63,11 @@ export default async function SpotDetailPage({ params }: Props) {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-5 space-y-4">
-        {coverImage && (
-          <div className="overflow-hidden rounded-2xl border border-[#ffd6dc] bg-white">
-            <img
-              src={coverImage}
-              alt={`${spot.name} 대표 이미지`}
-              className="h-52 w-full object-cover"
-            />
-          </div>
-        )}
-
-        {representativeImages.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {representativeImages.map((url, i) => (
-              <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                <img
-                  src={url}
-                  alt={`${spot.name} 사진 ${i + 1}`}
-                  className="h-44 w-44 rounded-2xl object-cover shadow-sm"
-                />
-              </a>
-            ))}
-          </div>
-        )}
+        <SpotImageGallery
+          coverImage={coverImage}
+          representativeImages={representativeImages}
+          spotName={spot.name}
+        />
 
         <div className="bg-[#fff5f7] rounded-xl p-5 border border-[#ffd6dc]">
           <div className="flex items-start justify-between gap-3 mb-3">
