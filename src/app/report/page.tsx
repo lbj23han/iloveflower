@@ -111,6 +111,9 @@ function ReportForm() {
         if (res.ok) {
           const { url } = await res.json();
           uploaded.push(url);
+        } else {
+          const body = await res.json().catch(() => ({}));
+          alert(body.error || "이미지 업로드에 실패했습니다.");
         }
       }
       setImageUrls((prev) => [...prev, ...uploaded].slice(0, 5));

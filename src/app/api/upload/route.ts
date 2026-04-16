@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
     .upload(path, arrayBuffer, { contentType: file.type, upsert: false });
 
   if (error) {
+    console.error('[upload] supabase storage error:', error.message);
     return NextResponse.json({ error: '업로드에 실패했습니다.' }, { status: 500 });
   }
 

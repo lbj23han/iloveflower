@@ -1460,33 +1460,76 @@ export default function MapPage() {
           style={{ top: overlayTop }}
         >
           <GlassPanel className="h-full">
-            <div className="flex items-center justify-between border-b border-[#ffd6dc]/40 px-4 py-3">
-              <span className="text-sm font-semibold text-[#111827]">
-                {listTitle}
-              </span>
-              <button
-                onClick={() => setMobileListOpen(false)}
-                className="text-xs text-[#6b7280]"
-              >
-                닫기
-              </button>
+            <div className="flex items-center gap-1 border-b border-[#ffd6dc]/40 px-3 py-2 shrink-0">
+              {(["ranking", "list", "festivals", "favorites"] as const).map((mode) => {
+                const label = mode === "ranking" ? "랭킹" : mode === "list" ? "목록" : mode === "festivals" ? "축제" : "찜";
+                const active = leftPanelMode === mode;
+                return (
+                  <button
+                    key={mode}
+                    onClick={() => setLeftPanelMode(mode)}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                      active
+                        ? mode === "festivals"
+                          ? "bg-[#c2410c] text-white"
+                          : "bg-[#111827] text-white"
+                        : "text-[#6b7280]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+              <div className="flex-1" />
+              <button onClick={() => setMobileListOpen(false)} className="text-xs text-[#6b7280]">닫기</button>
             </div>
-            <ListContent
-              gyms={visibleGyms}
-              loading={loading}
-              onSelect={handleGymSelect}
-              selectedId={selectedGym?.id}
-              favoriteIds={favoriteIds}
-              onToggleFavorite={handleToggleFavorite}
-              showFestivals
-              onFestivalSpotSelect={handleFestivalSpotSelect}
-            />
+            {leftPanelMode === "ranking" && (
+              <RankingContent
+                gyms={visibleGyms}
+                onSelect={handleGymSelect}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={(g) => handleToggleFavorite(g)}
+              />
+            )}
+            {leftPanelMode === "list" && (
+              <ListContent
+                gyms={visibleGyms}
+                loading={loading}
+                onSelect={handleGymSelect}
+                selectedId={selectedGym?.id}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={handleToggleFavorite}
+                showFestivals
+                onFestivalSpotSelect={handleFestivalSpotSelect}
+              />
+            )}
+            {leftPanelMode === "festivals" && (
+              <FestivalTabContent onSpotSelect={handleFestivalSpotSelect} />
+            )}
+            {leftPanelMode === "favorites" && (
+              <ListContent
+                gyms={favoriteGyms}
+                loading={false}
+                onSelect={handleGymSelect}
+                selectedId={selectedGym?.id}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={handleToggleFavorite}
+                emptyMessage="아직 찜한 명소가 없어요"
+              />
+            )}
           </GlassPanel>
         </div>
       )}
 
       <button
-        onClick={() => setMobileListOpen((prev) => !prev)}
+        onClick={() => {
+          if (mobileListOpen) {
+            setMobileListOpen(false);
+          } else {
+            setMobileListOpen(true);
+            if (leftPanelMode === "closed" || leftPanelMode === "detail") setLeftPanelMode("ranking");
+          }
+        }}
         className="absolute bottom-[calc(86px+env(safe-area-inset-bottom))] left-3 z-20 rounded-full border border-[#ffd6dc]/50 bg-[#fffafb]/74 px-4 py-2 text-sm font-semibold text-[#111827] shadow-[0_14px_36px_rgba(15,23,42,0.14)] backdrop-blur-xl lg:hidden"
       >
         {mobileListOpen ? "지도" : "목록"}
