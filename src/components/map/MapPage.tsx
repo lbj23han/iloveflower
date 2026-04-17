@@ -105,8 +105,10 @@ const MOBILE_FILTER_BUTTON_TOP = "calc(152px - 3vh)";
 const MOBILE_OVERLAY_TOP = "calc(160px + 2vh)";
 const MOBILE_SIDE_INSET = "12px";
 
-function timeAgo(d: string) {
+function timeAgo(d?: string | null) {
+  if (!d) return "며칠 전";
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (isNaN(m) || m < 0) return "며칠 전";
   if (m < 1) return "방금";
   if (m < 60) return `${m}분 전`;
   const h = Math.floor(m / 60);
@@ -1499,8 +1501,6 @@ export default function MapPage() {
                 selectedId={selectedGym?.id}
                 favoriteIds={favoriteIds}
                 onToggleFavorite={handleToggleFavorite}
-                showFestivals
-                onFestivalSpotSelect={handleFestivalSpotSelect}
               />
             )}
             {leftPanelMode === "festivals" && (
