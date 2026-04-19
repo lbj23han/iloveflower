@@ -1,3 +1,4 @@
+export const dynamic = 'force-static';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSpotDetailById } from '@/lib/spots';
 
@@ -15,3 +16,4 @@ export async function GET(_: NextRequest, { params }: Props) {
 
   return NextResponse.json(spot);
 }
+export async function generateStaticParams() { return []; }

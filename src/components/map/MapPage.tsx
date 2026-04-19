@@ -43,7 +43,7 @@ function MarqueeTicker() {
             {tickerItems.map((item) => (
               <span
                 key={`${groupIndex}-${item}`}
-                className="whitespace-nowrap text-[11px] font-medium text-[#4b5563]"
+                className="whitespace-nowrap text-xs font-medium leading-relaxed text-[#4b5563]"
               >
                 {item}
               </span>
@@ -55,19 +55,10 @@ function MarqueeTicker() {
   );
 }
 
-
-function getCurrentSeason(): FilterState["season"] {
-  const month = new Date().getMonth() + 1;
-  if (month >= 3 && month <= 5) return "spring";
-  if (month >= 6 && month <= 8) return "summer";
-  if (month >= 9 && month <= 11) return "autumn";
-  return "winter";
-}
-
 const DEFAULT_FILTERS: FilterState = {
   flower_type: "all",
   bloom_status: "all",
-  season: getCurrentSeason(),
+  season: "all",
   peak_month: "all",
   festival: "all",
   has_night_light: false,
@@ -147,8 +138,8 @@ function FavoriteToggleButton({
         event.stopPropagation();
         onClick();
       }}
-      className={`flex items-center justify-center rounded-full transition-all ${
-        small ? "h-8 w-8 text-sm" : "h-10 w-10 text-base"
+      className={`flex select-none items-center justify-center rounded-full transition-transform active:scale-[0.98] ${
+        small ? "h-10 w-10 text-sm" : "h-10 w-10 text-base"
       } ${
         active
           ? "bg-[#fff1f4] text-[#ff4d6d] shadow-[0_8px_18px_rgba(255,77,109,0.18)]"
@@ -171,7 +162,7 @@ function BadgeChipsCompact({ gym }: { gym: FlowerSpotMapItem }) {
       {gym.flower_types.slice(0, 2).map((key) => (
         <span
           key={key}
-          className="rounded-full border border-[#ffc9df] bg-[#fff1f6] px-2 py-0.5 text-[10px] font-semibold text-[#d63384]"
+          className="rounded-full border border-[#ffc9df] bg-[#fff1f6] px-2.5 py-1 text-xs font-semibold text-[#d63384]"
         >
           {FLOWER_TYPE_LABELS[key as keyof typeof FLOWER_TYPE_LABELS] ?? key}
         </span>
@@ -205,7 +196,8 @@ function RankingContent({
   return (
     <div className="flex-1 overflow-y-auto py-1 px-1">
       {top.length === 0 ? (
-        <div className="py-8 text-center text-[11px] text-[#9ca3af]">
+        <div className="py-8 text-center text-sm leading-relaxed text-[#9ca3af]">
+          <div className="mb-2 text-3xl">🌸</div>
           이 지역 데이터가 없습니다
         </div>
       ) : (
@@ -216,16 +208,16 @@ function RankingContent({
             tabIndex={0}
             onClick={() => onSelect(gym)}
             onKeyDown={(event) => handleKeyDown(event, gym)}
-            className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-[#fffafb]/60 text-left rounded-2xl transition-colors"
+            className="w-full select-none flex items-center gap-2 px-3 py-2.5 active:scale-[0.99] text-left rounded-2xl transition-colors"
           >
             <span className="text-xs font-bold text-[#9ca3af] w-5 shrink-0">
               #{i + 1}
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold text-[#111827] truncate">
+              <div className="text-sm font-semibold text-[#111827] truncate">
                 {gym.name}
               </div>
-              <div className="text-[10px] text-[#9ca3af] truncate">
+              <div className="text-sm text-[#9ca3af] truncate">
                 {gym.address?.slice(0, 14)}
               </div>
               <BadgeChipsCompact gym={gym} />
@@ -258,10 +250,11 @@ type FestivalItem = {
 function useFestivals() {
   const [festivals, setFestivals] = useState<FestivalItem[]>([]);
   useEffect(() => {
-    fetch('/api/festivals')
-      .then((r) => r.ok ? r.json() : [])
-      .then(setFestivals)
-      .catch(() => {});
+    if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
+      import('@/lib/clientApi').then(({ getFestivalsClient }) => getFestivalsClient()).then(setFestivals as (v: unknown) => void).catch(() => {});
+    } else {
+      fetch('/api/festivals').then((r) => r.ok ? r.json() : []).then(setFestivals).catch(() => {});
+    }
   }, []);
   return festivals;
 }
@@ -295,7 +288,7 @@ function FestivalSection({
           <button
             key={f.id}
             onClick={() => f.flower_spots?.id && onSpotSelect(f.flower_spots.id)}
-            className="w-full flex items-start gap-2 rounded-2xl px-3 py-2.5 text-left hover:bg-[#fff7ed]/70 transition-colors"
+            className="w-full flex items-start gap-2 rounded-2xl px-3 py-2.5 text-left active:scale-[0.99] transition-colors"
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -345,7 +338,7 @@ function FestivalTabContent({ onSpotSelect }: { onSpotSelect: (id: string) => vo
     <button
       key={f.id}
       onClick={() => f.flower_spots?.id && onSpotSelect(f.flower_spots.id)}
-      className="w-full flex items-start gap-2 rounded-2xl px-3 py-2.5 text-left hover:bg-[#fff7ed]/70 transition-colors"
+      className="w-full flex items-start gap-2 rounded-2xl px-3 py-2.5 text-left active:scale-[0.99] transition-colors"
     >
       <div className="flex-1 min-w-0">
         <div className="text-xs font-semibold text-[#111827] truncate">{f.name}</div>
@@ -455,7 +448,7 @@ function ListContent({
           tabIndex={0}
           onClick={() => onSelect(gym)}
           onKeyDown={(event) => handleKeyDown(event, gym)}
-          className={`w-full flex items-center gap-2 rounded-2xl border px-3 py-2.5 text-left transition-colors hover:bg-[#fffafb]/60 ${
+          className={`w-full flex items-center gap-2 rounded-2xl border px-3 py-2.5 text-left transition-colors active:scale-[0.99] ${
             selectedId === gym.id
               ? gym.photo_spot
                 ? "border-[#92e0b6] bg-[#f3fff8]"
@@ -526,7 +519,7 @@ function JudgeContent({
           <button
             key={gym.id}
             onClick={() => onSelect(gym)}
-            className="w-full flex items-start gap-2 px-3 py-2.5 hover:bg-[#fffafb]/60 text-left rounded-2xl transition-colors"
+            className="w-full flex items-start gap-2 px-3 py-2.5 active:scale-[0.99] text-left rounded-2xl transition-colors"
           >
             <span className="text-[10px] font-bold text-[#9ca3af] w-5 shrink-0 pt-0.5">
               #{i + 1}
@@ -600,10 +593,6 @@ export default function MapPage() {
   const [locating, setLocating] = useState(false);
   const [favoriteGyms, setFavoriteGyms] = useState<FlowerSpotMapItem[]>([]);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
-  const [supportOpen, setSupportOpen] = useState(false);
-  const [copyMessage, setCopyMessage] = useState<"account" | "email" | null>(
-    null,
-  );
   const boundsRef = useRef<ViewportBounds | null>(null);
   const fetchTimerRef = useRef<number | null>(null);
   const lastFetchKeyRef = useRef<string | null>(null);
@@ -737,9 +726,16 @@ export default function MapPage() {
       if (found) { handleGymSelect(found); return; }
       // Otherwise fetch minimal info to navigate
       try {
-        const res = await fetch(`/api/gyms/${spotId}`);
-        if (res.ok) {
-          const spot: FlowerSpotMapItem = await res.json();
+        let spot: FlowerSpotMapItem | null = null;
+        if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
+          const { getSpotDetailByIdClient } = await import('@/lib/clientApi');
+          const detail = await getSpotDetailByIdClient(spotId);
+          if (detail) spot = { id: detail.id, name: detail.name, address: detail.address, lat: detail.lat, lng: detail.lng, category: detail.category, flower_types: detail.flower_types, bloom_status: detail.bloom_status ? (detail.bloom_status as import('@/types').BloomStatus).status : null, bloom_pct: null, has_night_light: detail.has_night_light, has_parking: detail.has_parking, pet_friendly: detail.pet_friendly, photo_spot: detail.photo_spot, entry_fee: detail.entry_fee, vote_up: detail.vote_up, vote_down: detail.vote_down, festival_count: 0, has_active_festival: false, cover_image_url: null };
+        } else {
+          const res = await fetch(`/api/gyms/${spotId}`);
+          if (res.ok) spot = await res.json();
+        }
+        if (spot) {
           setSelectedGym(spot);
           setSelectedGymDetail(null);
           if (viewportWidth >= 1024) setLeftPanelMode("detail");
@@ -818,12 +814,16 @@ export default function MapPage() {
     const timer = window.setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const params = new URLSearchParams({ q: trimmed });
-        const res = await fetch(`/api/gyms?${params}`, {
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error("Failed to search gyms");
-        const data: { spots: FlowerSpotMapItem[] } = await res.json();
+        let data: { spots: FlowerSpotMapItem[] };
+        if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
+          const { searchSpotsByNameClient } = await import('@/lib/clientApi');
+          data = await searchSpotsByNameClient(trimmed) as { spots: FlowerSpotMapItem[] };
+        } else {
+          const params = new URLSearchParams({ q: trimmed });
+          const res = await fetch(`/api/gyms?${params}`, { signal: controller.signal });
+          if (!res.ok) throw new Error("Failed to search gyms");
+          data = await res.json();
+        }
         setSearchResults(data.spots ?? []);
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
@@ -895,19 +895,6 @@ export default function MapPage() {
     [],
   );
 
-  const handleCopySupport = useCallback(
-    async (type: "account" | "email", value: string) => {
-      try {
-        await navigator.clipboard.writeText(value);
-        setCopyMessage(type);
-        window.setTimeout(() => setCopyMessage(null), 1800);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [],
-  );
-
   useEffect(() => {
     if (!selectedGym) {
       setSelectedGymDetail(null);
@@ -918,38 +905,37 @@ export default function MapPage() {
     const controller = new AbortController();
     const fetchGymDetail = async () => {
       try {
-        const res = await fetch(`/api/gyms/${selectedGym.id}`, {
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error("Failed to fetch gym detail");
-        const data: FlowerSpotWithDetails = await res.json();
-        setSelectedGymDetail(data);
-      } catch (error) {
-        if ((error as Error).name !== "AbortError") {
-          console.error(error);
+        let data: FlowerSpotWithDetails | null = null;
+        if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
+          const { getSpotDetailByIdClient } = await import('@/lib/clientApi');
+          data = await getSpotDetailByIdClient(selectedGym.id);
+        } else {
+          const res = await fetch(`/api/gyms/${selectedGym.id}`, { signal: controller.signal });
+          if (!res.ok) throw new Error("Failed to fetch gym detail");
+          data = await res.json();
         }
+        if (data) setSelectedGymDetail(data);
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") console.error(error);
       }
     };
 
     const fetchReviews = async () => {
       try {
-        const params = new URLSearchParams({
-          spot_id: selectedGym.id,
-          limit: "12",
-        });
-        const res = await fetch(`/api/reviews?${params}`, {
-          signal: controller.signal,
-        });
-        if (!res.ok) {
-          setSelectedGymReviews([]);
-          return;
+        let reviews: SpotReview[] = [];
+        if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
+          const { getReviewsClient } = await import('@/lib/clientApi');
+          reviews = await getReviewsClient(selectedGym.id, 12, 0);
+        } else {
+          const params = new URLSearchParams({ spot_id: selectedGym.id, limit: "12" });
+          const res = await fetch(`/api/reviews?${params}`, { signal: controller.signal });
+          if (!res.ok) { setSelectedGymReviews([]); return; }
+          const data: SpotReview[] | { error?: string } = await res.json();
+          reviews = Array.isArray(data) ? data : [];
         }
-        const data: SpotReview[] | { error?: string } = await res.json();
-        setSelectedGymReviews(Array.isArray(data) ? data : []);
+        setSelectedGymReviews(reviews);
       } catch (error) {
-        if ((error as Error).name !== "AbortError") {
-          setSelectedGymReviews([]);
-        }
+        if ((error as Error).name !== "AbortError") setSelectedGymReviews([]);
       }
     };
 
@@ -1035,7 +1021,7 @@ export default function MapPage() {
           >
             이 지역을 기반으로 검색하기
           </button>
-          <div className="mt-2 text-center text-xs text-white [text-shadow:0_1px_8px_rgba(15,23,42,0.35)]">
+          <div className="mt-2 text-center text-sm text-white [text-shadow:0_1px_8px_rgba(15,23,42,0.35)]">
             아직 보이는 명소가 없다면 이 지역 기준으로 다시 찾아보세요
           </div>
         </div>
@@ -1054,9 +1040,9 @@ export default function MapPage() {
             />
             <Link
               href="/report"
-              className="rounded-full bg-[#111827] px-4 py-2 text-xs font-semibold text-white shadow-sm"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-full border border-[#ffd6dc] bg-white/88 px-5 py-2.5 text-sm font-semibold text-[#111827] shadow-[0_10px_28px_rgba(15,23,42,0.10)] transition-transform active:scale-[0.98]"
             >
-              제보하기
+              장소 제보
             </Link>
           </div>
 
@@ -1068,18 +1054,12 @@ export default function MapPage() {
               iconWidth={28}
               iconHeight={40}
             />
-            <div className="flex shrink-0 items-center gap-1.5">
-              <button
-                onClick={() => setSupportOpen(true)}
-                className="rounded-full border border-[#ffd6dc] bg-[#fff1f4]/92 px-3 py-1.5 text-xs font-semibold text-[#c0394f]"
-              >
-                후원
-              </button>
+            <div className="flex shrink-0 items-center">
               <Link
                 href="/report"
-                className="rounded-full bg-[#111827] px-3 py-1.5 text-xs font-semibold text-white shadow-sm"
+                className="inline-flex min-h-[42px] items-center justify-center rounded-full border border-[#ffd6dc] bg-white/88 px-4 py-2 text-sm font-semibold text-[#111827] shadow-[0_10px_24px_rgba(15,23,42,0.10)] transition-transform active:scale-[0.98]"
               >
-                제보하기
+                장소 제보
               </Link>
             </div>
           </div>
@@ -1095,13 +1075,6 @@ export default function MapPage() {
         style={{ top: controlTop, right: sideInset }}
       >
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setSupportOpen(true)}
-            className="hidden md:flex h-[46px] items-center rounded-full border border-[#ffd6dc] bg-[#fff1f4]/92 px-4 text-xs font-semibold text-[#c0394f] shadow-[0_12px_30px_rgba(255,107,129,0.18)] backdrop-blur-xl transition-all hover:bg-[#ffe4ea]"
-          >
-            후원
-          </button>
-
           <button
             onClick={() => setSearchOpen((prev) => !prev)}
             className={`flex h-[46px] w-[46px] items-center justify-center rounded-full border shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all ${
@@ -1158,7 +1131,7 @@ export default function MapPage() {
                 ? "기본 위치 또는 현재 위치로 이동"
                 : "내 위치로 이동"
             }
-            className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-[#ffd6dc]/50 bg-[#fffafb]/76 text-[12px] font-bold tracking-[0.02em] text-[#111827] shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all hover:bg-[#fffafb]/86 disabled:cursor-default disabled:opacity-75"
+            className="flex h-[46px] w-[46px] select-none items-center justify-center rounded-full border border-[#ffd6dc]/50 bg-[#fffafb]/76 text-[12px] font-bold tracking-[0.02em] text-[#111827] shadow-[0_14px_36px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-transform active:scale-[0.98] disabled:cursor-default disabled:opacity-75"
             aria-label={
               geolocationLoading || locating
                 ? "현재 위치 찾는 중"
@@ -1199,7 +1172,7 @@ export default function MapPage() {
                 <div className="text-sm font-bold text-[#111827]">
                   명소 검색
                 </div>
-                <div className="text-[11px] text-[#6b7280]">
+                <div className="text-sm leading-relaxed text-[#6b7280]">
                   명소 이름으로 바로 찾아 이동할 수 있어요
                 </div>
               </div>
@@ -1209,7 +1182,7 @@ export default function MapPage() {
                   setSearchQuery("");
                   setSearchResults([]);
                 }}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-xs text-[#9ca3af] hover:bg-black/5"
+                className="flex h-10 w-10 select-none items-center justify-center rounded-full text-sm text-[#9ca3af] active:scale-[0.98]"
               >
                 ✕
               </button>
@@ -1219,7 +1192,7 @@ export default function MapPage() {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="예: 여의도 벚꽃길, 경복궁, 남산공원"
-              className="w-full rounded-2xl border border-[#ffd6dc]/55 bg-[#fffafb]/82 px-4 py-3 text-sm text-[#111827] focus:border-[#111827] focus:outline-none"
+              className="min-h-[48px] w-full rounded-2xl border border-[#ffd6dc]/55 bg-[#fffafb]/82 px-4 py-3 text-base text-[#111827] focus:border-[#111827] focus:outline-none"
             />
 
             <div className="mt-3 max-h-[320px] overflow-y-auto space-y-2">
@@ -1243,12 +1216,12 @@ export default function MapPage() {
                       handleGymSelect(gym);
                       setSearchOpen(false);
                     }}
-                    className="w-full rounded-2xl border border-[#ffd6dc]/50 bg-[#fffafb]/72 px-4 py-3 text-left transition-colors hover:bg-[#fffafb]/86"
+                    className="w-full select-none rounded-2xl border border-[#ffd6dc]/50 bg-[#fffafb]/72 px-4 py-3 text-left transition-transform active:scale-[0.98]"
                   >
                     <div className="text-sm font-semibold text-[#111827]">
                       {gym.name}
                     </div>
-                    <div className="mt-1 truncate text-xs text-[#6b7280]">
+                    <div className="mt-1 truncate text-sm text-[#6b7280]">
                       {gym.address}
                     </div>
                   </button>
@@ -1267,7 +1240,7 @@ export default function MapPage() {
                 <div className="text-sm font-bold text-[#111827]">
                   지금 보고 싶은 조건
                 </div>
-                <div className="text-[11px] text-[#6b7280]">
+                <div className="text-sm leading-relaxed text-[#6b7280]">
                   탐색, 시기, 편의 탭으로 나눠서 빠르게 골라보세요
                 </div>
               </div>
@@ -1352,7 +1325,7 @@ export default function MapPage() {
               <div className="flex-1" />
               <button
                 onClick={() => setLeftPanelMode("closed")}
-                className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-[#9ca3af] hover:bg-black/5"
+                className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-[#9ca3af] active:scale-[0.98]"
               >
                 ✕
               </button>
@@ -1439,7 +1412,7 @@ export default function MapPage() {
               </div>
               <button
                 onClick={() => setRightJudgeOpen(false)}
-                className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-[#9ca3af] hover:bg-black/5"
+                className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-[#9ca3af] active:scale-[0.98]"
               >
                 ✕
               </button>
@@ -1567,60 +1540,6 @@ export default function MapPage() {
         </div>
       )}
 
-      {supportOpen && (
-        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-[rgba(15,23,42,0.20)] px-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-md rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/90 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <div className="text-lg font-extrabold tracking-tight text-[#111827]">
-                  후원하기
-                </div>
-                <div className="mt-1 text-xs text-[#6b7280]">
-                  커피 한 잔 값의 후원이 서비스 유지에 큰 힘이 됩니다
-                </div>
-              </div>
-              <button
-                onClick={() => setSupportOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fffafb]/76 text-sm text-[#6b7280] shadow-sm"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div className="rounded-[22px] border border-[#ffd6dc]/55 bg-[#fffafb]/80 px-4 py-3">
-                <div className="text-xs font-bold text-[#111827]">계좌이체</div>
-                <div className="mt-1 text-sm font-semibold text-[#374151]">
-                  신한은행 110366096624 이중한
-                </div>
-                <button
-                  onClick={() =>
-                    handleCopySupport("account", "신한은행 110366096624 이중한")
-                  }
-                  className="mt-3 rounded-full border border-[#e5e7eb] bg-white px-3 py-1.5 text-xs font-semibold text-[#374151]"
-                >
-                  {copyMessage === "account" ? "복사됨" : "계좌 복사"}
-                </button>
-              </div>
-
-              <div className="rounded-[22px] border border-[#ffd6dc]/55 bg-[#fffafb]/80 px-4 py-3">
-                <div className="text-xs font-bold text-[#111827]">문의</div>
-                <div className="mt-1 text-sm font-semibold text-[#374151]">
-                  ljhan0215@gmail.com
-                </div>
-                <button
-                  onClick={() =>
-                    handleCopySupport("email", "ljhan0215@gmail.com")
-                  }
-                  className="mt-3 rounded-full border border-[#e5e7eb] bg-white px-3 py-1.5 text-xs font-semibold text-[#374151]"
-                >
-                  {copyMessage === "email" ? "복사됨" : "이메일 복사"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

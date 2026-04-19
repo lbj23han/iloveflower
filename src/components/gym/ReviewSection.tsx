@@ -78,13 +78,16 @@ async function uploadFiles(files: FileList, existingCount: number): Promise<stri
   const toUpload = Array.from(files).slice(0, 5 - existingCount);
   const urls: string[] = [];
   for (const file of toUpload) {
-    const fd = new FormData();
-    fd.append('file', file);
     try {
-      const res = await fetch('/api/upload?folder=spot-reviews', { method: 'POST', body: fd });
-      if (res.ok) {
-        const { url } = await res.json();
-        urls.push(url);
+      if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
+        const { uploadImageClient } = await import('@/lib/clientApi');
+        const { url } = await uploadImageClient(file, 'spot-reviews');
+        if (url) urls.push(url);
+      } else {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch('/api/upload?folder=spot-reviews', { method: 'POST', body: fd });
+        if (res.ok) { const { url } = await res.json(); urls.push(url); }
       }
     } catch {
       // 개별 실패 무시
@@ -161,9 +164,15 @@ export default function ReviewSection({
         offset: String(reviews.length),
         limit: "12",
       });
-      const res = await fetch(`/api/reviews?${params}`);
-      if (!res.ok) throw new Error("Failed to fetch reviews");
-      const nextReviews: Review[] = await res.json();
+      let nextReviews: Review[];
+      if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
+        const { getReviewsClient } = await import('@/lib/clientApi');
+        nextReviews = await getReviewsClient(spotId, 12, reviews.length) as Review[];
+      } else {
+        const res = await fetch(`/api/reviews?${params}`);
+        if (!res.ok) throw new Error("Failed to fetch reviews");
+        nextReviews = await res.json();
+      }
       setReviews((prev) => [...prev, ...nextReviews]);
       setHasMore(nextReviews.length >= 12);
     } catch (error) {
@@ -211,41 +220,41 @@ export default function ReviewSection({
       : null;
 
     try {
-      const res = await fetch("/api/reviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          spot_id: spotId,
-          content: text.trim(),
-          rating: overallRating,
+      let newReview: Review | null = null;
+      let errorMsg = '';
+      if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
+        const { createReviewClient } = await import('@/lib/clientApi');
+        const result = await createReviewClient({
+          spot_id: spotId, content: text.trim(), rating: overallRating,
           signal_crowded: signalRatings.signal_crowded >= 3,
           signal_photo_spot: signalRatings.signal_photo_spot >= 3,
           signal_accessible: signalRatings.signal_accessible >= 3,
-          image_urls: imageUrls,
-          password: password.trim(),
-          anon_session_id: sessionId,
-          device_id: deviceId,
-          nickname: savedNickname,
-        }),
-      });
-
-      if (res.ok) {
-        const newReview: Review = await res.json();
-        setReviews((prev) => [newReview, ...prev]);
-        setHasMore(true);
-        setText("");
-        setSignalRatings({
-          signal_crowded: 0,
-          signal_photo_spot: 0,
-          signal_accessible: 0,
-          signal_parking_ok: 0,
+          image_urls: imageUrls, anon_session_id: sessionId, device_id: deviceId, nickname: savedNickname,
         });
-        setImageUrls([]);
-        setPassword("");
-        setComposerOpen(false);
+        newReview = result.data; errorMsg = result.error ?? '';
       } else {
-        const { error } = await res.json();
-        alert(error || "제출에 실패했습니다.");
+        const res = await fetch("/api/reviews", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            spot_id: spotId, content: text.trim(), rating: overallRating,
+            signal_crowded: signalRatings.signal_crowded >= 3,
+            signal_photo_spot: signalRatings.signal_photo_spot >= 3,
+            signal_accessible: signalRatings.signal_accessible >= 3,
+            image_urls: imageUrls, password: password.trim(),
+            anon_session_id: sessionId, device_id: deviceId, nickname: savedNickname,
+          }),
+        });
+        if (res.ok) { newReview = await res.json(); }
+        else { const j = await res.json(); errorMsg = j.error || "제출에 실패했습니다."; }
+      }
+
+      if (newReview) {
+        setReviews((prev) => [newReview as Review, ...prev]);
+        setHasMore(true); setText("");
+        setSignalRatings({ signal_crowded: 0, signal_photo_spot: 0, signal_accessible: 0, signal_parking_ok: 0 });
+        setImageUrls([]); setPassword(""); setComposerOpen(false);
+      } else {
+        alert(errorMsg || "제출에 실패했습니다.");
       }
     } finally {
       setSubmitting(false);
@@ -312,13 +321,13 @@ export default function ReviewSection({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSortMode("newest")}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${sortMode === "newest" ? "bg-[#111827] text-white" : "bg-white/70 text-[#6b7280]"}`}
+              className={`min-h-[40px] select-none rounded-full px-4 py-2 text-sm font-semibold transition-transform active:scale-[0.98] ${sortMode === "newest" ? "bg-[#111827] text-white" : "bg-white/70 text-[#6b7280]"}`}
             >
               최신순
             </button>
             <button
               onClick={() => setSortMode("best")}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${sortMode === "best" ? "bg-[#111827] text-white" : "bg-white/70 text-[#6b7280]"}`}
+              className={`min-h-[40px] select-none rounded-full px-4 py-2 text-sm font-semibold transition-transform active:scale-[0.98] ${sortMode === "best" ? "bg-[#111827] text-white" : "bg-white/70 text-[#6b7280]"}`}
             >
               좋아요순
             </button>
@@ -329,7 +338,7 @@ export default function ReviewSection({
           <button
             type="button"
             onClick={() => setComposerOpen(true)}
-            className="rounded-full border border-[#00C471]/60 bg-[#00C471]/10 px-5 py-2 text-sm font-semibold text-[#00935d] transition-colors hover:bg-[#00C471]/20"
+            className="min-h-[44px] select-none rounded-full border border-[#00C471]/60 bg-[#00C471]/10 px-5 py-2 text-sm font-semibold text-[#00935d] transition-transform active:scale-[0.98]"
           >
             평가하기
           </button>
@@ -342,7 +351,7 @@ export default function ReviewSection({
               <button
                 type="button"
                 onClick={() => setComposerOpen(false)}
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-white/72 text-xs text-[#6b7280]"
+                className="flex h-11 w-11 select-none items-center justify-center rounded-full bg-white/72 text-sm text-[#6b7280] transition-transform active:scale-[0.98]"
               >
                 ✕
               </button>
@@ -355,7 +364,7 @@ export default function ReviewSection({
                   setNicknameState(event.target.value.slice(0, 20))
                 }
                 placeholder="익명 닉네임"
-                className="rounded-2xl border border-[#e5e7eb] bg-white/88 px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#00C471] focus:outline-none"
+                className="min-h-[48px] rounded-2xl border border-[#e5e7eb] bg-white/88 px-4 py-3 text-base font-semibold text-[#111827] focus:border-[#00C471] focus:outline-none"
               />
               <div className="flex gap-2">
                 <button
@@ -373,13 +382,13 @@ export default function ReviewSection({
                     setPassword(event.target.value.slice(0, 20))
                   }
                   placeholder="비밀번호"
-                  className="min-w-0 flex-1 rounded-2xl border border-[#e5e7eb] bg-white/88 px-4 py-3 text-sm font-medium text-[#111827] focus:border-[#00C471] focus:outline-none"
+                  className="min-h-[48px] min-w-0 flex-1 rounded-2xl border border-[#e5e7eb] bg-white/88 px-4 py-3 text-base font-medium text-[#111827] focus:border-[#00C471] focus:outline-none"
                 />
               </div>
               <button
                 onClick={submit}
                 disabled={!text.trim() || !password.trim() || submitting}
-                className="rounded-[24px] bg-[#1f2a3d] px-5 py-3 text-sm font-bold text-white disabled:opacity-50"
+                className="min-h-[52px] rounded-[24px] bg-[#1f2a3d] px-5 py-3 text-base font-bold text-white disabled:opacity-50"
               >
                 {submitting ? "등록 중" : "등록"}
               </button>
@@ -401,7 +410,7 @@ export default function ReviewSection({
                   />
                 </div>
               ))}
-              <p className="text-[11px] text-[#9ca3af]">
+              <p className="text-sm leading-relaxed text-[#9ca3af]">
                 {" "}
                 항목이 배지 근거에 반영돼요
               </p>
@@ -412,7 +421,7 @@ export default function ReviewSection({
               onChange={(event) => setText(event.target.value.slice(0, 300))}
               placeholder="한 줄 후기를 남겨 주세요."
               rows={3}
-              className="mt-3 w-full rounded-[22px] border border-[#e5e7eb] bg-white/88 px-4 py-3 text-sm text-[#374151] focus:border-[#00C471] focus:outline-none"
+              className="mt-3 w-full rounded-[22px] border border-[#e5e7eb] bg-white/88 px-4 py-3 text-base leading-relaxed text-[#374151] focus:border-[#00C471] focus:outline-none"
             />
 
             {imageUrls.length > 0 && (
@@ -436,7 +445,7 @@ export default function ReviewSection({
                           prev.filter((_, i) => i !== index),
                         )
                       }
-                      className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[rgba(15,23,42,0.72)] text-xs text-white"
+                      className="absolute right-1 top-1 flex h-7 w-7 select-none items-center justify-center rounded-full bg-[rgba(15,23,42,0.72)] text-xs text-white"
                     >
                       ✕
                     </button>
@@ -446,7 +455,7 @@ export default function ReviewSection({
             )}
 
             <div className="mt-3 flex items-center justify-between gap-2">
-              <label className={`inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#e5e7eb] bg-white/80 px-4 py-2 text-xs font-semibold text-[#374151] hover:bg-white/100 ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
+              <label className={`inline-flex min-h-[44px] cursor-pointer select-none items-center gap-2 rounded-full border border-[#e5e7eb] bg-white/80 px-4 py-2 text-sm font-semibold text-[#374151] ${uploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
                 <input
                   type="file"
                   accept="image/*"
@@ -457,7 +466,7 @@ export default function ReviewSection({
                 />
                 {uploadingImage ? '업로드 중...' : `이미지 추가하기${imageUrls.length > 0 ? ` (${imageUrls.length}/5)` : ''}`}
               </label>
-              <span className="text-xs text-[#9ca3af]">
+              <span className="text-sm text-[#9ca3af]">
                 익명 작성 · 비밀번호로 삭제
               </span>
             </div>
@@ -473,7 +482,7 @@ export default function ReviewSection({
             <h3 className="text-sm font-semibold text-[#111827]">
               베스트 댓글
             </h3>
-            <span className="text-[11px] text-[#6b7280]">
+            <span className="text-sm text-[#6b7280]">
               길이와 이미지 기준
             </span>
           </div>
@@ -490,16 +499,16 @@ export default function ReviewSection({
                   className="rounded-2xl border border-white/60 bg-white/78 px-3 py-3 shadow-sm"
                 >
                   <div className="mb-2 flex items-center gap-2 flex-wrap">
-                    <span className="rounded-full bg-[#111827] px-2 py-0.5 text-[10px] font-bold text-white">
+                    <span className="rounded-full bg-[#111827] px-3 py-1 text-xs font-bold text-white">
                       BEST {index + 1}
                     </span>
-                    <span className="text-xs font-medium text-[#374151]">
+                    <span className="text-sm font-medium text-[#374151]">
                       {review.nickname}
                     </span>
                     {review.rating ? (
                       <StarRating value={review.rating} readOnly size="sm" />
                     ) : null}
-                    <span className="text-xs text-[#9ca3af]">
+                    <span className="text-sm text-[#9ca3af]">
                       {timeAgo(review.created_at)}
                     </span>
                   </div>
@@ -564,7 +573,7 @@ export default function ReviewSection({
         className={`divide-y ${variant === "overlay" ? "divide-white/30" : "divide-[#f3f4f6]"}`}
       >
         {sortedReviews.length === 0 ? (
-          <div className="px-5 py-6 text-center text-sm text-[#9ca3af]">
+          <div className="px-5 py-6 text-center text-sm leading-relaxed text-[#9ca3af]">
             아직 정보가 부족해요. 여러분의 참여가 필요해요.
           </div>
         ) : (
@@ -572,20 +581,20 @@ export default function ReviewSection({
             <div key={review.id} className="px-5 py-4">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-medium text-[#374151]">
+                  <span className="text-sm font-medium text-[#374151]">
                     {review.nickname}
                   </span>
                   {review.rating ? (
                     <StarRating value={review.rating} readOnly size="sm" />
                   ) : null}
-                  <span className="text-xs text-[#9ca3af]">
+                  <span className="text-sm text-[#9ca3af]">
                     {timeAgo(review.created_at)}
                   </span>
                 </div>
                 <button
                   onClick={() => removeReview(review.id)}
                   disabled={deletingId === review.id}
-                  className="text-xs font-medium text-[#9ca3af] hover:text-[#111827] disabled:opacity-50"
+                  className="min-h-[40px] select-none text-sm font-medium text-[#9ca3af] disabled:opacity-50"
                 >
                   {deletingId === review.id ? "삭제 중..." : "삭제"}
                 </button>
@@ -649,12 +658,12 @@ export default function ReviewSection({
             <button
               onClick={loadMore}
               disabled={loadingMore}
-              className="w-full rounded-2xl border border-white/55 bg-white/72 px-4 py-3 text-sm font-semibold text-[#374151] disabled:opacity-50"
+              className="min-h-[52px] w-full select-none rounded-2xl border border-white/55 bg-white/72 px-4 py-3 text-base font-semibold text-[#374151] disabled:opacity-50"
             >
               {loadingMore ? "불러오는 중..." : "댓글 더 보기"}
             </button>
           ) : (
-            <div className="text-center text-xs text-[#9ca3af]">
+            <div className="text-center text-sm text-[#9ca3af]">
               마지막 댓글까지 확인했어요
             </div>
           )}

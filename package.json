@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:toss": "node scripts/toss-build.mjs",
     "start": "next start",
     "lint": "eslint",
     "seed:curated": "node scripts/seed/seedCuratedSeasonalSpots.cjs",
@@ -32,6 +33,8 @@
     "scores:gyms": "node scripts/scoring/computeGymScores.cjs"
   },
   "dependencies": {
+    "@apps-in-toss/cli": "^2.4.7",
+    "@apps-in-toss/web-framework": "^2.4.7",
     "@supabase/ssr": "^0.10.0",
     "@supabase/supabase-js": "^2.102.1",
     "next": "16.2.3",

@@ -28,20 +28,30 @@ export default function VoteButtons({ spotId, initialUp, initialDown }: Props) {
     const deviceId = await getDeviceId();
 
     try {
-      const res = await fetch('/api/votes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spot_id: spotId, vote_type: type, anon_session_id: sessionId, device_id: deviceId, nickname }),
-      });
+      let ok = false;
+      let errorMsg = '';
+      if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
+        const { voteClient } = await import('@/lib/clientApi');
+        const result = await voteClient({ spot_id: spotId, vote_type: type, anon_session_id: sessionId, device_id: deviceId });
+        ok = result.ok;
+        errorMsg = result.error ?? '';
+      } else {
+        const res = await fetch('/api/votes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ spot_id: spotId, vote_type: type, anon_session_id: sessionId, device_id: deviceId, nickname }),
+        });
+        ok = res.ok;
+        if (!res.ok) { const j = await res.json(); errorMsg = j.error || '투표에 실패했습니다.'; }
+      }
 
-      if (res.ok) {
+      if (ok) {
         if (type === 'up') setUp((v) => v + 1);
         else setDown((v) => v + 1);
         setMyVote(type);
         localStorage.setItem(`vote_${spotId}`, type);
       } else {
-        const { error } = await res.json();
-        alert(error || '투표에 실패했습니다.');
+        alert(errorMsg || '투표에 실패했습니다.');
       }
     } finally {
       setLoading(false);
@@ -51,18 +61,18 @@ export default function VoteButtons({ spotId, initialUp, initialDown }: Props) {
   return (
     <div className="flex items-center gap-2 shrink-0">
       <button onClick={() => vote('up')} disabled={!!myVote || loading}
-        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+        className={`flex min-h-[44px] min-w-[44px] select-none items-center gap-1 px-4 py-2 rounded-full text-sm font-medium border leading-relaxed transition-transform active:scale-[0.98] ${
           myVote === 'up' ? 'bg-[#ff6b81] text-white border-[#ff6b81]' :
           myVote ? 'bg-[#f3f4f6] text-[#9ca3af] border-[#e5e7eb] cursor-not-allowed' :
-          'bg-white text-[#374151] border-[#e5e7eb] hover:border-[#ff6b81]/50 cursor-pointer'
+          'bg-white/80 text-[#374151] border-[#e5e7eb] cursor-pointer'
         }`}>
         👍 {up}
       </button>
       <button onClick={() => vote('down')} disabled={!!myVote || loading}
-        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+        className={`flex min-h-[44px] min-w-[44px] select-none items-center gap-1 px-4 py-2 rounded-full text-sm font-medium border leading-relaxed transition-transform active:scale-[0.98] ${
           myVote === 'down' ? 'bg-[#ef4444] text-white border-[#ef4444]' :
           myVote ? 'bg-[#f3f4f6] text-[#9ca3af] border-[#e5e7eb] cursor-not-allowed' :
-          'bg-white text-[#374151] border-[#e5e7eb] hover:border-[#ef4444]/50 cursor-pointer'
+          'bg-white/80 text-[#374151] border-[#e5e7eb] cursor-pointer'
         }`}>
         👎 {down}
       </button>
