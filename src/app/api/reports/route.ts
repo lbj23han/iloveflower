@@ -2,11 +2,16 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { rateLimit, ipHash } from '@/lib/rateLimit';
+import { corsJson, corsOptions } from '@/lib/apiCors';
+
+export async function OPTIONS(req: NextRequest) {
+  return corsOptions(req);
+}
 
 export async function POST(req: NextRequest) {
   const { ok } = rateLimit(req, 'report', { limit: 5, windowMs: 60 * 60 * 1000 });
   if (!ok) {
-    return NextResponse.json({ error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
+    return corsJson(req, { error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
   }
 
   const body = await req.json();
@@ -27,7 +32,7 @@ export async function POST(req: NextRequest) {
   } = body;
 
   if (!spot_name?.trim() || !anon_session_id) {
-    return NextResponse.json({ error: '장소 이름을 입력해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '장소 이름을 입력해주세요.' }, { status: 400 });
   }
 
   const supabase = await createServiceClient();
@@ -44,7 +49,7 @@ export async function POST(req: NextRequest) {
     .limit(1);
 
   if (existing && existing.length > 0) {
-    return NextResponse.json({ error: '이미 같은 장소를 제보하셨습니다.' }, { status: 409 });
+    return corsJson(req, { error: '이미 같은 장소를 제보하셨습니다.' }, { status: 409 });
   }
 
   const { data, error } = await supabase
@@ -70,8 +75,8 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: '제보 저장에 실패했습니다.' }, { status: 500 });
+    return corsJson(req, { error: '제보 저장에 실패했습니다.' }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return corsJson(req, data, { status: 201 });
 }

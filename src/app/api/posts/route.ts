@@ -4,6 +4,7 @@ import { createServiceClient, createClient } from '@/lib/supabase/server';
 import { rateLimit, ipHash } from '@/lib/rateLimit';
 import { POST_CATEGORIES, PostCategory } from '@/types';
 import { hashPostPassword } from '@/lib/postPassword';
+import { corsJson, corsOptions } from '@/lib/apiCors';
 
 function isPostCategory(value: string | null): value is PostCategory {
   return !!value && POST_CATEGORIES.includes(value as PostCategory);
@@ -32,56 +33,103 @@ function getPostCategoryQueryValues(category: string | null): PostCategory[] | n
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const category = req.nextUrl.searchParams.get('category');
+  const debug = req.nextUrl.searchParams.get('debug') === '1';
+  const limit = Math.min(
+    Math.max(parseInt(req.nextUrl.searchParams.get('limit') ?? '10', 10), 1),
+    20,
+  );
   const categoryValues = getPostCategoryQueryValues(category);
 
-  let query = supabase
-    .from('posts')
-    .select('id, title, content, category, nickname, anon_session_id, device_hash, comment_count, image_urls, created_at, moderation_status')
-    .eq('moderation_status', 'visible')
-    .order('created_at', { ascending: false })
-    .limit(50);
+  const buildBaseQuery = () => {
+    let query = supabase
+      .from('posts')
+      .select('id, title, content, category, nickname, comment_count, image_urls, created_at')
+      .eq('moderation_status', 'visible')
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
-  if (category === 'best') {
-    query = query.gte('comment_count', 5).order('comment_count', { ascending: false });
-  } else if (categoryValues?.length === 1) {
-    query = query.eq('category', categoryValues[0]);
-  } else if (categoryValues && categoryValues.length > 1) {
-    query = query.in('category', categoryValues);
+    if (category === 'best') {
+      query = query.gte('comment_count', 5).order('comment_count', { ascending: false });
+    } else if (categoryValues?.length === 1) {
+      query = query.eq('category', categoryValues[0]);
+    } else if (categoryValues && categoryValues.length > 1) {
+      query = query.in('category', categoryValues);
+    }
+
+    return query;
+  };
+
+  const { data, error } = await buildBaseQuery();
+  if (!error) {
+    return corsJson(req, data ?? []);
   }
 
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: 'DB error' }, { status: 500 });
+  let fallbackQuery = supabase
+    .from('posts')
+    .select('id, title, content, category, nickname, created_at')
+    .eq('moderation_status', 'visible')
+    .order('created_at', { ascending: false })
+    .limit(limit);
 
-  return NextResponse.json(data ?? []);
+  if (categoryValues?.length === 1) {
+    fallbackQuery = fallbackQuery.eq('category', categoryValues[0]);
+  } else if (categoryValues && categoryValues.length > 1) {
+    fallbackQuery = fallbackQuery.in('category', categoryValues);
+  }
+
+  const { data: fallbackData, error: fallbackError } = await fallbackQuery;
+  if (fallbackError) {
+    return corsJson(
+      req,
+      {
+        error: 'DB error',
+        detail: debug ? `${error.message} | fallback: ${fallbackError.message}` : undefined,
+      },
+      { status: 500 },
+    );
+  }
+
+  return corsJson(
+    req,
+    (fallbackData ?? []).map((post) => ({
+      ...post,
+      comment_count: 0,
+      image_urls: [],
+    })),
+  );
+}
+
+export async function OPTIONS(req: NextRequest) {
+  return corsOptions(req);
 }
 
 export async function POST(req: NextRequest) {
   const { ok } = rateLimit(req, 'post', { limit: 5, windowMs: 60 * 60 * 1000 });
   if (!ok) {
-    return NextResponse.json({ error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
+    return corsJson(req, { error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
   }
 
   const body = await req.json();
   const { title, content, category, password, anon_session_id, device_id, nickname, image_urls } = body;
 
   if (!title?.trim() || !content?.trim() || !anon_session_id) {
-    return NextResponse.json({ error: '제목과 내용을 입력해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '제목과 내용을 입력해주세요.' }, { status: 400 });
   }
 
   if (!password?.trim()) {
-    return NextResponse.json({ error: '글 비밀번호를 입력해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '글 비밀번호를 입력해주세요.' }, { status: 400 });
   }
 
   if (title.length > 80) {
-    return NextResponse.json({ error: '제목은 80자 이내로 작성해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '제목은 80자 이내로 작성해주세요.' }, { status: 400 });
   }
 
   if (content.length > 500) {
-    return NextResponse.json({ error: '내용은 500자 이내로 작성해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '내용은 500자 이내로 작성해주세요.' }, { status: 400 });
   }
 
   if (password.length < 4 || password.length > 20) {
-    return NextResponse.json({ error: '비밀번호는 4자 이상 20자 이하로 입력해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '비밀번호는 4자 이상 20자 이하로 입력해주세요.' }, { status: 400 });
   }
 
   const supabase = await createServiceClient();
@@ -98,7 +146,7 @@ export async function POST(req: NextRequest) {
     .limit(1);
 
   if (existing && existing.length > 0) {
-    return NextResponse.json({ error: '5분 내 하나의 글만 등록할 수 있습니다.' }, { status: 429 });
+    return corsJson(req, { error: '5분 내 하나의 글만 등록할 수 있습니다.' }, { status: 429 });
   }
 
   const safeImageUrls = Array.isArray(image_urls)
@@ -123,8 +171,8 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: '글 저장에 실패했습니다.' }, { status: 500 });
+    return corsJson(req, { error: '글 저장에 실패했습니다.' }, { status: 500 });
   }
 
-  return NextResponse.json({ ...sanitizePost(data), comment_count: 0 }, { status: 201 });
+  return corsJson(req, { ...sanitizePost(data), comment_count: 0 }, { status: 201 });
 }

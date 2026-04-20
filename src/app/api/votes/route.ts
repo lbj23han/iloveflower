@@ -2,22 +2,27 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { rateLimit, ipHash } from '@/lib/rateLimit';
+import { corsJson, corsOptions } from '@/lib/apiCors';
+
+export async function OPTIONS(req: NextRequest) {
+  return corsOptions(req, 'POST, OPTIONS');
+}
 
 export async function POST(req: NextRequest) {
   const { ok } = rateLimit(req, 'vote', { limit: 20, windowMs: 60 * 60 * 1000 });
   if (!ok) {
-    return NextResponse.json({ error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
+    return corsJson(req, { error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
   }
 
   const body = await req.json();
   const { spot_id, vote_type, anon_session_id, device_id } = body;
 
   if (!spot_id || !vote_type || !anon_session_id) {
-    return NextResponse.json({ error: '잘못된 요청입니다.' }, { status: 400 });
+    return corsJson(req, { error: '잘못된 요청입니다.' }, { status: 400 });
   }
 
   if (!['up', 'down'].includes(vote_type)) {
-    return NextResponse.json({ error: '잘못된 투표 타입입니다.' }, { status: 400 });
+    return corsJson(req, { error: '잘못된 투표 타입입니다.' }, { status: 400 });
   }
 
   const supabase = await createServiceClient();
@@ -31,7 +36,7 @@ export async function POST(req: NextRequest) {
     .limit(1);
 
   if (existing && existing.length > 0) {
-    return NextResponse.json({ error: '이미 투표하셨습니다.' }, { status: 409 });
+    return corsJson(req, { error: '이미 투표하셨습니다.' }, { status: 409 });
   }
 
   const { error } = await supabase.from('votes').insert({
@@ -43,8 +48,8 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json({ error: '투표 저장에 실패했습니다.' }, { status: 500 });
+    return corsJson(req, { error: '투표 저장에 실패했습니다.' }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  return corsJson(req, { ok: true });
 }

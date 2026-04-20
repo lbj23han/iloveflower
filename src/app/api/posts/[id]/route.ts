@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { POST_CATEGORIES, PostCategory } from '@/types';
 import { verifyPostPassword } from '@/lib/postPassword';
+import { corsJson, corsOptions } from '@/lib/apiCors';
 
 function isPostCategory(value: string | null | undefined): value is PostCategory {
   return !!value && POST_CATEGORIES.includes(value as PostCategory);
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const password = typeof body.password === 'string' ? body.password.trim() : '';
 
   if (!password) {
-    return NextResponse.json({ error: '비밀번호를 입력해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '비밀번호를 입력해주세요.' }, { status: 400 });
   }
 
   const supabase = await createServiceClient();
@@ -31,14 +32,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .single();
 
   if (existingError || !existing) {
-    return NextResponse.json({ error: '글을 찾을 수 없습니다.' }, { status: 404 });
+    return corsJson(req, { error: '글을 찾을 수 없습니다.' }, { status: 404 });
   }
 
   if (!verifyPostPassword(password, existing.post_password_hash)) {
-    return NextResponse.json({ error: '비밀번호가 일치하지 않습니다.' }, { status: 403 });
+    return corsJson(req, { error: '비밀번호가 일치하지 않습니다.' }, { status: 403 });
   }
 
-  return NextResponse.json({ ok: true });
+  return corsJson(req, { ok: true });
 }
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -59,17 +60,21 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   return NextResponse.json(sanitizePost(data));
 }
 
+export async function OPTIONS(req: NextRequest) {
+  return corsOptions(req);
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await req.json();
   const { title, content, category, nickname, password } = body;
 
   if (!title?.trim() || !content?.trim() || !password?.trim()) {
-    return NextResponse.json({ error: '수정에 필요한 정보가 부족합니다.' }, { status: 400 });
+    return corsJson(req, { error: '수정에 필요한 정보가 부족합니다.' }, { status: 400 });
   }
 
   if (title.length > 80 || content.length > 500) {
-    return NextResponse.json({ error: '입력 길이를 다시 확인해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '입력 길이를 다시 확인해주세요.' }, { status: 400 });
   }
 
   const supabase = await createServiceClient();
@@ -80,11 +85,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .single();
 
   if (existingError || !existing) {
-    return NextResponse.json({ error: '글을 찾을 수 없습니다.' }, { status: 404 });
+    return corsJson(req, { error: '글을 찾을 수 없습니다.' }, { status: 404 });
   }
 
   if (!verifyPostPassword(password.trim(), existing.post_password_hash)) {
-    return NextResponse.json({ error: '글 비밀번호가 일치하지 않습니다.' }, { status: 403 });
+    return corsJson(req, { error: '글 비밀번호가 일치하지 않습니다.' }, { status: 403 });
   }
 
   const { data, error } = await supabase
@@ -100,10 +105,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: '글 수정에 실패했습니다.' }, { status: 500 });
+    return corsJson(req, { error: '글 수정에 실패했습니다.' }, { status: 500 });
   }
 
-  return NextResponse.json(sanitizePost(data));
+  return corsJson(req, sanitizePost(data));
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -112,7 +117,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const password = typeof body.password === 'string' ? body.password.trim() : '';
 
   if (!password) {
-    return NextResponse.json({ error: '삭제 비밀번호를 입력해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '삭제 비밀번호를 입력해주세요.' }, { status: 400 });
   }
 
   const supabase = await createServiceClient();
@@ -123,18 +128,18 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     .single();
 
   if (existingError || !existing) {
-    return NextResponse.json({ error: '글을 찾을 수 없습니다.' }, { status: 404 });
+    return corsJson(req, { error: '글을 찾을 수 없습니다.' }, { status: 404 });
   }
 
   if (!verifyPostPassword(password, existing.post_password_hash)) {
-    return NextResponse.json({ error: '글 비밀번호가 일치하지 않습니다.' }, { status: 403 });
+    return corsJson(req, { error: '글 비밀번호가 일치하지 않습니다.' }, { status: 403 });
   }
 
   const { error } = await supabase.from('posts').delete().eq('id', id);
   if (error) {
-    return NextResponse.json({ error: '글 삭제에 실패했습니다.' }, { status: 500 });
+    return corsJson(req, { error: '글 삭제에 실패했습니다.' }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  return corsJson(req, { ok: true });
 }
 export async function generateStaticParams() { return []; }

@@ -2,10 +2,11 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, createClient } from '@/lib/supabase/server';
 import { rateLimit, ipHash } from '@/lib/rateLimit';
+import { corsJson, corsOptions } from '@/lib/apiCors';
 
 export async function GET(req: NextRequest) {
   const postId = req.nextUrl.searchParams.get('post_id');
-  if (!postId) return NextResponse.json({ error: 'post_id required' }, { status: 400 });
+  if (!postId) return corsJson(req, { error: 'post_id required' }, { status: 400 });
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -16,25 +17,29 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: true })
     .limit(100);
 
-  if (error) return NextResponse.json({ error: 'DB error' }, { status: 500 });
-  return NextResponse.json(data ?? []);
+  if (error) return corsJson(req, { error: 'DB error' }, { status: 500 });
+  return corsJson(req, data ?? []);
+}
+
+export async function OPTIONS(req: NextRequest) {
+  return corsOptions(req);
 }
 
 export async function POST(req: NextRequest) {
   const { ok } = rateLimit(req, 'comment', { limit: 10, windowMs: 60 * 60 * 1000 });
   if (!ok) {
-    return NextResponse.json({ error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
+    return corsJson(req, { error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
   }
 
   const body = await req.json();
   const { post_id, parent_id, content, anon_session_id, device_id, nickname } = body;
 
   if (!post_id || !content?.trim() || !anon_session_id) {
-    return NextResponse.json({ error: '잘못된 요청입니다.' }, { status: 400 });
+    return corsJson(req, { error: '잘못된 요청입니다.' }, { status: 400 });
   }
 
   if (content.length > 200) {
-    return NextResponse.json({ error: '200자 이내로 작성해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '200자 이내로 작성해주세요.' }, { status: 400 });
   }
 
   const supabase = await createServiceClient();
@@ -52,7 +57,7 @@ export async function POST(req: NextRequest) {
     .limit(1);
 
   if (existing && existing.length > 0) {
-    return NextResponse.json({ error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
+    return corsJson(req, { error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
   }
 
   const { data, error } = await supabase
@@ -71,8 +76,8 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: '댓글 저장에 실패했습니다.' }, { status: 500 });
+    return corsJson(req, { error: '댓글 저장에 실패했습니다.' }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return corsJson(req, data, { status: 201 });
 }

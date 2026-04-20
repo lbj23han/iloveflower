@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { rateLimit, ipHash } from '@/lib/rateLimit';
+import { corsJson, corsOptions } from '@/lib/apiCors';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest) {
   const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10), 0);
 
   if (!spotId) {
-    return NextResponse.json({ error: 'spot_id가 필요합니다.' }, { status: 400 });
+    return corsJson(req, { error: 'spot_id가 필요합니다.' }, { status: 400 });
   }
 
   const supabase = await createServiceClient();
@@ -23,16 +24,20 @@ export async function GET(req: NextRequest) {
     .range(offset, offset + limit - 1);
 
   if (error) {
-    return NextResponse.json({ error: '후기 조회에 실패했습니다.' }, { status: 500 });
+    return corsJson(req, { error: '후기 조회에 실패했습니다.' }, { status: 500 });
   }
 
-  return NextResponse.json(data ?? []);
+  return corsJson(req, data ?? []);
+}
+
+export async function OPTIONS(req: NextRequest) {
+  return corsOptions(req);
 }
 
 export async function POST(req: NextRequest) {
   const { ok } = rateLimit(req, 'review', { limit: 5, windowMs: 60 * 60 * 1000 });
   if (!ok) {
-    return NextResponse.json({ error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
+    return corsJson(req, { error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
   }
 
   const body = await req.json();
@@ -53,11 +58,11 @@ export async function POST(req: NextRequest) {
   } = body;
 
   if (!spot_id || !anon_session_id) {
-    return NextResponse.json({ error: '잘못된 요청입니다.' }, { status: 400 });
+    return corsJson(req, { error: '잘못된 요청입니다.' }, { status: 400 });
   }
 
   if (content && content.length > 300) {
-    return NextResponse.json({ error: '300자 이내로 작성해주세요.' }, { status: 400 });
+    return corsJson(req, { error: '300자 이내로 작성해주세요.' }, { status: 400 });
   }
 
   const safeRating =
@@ -66,7 +71,15 @@ export async function POST(req: NextRequest) {
       : null;
 
   const safeImageUrls = Array.isArray(image_urls)
-    ? image_urls.filter((item: unknown) => typeof item === 'string' && item.startsWith('data:image/')).slice(0, 5)
+    ? image_urls
+        .filter(
+          (item: unknown) =>
+            typeof item === 'string' &&
+            (item.startsWith('http://') ||
+              item.startsWith('https://') ||
+              item.startsWith('data:image/')),
+        )
+        .slice(0, 5)
     : [];
 
   const supabase = await createServiceClient();
@@ -78,7 +91,7 @@ export async function POST(req: NextRequest) {
     : await supabase.from('spot_reviews').select('id').eq('spot_id', spot_id).eq('anon_session_id', anon_session_id).limit(1);
 
   if (dupCheck.data && dupCheck.data.length > 0) {
-    return NextResponse.json({ error: '이 장소에는 이미 후기를 남겼어요.' }, { status: 409 });
+    return corsJson(req, { error: '이 장소에는 이미 후기를 남겼어요.' }, { status: 409 });
   }
 
   const { data, error } = await supabase
@@ -104,8 +117,48 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error || !data) {
-    return NextResponse.json({ error: '후기 저장에 실패했습니다.' }, { status: 500 });
+    return corsJson(req, { error: '후기 저장에 실패했습니다.' }, { status: 500 });
   }
 
-  return NextResponse.json(data, { status: 201 });
+  return corsJson(req, data, { status: 201 });
+}
+
+export async function DELETE(req: NextRequest) {
+  const { ok } = rateLimit(req, 'review-delete', { limit: 10, windowMs: 60 * 60 * 1000 });
+  if (!ok) {
+    return NextResponse.json({ error: '잠시 후 다시 시도해주세요.' }, { status: 429 });
+  }
+
+  const body = await req.json();
+  const { review_id, anon_session_id, device_id } = body;
+
+  if (!review_id || (!anon_session_id && !device_id)) {
+    return corsJson(req, { error: '잘못된 요청입니다.' }, { status: 400 });
+  }
+
+  const supabase = await createServiceClient();
+  const { data: review, error: reviewError } = await supabase
+    .from('spot_reviews')
+    .select('id, anon_session_id, device_hash')
+    .eq('id', review_id)
+    .single();
+
+  if (reviewError || !review) {
+    return corsJson(req, { error: '리뷰를 찾을 수 없습니다.' }, { status: 404 });
+  }
+
+  const matchesOwner =
+    (device_id && review.device_hash && review.device_hash === device_id) ||
+    (anon_session_id && review.anon_session_id === anon_session_id);
+
+  if (!matchesOwner) {
+    return corsJson(req, { error: '본인이 작성한 리뷰만 삭제할 수 있습니다.' }, { status: 403 });
+  }
+
+  const { error } = await supabase.from('spot_reviews').delete().eq('id', review_id);
+  if (error) {
+    return corsJson(req, { error: '리뷰 삭제에 실패했습니다.' }, { status: 500 });
+  }
+
+  return corsJson(req, { ok: true });
 }
