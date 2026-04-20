@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -56,8 +55,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const kakaoKey = (process.env.NEXT_PUBLIC_KAKAO_MAP_KEY ?? "").trim();
-
   return (
     <html lang="ko" className="h-full">
       <head>
@@ -73,21 +70,18 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5992854033857462"
           crossOrigin="anonymous"
         />
+        <script src="/kakao-maps-loader.js" />
       </head>
       <body className="h-full">
         {children}
         <Link
           href="/privacy"
-          className="fixed bottom-3 right-3 z-[70] rounded-full border border-white/45 bg-white/70 px-3 py-1.5 text-[10px] font-medium text-[#6b7280] shadow-[0_8px_20px_rgba(15,23,42,0.08)] backdrop-blur-md opacity-55 transition-opacity hover:opacity-100"
+          aria-label="개인정보처리방침"
+          className="fixed right-2 z-[70] inline-flex h-8 select-none items-center rounded-full border border-white/35 bg-white/55 px-2.5 text-[11px] font-medium text-[#9ca3af] shadow-[0_6px_16px_rgba(15,23,42,0.06)] backdrop-blur-md opacity-55 transition-opacity hover:opacity-80"
+          style={{ bottom: "calc(env(safe-area-inset-bottom) + 8px)" }}
         >
-          개인정보처리방침
+          개인정보
         </Link>
-        {kakaoKey && (
-          <Script
-            src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&libraries=clusterer&autoload=false`}
-            strategy="afterInteractive"
-          />
-        )}
       </body>
     </html>
   );
