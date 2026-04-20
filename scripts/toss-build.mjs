@@ -16,9 +16,7 @@ fs.mkdirSync(tmpDir, { recursive: true });
 
 // 임시로 제외할 동적 API route 디렉토리 목록
 const DYNAMIC_API_DIRS = [
-  'src/app/api/admin',
-  'src/app/api/posts/[id]',
-  'src/app/api/gyms/[id]',
+  'src/app/api',
   'src/app/gyms/[id]',
   'src/app/community/[id]',
 ];
