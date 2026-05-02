@@ -5,6 +5,7 @@ import VoteButtons from '@/components/gym/VoteButtons';
 import StarRating from '@/components/ui/StarRating';
 import { getAccentStyle } from '@/lib/flowerTheme';
 import { getSpotCoverImage } from '@/lib/spotCovers';
+import LazyTossAdBanner from '@/components/common/LazyTossAdBanner';
 
 interface Props {
   gym: FlowerSpotWithDetails;
@@ -61,18 +62,18 @@ export default function SpotDetailPanel({
             <h2 className={`${mobile ? 'text-[22px]' : 'text-[24px]'} font-extrabold tracking-tight text-[#111827]`}>
               {spot.name}
             </h2>
-            {spot.address && <p className="mt-1 text-sm text-[#6b7280]">{spot.address}</p>}
+            {spot.address && <p className="mt-1 text-sm leading-relaxed text-[#6b7280]">{spot.address}</p>}
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => onToggleFavorite?.(spot)}
-              className={`flex h-10 w-10 items-center justify-center rounded-full border text-base shadow-sm transition-colors ${
+              className={`flex h-10 w-10 select-none items-center justify-center rounded-full border text-base shadow-sm transition-transform active:scale-[0.98] ${
                 isFavorite ? 'border-[#ff6b81]/40 bg-[#fff1f4] text-[#ff4d6d]' : 'border-[#ffd6dc]/55 bg-[#fffafb]/76 text-[#6b7280]'
               }`}
               aria-label={isFavorite ? '찜 해제' : '찜하기'}
             >♥</button>
             {onClose && (
-              <button onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fffafb]/74 text-sm text-[#6b7280] shadow-sm">
+              <button onClick={onClose} className="flex h-10 w-10 shrink-0 select-none items-center justify-center rounded-full bg-[#fffafb]/74 text-sm text-[#6b7280] shadow-sm transition-transform active:scale-[0.98]">
                 ✕
               </button>
             )}
@@ -94,9 +95,9 @@ export default function SpotDetailPanel({
         {bloomStatus && (
           <div className="mb-4 rounded-[24px] border border-[#ffd6dc]/55 bg-[#fffafb]/76 px-4 py-4">
             <div className="mb-3 flex items-center justify-between">
-              <div className="text-xs font-semibold text-[#6b7280]">개화 현황</div>
+              <div className="text-sm font-semibold text-[#6b7280]">개화 현황</div>
               {bloomLabel && (
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                <span className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
                   bloomStatus.status === 'peak' ? 'bg-[#ff6b81] text-white' :
                   bloomStatus.status === 'blooming' ? 'bg-[#ffd6e0] text-[#c0392b]' :
                   'bg-[#f3f4f6] text-[#6b7280]'
@@ -108,26 +109,26 @@ export default function SpotDetailPanel({
                 <div className="h-2 w-full overflow-hidden rounded-full bg-[#e5e7eb]">
                   <div className="h-full rounded-full" style={{ width: `${bloomPct}%`, backgroundColor: accent.strongBg }} />
                 </div>
-                <div className="text-right text-xs text-[#9ca3af]">{bloomPct}%</div>
+                <div className="text-right text-sm text-[#9ca3af]">{bloomPct}%</div>
               </div>
             )}
           </div>
         )}
 
         {/* 카테고리 + 꽃 종류 */}
-        <div className="mb-4 grid gap-3 md:grid-cols-2">
+        <div className="mb-4 grid gap-3">
           <div className="rounded-[24px] border border-[#ffd6dc]/55 bg-[#fffafb]/78 px-4 py-4">
-            <div className="text-xs font-semibold text-[#6b7280]">카테고리</div>
+            <div className="text-sm font-semibold text-[#6b7280]">카테고리</div>
             <div className="mt-2 text-lg font-bold text-[#111827]">{(CATEGORY_LABELS as Record<string, string>)[spot.category]}</div>
           </div>
           <div className="rounded-[24px] border border-[#ffd6dc]/55 bg-[#fffafb]/78 px-4 py-4">
-            <div className="text-xs font-semibold text-[#6b7280]">꽃 종류</div>
+            <div className="text-sm font-semibold text-[#6b7280]">꽃 종류</div>
             <div className="mt-2 flex flex-wrap gap-1">
               {spot.flower_types.length > 0
                 ? spot.flower_types.map((t) => (
                     <span
                       key={t}
-                      className="rounded-full px-2 py-0.5 text-xs font-semibold"
+                      className="rounded-full px-3 py-1.5 text-sm font-semibold"
                       style={{ backgroundColor: accent.bg, color: accent.text }}
                     >
                       {(FLOWER_TYPE_LABELS as Record<string, string>)[t] ?? t}
@@ -140,7 +141,7 @@ export default function SpotDetailPanel({
 
         {/* 이용 정보 */}
         <div className="mb-4 rounded-[24px] border border-[#ffd6dc]/55 bg-[#fffafb]/76 px-4 py-4">
-          <div className="mb-3 text-xs font-semibold text-[#6b7280]">이용 정보</div>
+          <div className="mb-3 text-sm font-semibold text-[#6b7280]">이용 정보</div>
           <div className="flex flex-wrap gap-2">
             {[
               { cond: spot.entry_fee === 0, label: '무료입장', color: 'bg-[#ecfbf3] text-[#00935d]' },
@@ -150,11 +151,11 @@ export default function SpotDetailPanel({
               { cond: spot.pet_friendly, label: '반려동물', color: 'bg-[#faf5ff] text-[#7c3aed]' },
               { cond: spot.photo_spot, label: '포토스팟', color: 'bg-[#fff1f4] text-[#ff4d6d]' },
             ].filter((item) => item.cond).map(({ label, color }) => (
-              <span key={label} className={`rounded-full px-3 py-1 text-xs font-semibold ${color}`}>{label}</span>
+              <span key={label} className={`rounded-full px-3 py-1.5 text-sm font-semibold ${color}`}>{label}</span>
             ))}
           </div>
           {spot.peak_month_start && (
-            <div className="mt-2 text-xs text-[#6b7280]">
+            <div className="mt-2 text-sm leading-relaxed text-[#6b7280]">
               절정 시기: {spot.peak_month_start}월{spot.peak_month_end && spot.peak_month_end !== spot.peak_month_start ? ` ~ ${spot.peak_month_end}월` : ''}
             </div>
           )}
@@ -163,13 +164,13 @@ export default function SpotDetailPanel({
         {/* 축제 */}
         {currentFestivals.length > 0 && (
           <div className="mb-4 rounded-[24px] border border-[#ffd6dc]/55 bg-[#fffafb]/76 px-4 py-4">
-            <div className="mb-3 text-xs font-semibold text-[#6b7280]">관련 축제</div>
+            <div className="mb-3 text-sm font-semibold text-[#6b7280]">관련 축제</div>
             <div className="space-y-2">
               {currentFestivals.map((f) => (
                 <div key={f.id}>
                   <div className="font-medium text-sm text-[#111827]">{f.name}</div>
                   {(f.start_date || f.end_date) && (
-                    <div className="text-xs text-[#9ca3af]">{f.start_date}{f.end_date && ` ~ ${f.end_date}`}</div>
+                    <div className="text-sm text-[#9ca3af]">{f.start_date}{f.end_date && ` ~ ${f.end_date}`}</div>
                   )}
                 </div>
               ))}
@@ -181,10 +182,10 @@ export default function SpotDetailPanel({
         {totalReviews > 0 && (
           <div className="mb-4 rounded-[24px] border border-[#ffd6dc]/55 bg-[#fffafb]/76 px-4 py-4">
             <div className="mb-3 flex items-center justify-between">
-              <div className="text-xs font-semibold text-[#6b7280]">이용자 반응</div>
+              <div className="text-sm font-semibold text-[#6b7280]">이용자 반응</div>
               <div className="flex items-center gap-1.5">
                 {avgRating != null && <StarRating value={Math.round(avgRating * 2) / 2} readOnly size="sm" />}
-                <span className="text-xs text-[#9ca3af]">{totalReviews}명 참여</span>
+                <span className="text-sm text-[#9ca3af]">{totalReviews}명 참여</span>
               </div>
             </div>
             {hasAnySignal ? (
@@ -196,7 +197,7 @@ export default function SpotDetailPanel({
                   { label: '주차 편해요', count: signalCounts.parking },
                 ].map((signal) => (
                   <div key={signal.label} className="flex items-center gap-2">
-                    <span className="w-[108px] shrink-0 text-xs text-[#374151]">{signal.label}</span>
+                    <span className="w-28 shrink-0 text-sm leading-relaxed text-[#374151]">{signal.label}</span>
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#e5e7eb]">
                       <div
                         className="h-full rounded-full"
@@ -206,12 +207,12 @@ export default function SpotDetailPanel({
                         }}
                       />
                     </div>
-                    <span className="w-8 text-right text-xs text-[#6b7280]">{signal.count}명</span>
+                    <span className="w-10 text-right text-sm text-[#6b7280]">{signal.count}명</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#9ca3af]">평가 항목 응답 없음</p>
+              <p className="text-sm leading-relaxed text-[#9ca3af]">평가 항목 응답 없음</p>
             )}
           </div>
         )}
@@ -219,17 +220,17 @@ export default function SpotDetailPanel({
         {/* 운영 정보 */}
         {(spot.phone || spot.website_url) && (
           <div className="mb-4 space-y-2 rounded-[24px] border border-[#ffd6dc]/55 bg-[#fffafb]/76 px-4 py-4">
-            <div className="text-xs font-semibold text-[#6b7280]">운영 정보</div>
+            <div className="text-sm font-semibold text-[#6b7280]">운영 정보</div>
             {spot.phone && (
-              <div className="flex gap-2">
-                <span className="w-16 shrink-0 text-xs text-[#9ca3af]">전화</span>
-                <a href={`tel:${spot.phone}`} className="text-xs text-[#00935d]">{spot.phone}</a>
+              <div className="flex min-h-[44px] items-center gap-2 rounded-2xl border border-white/55 bg-white/60 px-3">
+                <span className="w-16 shrink-0 text-sm text-[#9ca3af]">전화</span>
+                <a href={`tel:${spot.phone}`} className="text-sm font-medium text-[#00935d]">{spot.phone}</a>
               </div>
             )}
             {spot.website_url && (
-              <div className="flex gap-2">
-                <span className="w-16 shrink-0 text-xs text-[#9ca3af]">홈페이지</span>
-                <a href={spot.website_url} target="_blank" rel="noopener noreferrer" className="truncate text-xs text-[#2563eb]">
+              <div className="flex min-h-[44px] items-center gap-2 rounded-2xl border border-white/55 bg-white/60 px-3">
+                <span className="w-16 shrink-0 text-sm text-[#9ca3af]">홈페이지</span>
+                <a href={spot.website_url} target="_blank" rel="noopener noreferrer" className="truncate text-sm font-medium text-[#2563eb]">
                   {spot.website_url.replace(/^https?:\/\//, '')}
                 </a>
               </div>
@@ -240,16 +241,18 @@ export default function SpotDetailPanel({
         {/* 카카오맵 + 투표 */}
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <a href={kakaoMapUrl} target="_blank" rel="noopener noreferrer"
-            className="flex items-center justify-center rounded-2xl bg-[#FEE500] px-4 py-3 text-sm font-semibold text-[#111827] shadow-sm">
+            className="flex min-h-[56px] select-none items-center justify-center rounded-2xl bg-[#FEE500] px-4 py-4 text-base font-semibold text-[#111827] shadow-sm transition-transform active:scale-[0.98]">
             카카오맵에서 보기
           </a>
           <div className="flex items-center justify-center rounded-2xl border border-[#ffd6dc]/55 bg-[#fffafb]/76 px-4 py-3">
             <VoteButtons spotId={spot.id} initialUp={spot.vote_up} initialDown={spot.vote_down} />
           </div>
         </div>
+
+        <LazyTossAdBanner className="mt-4" variant="card" />
       </div>
 
-      <div className="px-4 pb-6 pt-4">
+      <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-4">
         <ReviewSection spotId={spot.id} initialReviews={initialReviews} variant="overlay" />
       </div>
     </div>

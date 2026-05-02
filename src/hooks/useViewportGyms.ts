@@ -43,20 +43,32 @@ export function useViewportSpots() {
         if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
           const { getSpotMapItemsByBoundsClient } = await import('@/lib/clientApi');
           data = await getSpotMapItemsByBoundsClient({
-            swLat: bounds.swLat, swLng: bounds.swLng,
-            neLat: bounds.neLat, neLng: bounds.neLng,
-            category: filters.category, flowerType: filters.flower_type,
-            bloomStatus: filters.bloom_status, season: filters.season,
-            peakMonth: String(filters.peak_month), festival: filters.festival,
-            hasNightLight: filters.has_night_light, hasParking: filters.has_parking,
-            petFriendly: filters.pet_friendly, photoSpot: filters.photo_spot,
-            freeOnly: filters.free_only, sort: filters.sort,
+            swLat: bounds.swLat,
+            swLng: bounds.swLng,
+            neLat: bounds.neLat,
+            neLng: bounds.neLng,
+            category: filters.category,
+            flowerType: filters.flower_type,
+            bloomStatus: filters.bloom_status,
+            season: filters.season,
+            peakMonth: String(filters.peak_month),
+            festival: filters.festival,
+            hasNightLight: filters.has_night_light,
+            hasParking: filters.has_parking,
+            petFriendly: filters.pet_friendly,
+            photoSpot: filters.photo_spot,
+            freeOnly: filters.free_only,
+            sort: filters.sort,
           });
         } else {
-          const res = await fetch(`/api/gyms?${params}`, { signal: controller.signal });
+          const res = await fetch(`/api/gyms?${params.toString()}`, {
+            cache: 'no-store',
+            signal: controller.signal,
+          });
           if (!res.ok) throw new Error('Failed to fetch');
           data = await res.json();
         }
+
         if (requestId === requestIdRef.current) {
           setSpots(data.spots ?? []);
           setZoomHint(data.meta?.zoomHint ?? null);

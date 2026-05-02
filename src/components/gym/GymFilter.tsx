@@ -44,7 +44,7 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+      className={`min-h-[40px] select-none rounded-full px-4 py-2 text-sm font-medium leading-relaxed transition-transform active:scale-[0.98] ${
         active
           ? 'bg-[#ff6b81] text-white'
           : 'border border-white/55 bg-white/80 text-[#374151]'
@@ -86,7 +86,7 @@ export default function SpotFilter({ filters, onChange }: Props) {
               key={section.key}
               type="button"
               onClick={() => setActiveSection(section.key as FilterSection)}
-              className={`rounded-[18px] px-3 py-2 text-xs font-semibold transition-colors ${
+            className={`min-h-[44px] select-none rounded-[18px] px-3 py-2 text-sm font-semibold transition-transform active:scale-[0.98] ${
                 activeSection === section.key
                   ? 'bg-[#ff6b81] text-white shadow-[0_8px_20px_rgba(255,107,129,0.22)]'
                   : 'text-[#6b7280]'
@@ -102,7 +102,7 @@ export default function SpotFilter({ filters, onChange }: Props) {
         {activeSection === 'explore' && (
           <div className="space-y-5">
             <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">꽃 종류</div>
+              <div className="mb-2 text-sm font-semibold text-[#6b7280]">꽃 종류</div>
               <div className="rounded-[24px] border border-[#ffd6dc]/45 bg-[#fffafb]/72 p-3">
                 <div className="flex flex-wrap gap-1.5">
                   {SEASON_BUTTONS.map(({ key, label }) => {
@@ -118,7 +118,7 @@ export default function SpotFilter({ filters, onChange }: Props) {
                             flower_type: 'all',
                           })
                         }
-                        className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                        className={`min-h-[40px] select-none rounded-full px-4 py-2 text-sm font-semibold transition-transform active:scale-[0.98] ${
                           active
                             ? 'bg-[#ff6b81] text-white shadow-[0_8px_20px_rgba(255,107,129,0.18)]'
                             : 'border border-white/55 bg-white/82 text-[#374151]'
@@ -135,13 +135,13 @@ export default function SpotFilter({ filters, onChange }: Props) {
                     <div className="my-3 h-px w-full bg-gradient-to-r from-transparent via-[#ffd6dc] to-transparent" />
 
                     <div className="mb-2 flex items-center justify-between">
-                      <div className="text-[11px] font-semibold text-[#6b7280]">
+                      <div className="text-sm font-semibold leading-relaxed text-[#6b7280]">
                         선택한 계절 안에서 더 좁혀볼 수 있어요
                       </div>
                       <button
                         type="button"
                         onClick={() => onChange({ season: 'all', flower_type: 'all' })}
-                        className="text-[11px] font-semibold text-[#ff6b81]"
+                        className="select-none text-sm font-semibold text-[#ff6b81]"
                       >
                         전체 해제
                       </button>
@@ -172,7 +172,7 @@ export default function SpotFilter({ filters, onChange }: Props) {
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">카테고리</div>
+              <div className="mb-2 text-sm font-semibold text-[#6b7280]">카테고리</div>
               <div className="flex flex-wrap gap-1.5">
                 {CATEGORIES.map(([val, label]) => (
                   <FilterChip
@@ -192,15 +192,15 @@ export default function SpotFilter({ filters, onChange }: Props) {
         {activeSection === 'timing' && (
           <div className="space-y-5">
             <div className="rounded-[22px] border border-[#ffd6dc]/45 bg-[#fffafb]/72 px-4 py-3">
-              <div className="text-[11px] font-semibold text-[#6b7280]">지금 선택된 시기</div>
+              <div className="text-sm font-semibold text-[#6b7280]">지금 선택된 시기</div>
               <div className="mt-1 text-sm font-semibold text-[#111827]">{timingSummary}</div>
-              <div className="mt-1 text-[11px] text-[#9ca3af]">
+              <div className="mt-1 text-sm leading-relaxed text-[#9ca3af]">
                 절정 월 기준으로 명소를 걸러볼 수 있어요
               </div>
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">개화 상태</div>
+              <div className="mb-2 text-sm font-semibold text-[#6b7280]">개화 상태</div>
               <div className="flex flex-wrap gap-1.5">
                 {BLOOM_STATUSES.map(([val, label]) => (
                   <FilterChip
@@ -215,7 +215,7 @@ export default function SpotFilter({ filters, onChange }: Props) {
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">절정 시기</div>
+              <div className="mb-2 text-sm font-semibold text-[#6b7280]">절정 시기</div>
               <div className="flex flex-wrap gap-1.5">
                 <FilterChip
                   active={filters.peak_month === 'all'}
@@ -240,7 +240,7 @@ export default function SpotFilter({ filters, onChange }: Props) {
         {activeSection === 'comfort' && (
           <div className="space-y-5">
             <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">편의 정보</div>
+              <div className="mb-2 text-sm font-semibold text-[#6b7280]">편의 정보</div>
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { key: 'festival', label: '축제' },
@@ -270,7 +270,7 @@ export default function SpotFilter({ filters, onChange }: Props) {
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold text-[#6b7280]">정렬</div>
+              <div className="mb-2 text-sm font-semibold text-[#6b7280]">정렬</div>
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { val: 'recommended', label: '추천순' },

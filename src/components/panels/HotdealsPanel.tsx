@@ -47,11 +47,11 @@ export default function HotdealsPanel() {
   return (
     <>
       {/* 헤더 */}
-      <div className="flex items-center justify-between px-4 h-11 border-b border-[#e5e7eb] shrink-0">
+      <div className="flex h-12 items-center justify-between border-b border-[#e5e7eb] px-4 shrink-0">
         <span className="font-bold text-[15px] text-[#111827]">핫딜</span>
         <Link
           href="/report?type=hotdeal"
-          className="w-8 h-8 rounded-full bg-[#111827] text-white flex items-center justify-center text-lg"
+          className="flex h-11 w-11 select-none items-center justify-center rounded-full bg-[#111827] text-lg text-white transition-transform active:scale-[0.98]"
         >
           ✏️
         </Link>
@@ -63,7 +63,7 @@ export default function HotdealsPanel() {
           <button
             key={c}
             onClick={() => setCat(c)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`min-h-[40px] shrink-0 select-none rounded-full px-4 py-2 text-sm font-medium transition-transform active:scale-[0.98] ${
               cat === c ? 'bg-[#111827] text-white' : 'bg-[#f3f4f6] text-[#374151]'
             }`}
           >
@@ -75,27 +75,28 @@ export default function HotdealsPanel() {
       {/* 목록 */}
       <div className="flex-1 overflow-y-auto divide-y divide-[#f3f4f6]">
         {loading ? (
-          <div className="py-10 text-center text-sm text-[#9ca3af]">불러오는 중...</div>
+          <div className="py-10 text-center text-sm text-[#9ca3af] animate-pulse">불러오는 중...</div>
         ) : filtered.length === 0 ? (
-          <div className="py-10 text-center text-sm text-[#9ca3af]">
+          <div className="py-10 text-center text-sm leading-relaxed text-[#9ca3af]">
+            <div className="mb-2 text-3xl">🎟️</div>
             등록된 핫딜이 없어요
             <br />
-            <Link href="/report?type=hotdeal" className="text-[#00C471] underline mt-1 inline-block text-xs">핫딜 제보하기 →</Link>
+            <Link href="/report?type=hotdeal" className="mt-1 inline-block text-sm text-[#00C471] underline">핫딜 제보하기 →</Link>
           </div>
         ) : (
           filtered.map((deal) => (
             <div key={deal.id} className="flex items-start gap-3 px-4 py-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#fee2e2] text-[#dc2626] font-medium">
+                  <span className="rounded-full bg-[#fee2e2] px-2.5 py-1 text-sm font-medium text-[#dc2626]">
                     {DEAL_TYPE_LABELS[deal.deal_type] ?? deal.deal_type}
                   </span>
                 </div>
                 <div className="text-sm font-semibold text-[#111827] mb-0.5">{deal.title}</div>
                 {deal.description && (
-                  <div className="text-[11px] text-[#6b7280] mb-1 line-clamp-2">{deal.description}</div>
+                  <div className="mb-1 line-clamp-2 text-sm leading-relaxed text-[#6b7280]">{deal.description}</div>
                 )}
-                <div className="text-[11px] text-[#9ca3af]">
+                <div className="text-sm text-[#9ca3af]">
                   {deal.gym?.name && (
                     <Link href={`/gyms/${deal.gym.id}`} className="text-[#00C471]">{deal.gym.name} · </Link>
                   )}
@@ -106,7 +107,7 @@ export default function HotdealsPanel() {
               {deal.price != null && (
                 <div className="shrink-0 text-right">
                   {deal.original_price && (
-                    <div className="text-[10px] text-[#9ca3af] line-through">{deal.original_price.toLocaleString()}원</div>
+                    <div className="text-xs text-[#9ca3af] line-through">{deal.original_price.toLocaleString()}원</div>
                   )}
                   <div className="text-sm font-bold text-[#dc2626]">{deal.price.toLocaleString()}원</div>
                 </div>

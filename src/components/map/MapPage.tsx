@@ -20,6 +20,8 @@ import { getOrCreateSession } from "@/lib/session";
 import SpotDetailPanel from "@/components/map/GymDetailPanel";
 import FloatingTabBar from "@/components/ui/FloatingTabBar";
 import BrandLockup from "@/components/ui/BrandLockup";
+import DismissibleMapAd from "@/components/common/DismissibleMapAd";
+import LazyTossAdBanner from "@/components/common/LazyTossAdBanner";
 
 const KakaoMap = dynamic(() => import("./KakaoMap"), { ssr: false });
 
@@ -250,11 +252,30 @@ type FestivalItem = {
 function useFestivals() {
   const [festivals, setFestivals] = useState<FestivalItem[]>([]);
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-      import('@/lib/clientApi').then(({ getFestivalsClient }) => getFestivalsClient()).then(setFestivals as (v: unknown) => void).catch(() => {});
-    } else {
-      fetch('/api/festivals').then((r) => r.ok ? r.json() : []).then(setFestivals).catch(() => {});
-    }
+    let active = true;
+
+    const fetchFestivals = async () => {
+      try {
+        if (process.env.NEXT_PUBLIC_TOSS_BUILD === "true") {
+          const { getFestivalsClient } = await import("@/lib/clientApi");
+          const data = await getFestivalsClient();
+          if (active) setFestivals((data as FestivalItem[]) ?? []);
+          return;
+        }
+
+        const response = await fetch("/api/festivals", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (active) setFestivals((data as FestivalItem[]) ?? []);
+      } catch {
+        // ignore
+      }
+    };
+
+    fetchFestivals();
+    return () => {
+      active = false;
+    };
   }, []);
   return festivals;
 }
@@ -441,59 +462,63 @@ function ListContent({
           onSpotSelect={onFestivalSpotSelect ?? (() => {})}
         />
       )}
-      {gyms.map((gym) => (
-        <div
-          key={gym.id}
-          role="button"
-          tabIndex={0}
-          onClick={() => onSelect(gym)}
-          onKeyDown={(event) => handleKeyDown(event, gym)}
-          className={`w-full flex items-center gap-2 rounded-2xl border px-3 py-2.5 text-left transition-colors active:scale-[0.99] ${
-            selectedId === gym.id
-              ? gym.photo_spot
-                ? "border-[#92e0b6] bg-[#f3fff8]"
-                : "border-[#ffd6dc]/60 bg-[#fffafb]/65"
-              : gym.photo_spot
-                ? "border-[#d8f5e8] bg-white/42"
-                : "border-transparent"
-          }`}
-        >
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold text-[#111827] truncate">
-              {gym.name}
-            </div>
-            <div className="text-[10px] text-[#9ca3af] truncate">
-              {gym.address}
-            </div>
-            <BadgeChipsCompact gym={gym} />
-            {(gym.has_active_festival || gym.festival_count > 0) && (
-              <div className="mt-1 flex flex-wrap gap-1">
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                  gym.has_active_festival
-                    ? 'bg-[#fff7ed] text-[#c2410c]'
-                    : 'bg-[#fef3c7] text-[#92400e]'
-                }`}>
-                  {gym.has_active_festival ? '진행 중 축제' : `축제 ${gym.festival_count}`}
-                </span>
+      {gyms.map((gym, index) => (
+        <div key={gym.id}>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => onSelect(gym)}
+            onKeyDown={(event) => handleKeyDown(event, gym)}
+            className={`w-full flex items-center gap-2 rounded-2xl border px-3 py-2.5 text-left transition-colors active:scale-[0.99] ${
+              selectedId === gym.id
+                ? gym.photo_spot
+                  ? "border-[#92e0b6] bg-[#f3fff8]"
+                  : "border-[#ffd6dc]/60 bg-[#fffafb]/65"
+                : gym.photo_spot
+                  ? "border-[#d8f5e8] bg-white/42"
+                  : "border-transparent"
+            }`}
+          >
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-semibold text-[#111827] truncate">
+                {gym.name}
               </div>
-            )}
-          </div>
-          <div className="shrink-0 text-right">
-            <div className="text-xs font-semibold text-[#4b5563]">
-              {CATEGORY_LABELS[gym.category]}
+              <div className="text-[10px] text-[#9ca3af] truncate">
+                {gym.address}
+              </div>
+              <BadgeChipsCompact gym={gym} />
+              {(gym.has_active_festival || gym.festival_count > 0) && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                    gym.has_active_festival
+                      ? 'bg-[#fff7ed] text-[#c2410c]'
+                      : 'bg-[#fef3c7] text-[#92400e]'
+                  }`}>
+                    {gym.has_active_festival ? '진행 중 축제' : `축제 ${gym.festival_count}`}
+                  </span>
+                </div>
+              )}
             </div>
-            <div
-              className="text-[9px] text-[#9ca3af] mt-0.5"
-              suppressHydrationWarning
-            >
-              {timeAgo(gym.id)}
+            <div className="shrink-0 text-right">
+              <div className="text-xs font-semibold text-[#4b5563]">
+                {CATEGORY_LABELS[gym.category]}
+              </div>
+              <div
+                className="text-[9px] text-[#9ca3af] mt-0.5"
+                suppressHydrationWarning
+              >
+                {timeAgo(gym.id)}
+              </div>
             </div>
+            <FavoriteToggleButton
+              active={favoriteIds.includes(gym.id)}
+              onClick={() => onToggleFavorite(gym)}
+              small
+            />
           </div>
-          <FavoriteToggleButton
-            active={favoriteIds.includes(gym.id)}
-            onClick={() => onToggleFavorite(gym)}
-            small
-          />
+          {(index + 1) % 6 === 0 && (
+            <LazyTossAdBanner className="my-2" variant="card" />
+          )}
         </div>
       ))}
     </div>
@@ -727,13 +752,18 @@ export default function MapPage() {
       // Otherwise fetch minimal info to navigate
       try {
         let spot: FlowerSpotMapItem | null = null;
-        if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-          const { getSpotDetailByIdClient } = await import('@/lib/clientApi');
-          const detail = await getSpotDetailByIdClient(spotId);
-          if (detail) spot = { id: detail.id, name: detail.name, address: detail.address, lat: detail.lat, lng: detail.lng, category: detail.category, flower_types: detail.flower_types, bloom_status: detail.bloom_status ? (detail.bloom_status as import('@/types').BloomStatus).status : null, bloom_pct: null, has_night_light: detail.has_night_light, has_parking: detail.has_parking, pet_friendly: detail.pet_friendly, photo_spot: detail.photo_spot, entry_fee: detail.entry_fee, vote_up: detail.vote_up, vote_down: detail.vote_down, festival_count: 0, has_active_festival: false, cover_image_url: null };
+        let detail: FlowerSpotWithDetails | null = null;
+        if (process.env.NEXT_PUBLIC_TOSS_BUILD === "true") {
+          const { getSpotDetailByIdClient } = await import("@/lib/clientApi");
+          detail = await getSpotDetailByIdClient(spotId);
         } else {
-          const res = await fetch(`/api/gyms/${spotId}`);
-          if (res.ok) spot = await res.json();
+          const response = await fetch(`/api/gyms/${spotId}`, { cache: "no-store" });
+          if (response.ok) {
+            detail = await response.json();
+          }
+        }
+        if (detail) {
+          spot = { id: detail.id, name: detail.name, address: detail.address, lat: detail.lat, lng: detail.lng, category: detail.category, flower_types: detail.flower_types, bloom_status: detail.bloom_status ? (detail.bloom_status as import('@/types').BloomStatus).status : null, bloom_pct: null, has_night_light: detail.has_night_light, has_parking: detail.has_parking, pet_friendly: detail.pet_friendly, photo_spot: detail.photo_spot, entry_fee: detail.entry_fee, vote_up: detail.vote_up, vote_down: detail.vote_down, festival_count: 0, has_active_festival: false, cover_image_url: null };
         }
         if (spot) {
           setSelectedGym(spot);
@@ -814,17 +844,20 @@ export default function MapPage() {
     const timer = window.setTimeout(async () => {
       setSearchLoading(true);
       try {
-        let data: { spots: FlowerSpotMapItem[] };
-        if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-          const { searchSpotsByNameClient } = await import('@/lib/clientApi');
-          data = await searchSpotsByNameClient(trimmed) as { spots: FlowerSpotMapItem[] };
+        if (controller.signal.aborted) return;
+        if (process.env.NEXT_PUBLIC_TOSS_BUILD === "true") {
+          const { searchSpotsByNameClient } = await import("@/lib/clientApi");
+          const result = await searchSpotsByNameClient(trimmed);
+          setSearchResults(result.spots ?? []);
         } else {
-          const params = new URLSearchParams({ q: trimmed });
-          const res = await fetch(`/api/gyms?${params}`, { signal: controller.signal });
-          if (!res.ok) throw new Error("Failed to search gyms");
-          data = await res.json();
+          const response = await fetch(`/api/gyms?q=${encodeURIComponent(trimmed)}`, {
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          if (!response.ok) throw new Error("Failed to search gyms");
+          const result = await response.json();
+          setSearchResults(result.spots ?? []);
         }
-        setSearchResults(data.spots ?? []);
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
           console.error(error);
@@ -906,13 +939,17 @@ export default function MapPage() {
     const fetchGymDetail = async () => {
       try {
         let data: FlowerSpotWithDetails | null = null;
-        if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-          const { getSpotDetailByIdClient } = await import('@/lib/clientApi');
+        if (process.env.NEXT_PUBLIC_TOSS_BUILD === "true") {
+          const { getSpotDetailByIdClient } = await import("@/lib/clientApi");
           data = await getSpotDetailByIdClient(selectedGym.id);
         } else {
-          const res = await fetch(`/api/gyms/${selectedGym.id}`, { signal: controller.signal });
-          if (!res.ok) throw new Error("Failed to fetch gym detail");
-          data = await res.json();
+          const response = await fetch(`/api/gyms/${selectedGym.id}`, {
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          if (response.ok) {
+            data = await response.json();
+          }
         }
         if (data) setSelectedGymDetail(data);
       } catch (error) {
@@ -922,18 +959,22 @@ export default function MapPage() {
 
     const fetchReviews = async () => {
       try {
-        let reviews: SpotReview[] = [];
-        if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-          const { getReviewsClient } = await import('@/lib/clientApi');
-          reviews = await getReviewsClient(selectedGym.id, 12, 0);
+        if (process.env.NEXT_PUBLIC_TOSS_BUILD === "true") {
+          const { getReviewsClient } = await import("@/lib/clientApi");
+          const data = await getReviewsClient(selectedGym.id, 12, 0);
+          setSelectedGymReviews(data ?? []);
         } else {
-          const params = new URLSearchParams({ spot_id: selectedGym.id, limit: "12" });
-          const res = await fetch(`/api/reviews?${params}`, { signal: controller.signal });
-          if (!res.ok) { setSelectedGymReviews([]); return; }
-          const data: SpotReview[] | { error?: string } = await res.json();
-          reviews = Array.isArray(data) ? data : [];
+          const response = await fetch(
+            `/api/reviews?spot_id=${encodeURIComponent(selectedGym.id)}&limit=12&offset=0`,
+            {
+              cache: "no-store",
+              signal: controller.signal,
+            },
+          );
+          if (!response.ok) throw new Error("Failed to fetch reviews");
+          const data = await response.json();
+          setSelectedGymReviews(data ?? []);
         }
-        setSelectedGymReviews(reviews);
       } catch (error) {
         if ((error as Error).name !== "AbortError") setSelectedGymReviews([]);
       }
@@ -1509,6 +1550,8 @@ export default function MapPage() {
       </button>
 
       <FloatingTabBar />
+
+      {!selectedGym && !mobileListOpen && <DismissibleMapAd />}
 
       {selectedGym && (
         <div

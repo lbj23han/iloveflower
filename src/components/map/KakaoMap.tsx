@@ -31,7 +31,10 @@ type KakaoMapType = {
 };
 type KakaoLatLng = { getLat: () => number; getLng: () => number };
 type KakaoLatLngBounds = { getSouthWest: () => KakaoLatLng; getNorthEast: () => KakaoLatLng };
-type KakaoMarker = { setMap: (map: KakaoMapType | null) => void };
+type KakaoMarker = {
+  setMap: (map: KakaoMapType | null) => void;
+  setPosition?: (latlng: KakaoLatLng) => void;
+};
 type KakaoOverlay = { setMap: (map: KakaoMapType | null) => void };
 type KakaoClusterer = { addMarkers: (markers: KakaoMarker[]) => void; clear: () => void };
 
@@ -199,7 +202,7 @@ export default function KakaoMap({
           background:${bg}; color:${color};
           border:${borderWidth} solid ${borderColor};
           border-radius:999px; padding:5px 9px;
-          font-size:11px; font-weight:800;
+          font-size:12px; font-weight:800;
           letter-spacing:-0.02em; white-space:nowrap;
           cursor:pointer; box-shadow:${shadow};
           font-family:-apple-system,sans-serif;

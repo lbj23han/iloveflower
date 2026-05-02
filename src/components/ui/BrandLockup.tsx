@@ -42,7 +42,7 @@ export default function BrandLockup({
           {title}
         </div>
         {subtitle && (
-          <div className={subtitleClassName || 'text-[11px] text-[#6b7280]'}>
+          <div className={subtitleClassName || 'text-sm leading-relaxed text-[#6b7280]'}>
             {subtitle}
           </div>
         )}

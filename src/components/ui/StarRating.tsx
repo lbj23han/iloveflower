@@ -64,18 +64,18 @@ export default function StarRating({
         }
 
         return (
-          <div key={starNumber} className="relative inline-flex h-6 w-6">
+          <div key={starNumber} className="relative inline-flex h-11 w-11 items-center justify-center">
             <button
               type="button"
               aria-label={`${starNumber - 0.5}점`}
               onClick={() => onChange(starNumber - 0.5)}
-              className="absolute inset-y-0 left-0 w-1/2"
+              className="absolute inset-y-0 left-0 w-1/2 select-none rounded-l-full"
             />
             <button
               type="button"
               aria-label={`${starNumber}점`}
               onClick={() => onChange(starNumber)}
-              className="absolute inset-y-0 right-0 w-1/2"
+              className="absolute inset-y-0 right-0 w-1/2 select-none rounded-r-full"
             />
             <span className="pointer-events-none inline-flex">
               <StarIcon fillRatio={fillRatio} sizeClass={sizeClass} />

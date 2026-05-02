@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { voteSpot } from '@/lib/appApi';
 import { getOrCreateSession, getDeviceId } from '@/lib/session';
 
 interface Props {
@@ -28,22 +29,15 @@ export default function VoteButtons({ spotId, initialUp, initialDown }: Props) {
     const deviceId = await getDeviceId();
 
     try {
-      let ok = false;
-      let errorMsg = '';
-      if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-        const { voteClient } = await import('@/lib/clientApi');
-        const result = await voteClient({ spot_id: spotId, vote_type: type, anon_session_id: sessionId, device_id: deviceId });
-        ok = result.ok;
-        errorMsg = result.error ?? '';
-      } else {
-        const res = await fetch('/api/votes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ spot_id: spotId, vote_type: type, anon_session_id: sessionId, device_id: deviceId, nickname }),
-        });
-        ok = res.ok;
-        if (!res.ok) { const j = await res.json(); errorMsg = j.error || '투표에 실패했습니다.'; }
-      }
+      const result = await voteSpot({
+        spot_id: spotId,
+        vote_type: type,
+        anon_session_id: sessionId,
+        device_id: deviceId,
+        nickname,
+      });
+      const ok = Boolean(result.data?.ok);
+      const errorMsg = result.error ?? '';
 
       if (ok) {
         if (type === 'up') setUp((v) => v + 1);

@@ -10,6 +10,7 @@ import {
   FlowerType,
   FLOWER_TYPE_LABELS,
 } from "@/types";
+import { createSpotReport, searchSpotsByName, uploadAppImage } from "@/lib/appApi";
 import { getOrCreateSession, getDeviceId } from "@/lib/session";
 import BrandLockup from "@/components/ui/BrandLockup";
 
@@ -25,6 +26,35 @@ type PickedLocation = {
   lng: number;
 };
 
+type KakaoLatLng = {
+  getLat: () => number;
+  getLng: () => number;
+};
+
+type KakaoMapClickEvent = {
+  latLng: KakaoLatLng;
+};
+
+type KakaoMapsNamespace = {
+  LatLng: new (lat: number, lng: number) => KakaoLatLng;
+  Map: new (
+    container: HTMLElement,
+    options: { center: KakaoLatLng; level: number },
+  ) => object;
+  Marker: new (options: { position: KakaoLatLng }) => {
+    setMap: (map: object | null) => void;
+    setPosition: (latlng: KakaoLatLng) => void;
+  };
+  event: {
+    addListener: (
+      map: object,
+      eventName: 'click',
+      handler: (mouseEvent: KakaoMapClickEvent) => void,
+    ) => void;
+  };
+  load: (callback: () => void) => void;
+};
+
 function ReportLocationPicker({
   initialPosition,
   onClose,
@@ -36,8 +66,7 @@ function ReportLocationPicker({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<{
-    setMap: (map: object | null) => void;
-    setPosition: (latlng: { getLat: () => number; getLng: () => number }) => void;
+    setPosition?: (latlng: KakaoLatLng) => void;
   } | null>(null);
   const [pendingLocation, setPendingLocation] = useState<PickedLocation | null>(
     initialPosition,
@@ -45,7 +74,9 @@ function ReportLocationPicker({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const kakaoWindow = window as typeof window & { kakao?: any };
+    const kakaoWindow = window as typeof window & {
+      kakao?: { maps?: KakaoMapsNamespace };
+    };
 
     const seedLocation = initialPosition ?? { lat: 37.5665, lng: 126.978 };
 
@@ -61,10 +92,10 @@ function ReportLocationPicker({
       if (initialPosition) {
         const marker = new maps.Marker({ position: center });
         marker.setMap(map);
-        markerRef.current = marker;
+        markerRef.current = { setPosition: marker.setPosition?.bind(marker) };
       }
 
-      maps.event.addListener(map, "click", (mouseEvent: any) => {
+      maps.event.addListener(map, "click", (mouseEvent) => {
         const lat = mouseEvent.latLng.getLat();
         const lng = mouseEvent.latLng.getLng();
         setPendingLocation({ lat, lng });
@@ -72,11 +103,11 @@ function ReportLocationPicker({
         if (!markerRef.current) {
           const marker = new maps.Marker({ position: mouseEvent.latLng });
           marker.setMap(map);
-          markerRef.current = marker;
+          markerRef.current = { setPosition: marker.setPosition?.bind(marker) };
           return;
         }
 
-        markerRef.current.setPosition(mouseEvent.latLng);
+        markerRef.current.setPosition?.(mouseEvent.latLng);
       });
     };
 
@@ -215,17 +246,8 @@ function ReportForm() {
     const timer = window.setTimeout(async () => {
       setSearching(true);
       try {
-        let spots: FlowerSpotMapItem[] = [];
-        if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-          const { searchSpotsByNameClient } = await import('@/lib/clientApi');
-          const result = await searchSpotsByNameClient(keyword);
-          spots = result.spots;
-        } else {
-          const res = await fetch(`/api/gyms?q=${encodeURIComponent(keyword)}`);
-          const json = await res.json();
-          spots = json.spots ?? [];
-        }
-        setSearchResults(spots);
+        const result = await searchSpotsByName(keyword);
+        setSearchResults(result.data?.spots ?? []);
       } catch {
         setSearchResults([]);
       } finally {
@@ -255,18 +277,11 @@ function ReportForm() {
     try {
       const uploaded: string[] = [];
       for (const file of Array.from(files).slice(0, 5 - imageUrls.length)) {
-        const fd = new FormData();
-        fd.append("file", file);
-        const res = await fetch("/api/upload?folder=reports", {
-          method: "POST",
-          body: fd,
-        });
-        if (res.ok) {
-          const { url } = await res.json();
-          uploaded.push(url);
+        const result = await uploadAppImage(file, "reports");
+        if (result.data?.url) {
+          uploaded.push(result.data.url);
         } else {
-          const body = await res.json().catch(() => ({}));
-          alert(body.error || "이미지 업로드에 실패했습니다.");
+          alert(result.error || "이미지 업로드에 실패했습니다.");
         }
       }
       setImageUrls((prev) => [...prev, ...uploaded].slice(0, 5));
@@ -293,35 +308,30 @@ function ReportForm() {
         : normalizedComment || null;
 
     try {
-      const res = await fetch("/api/reports", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          spot_id: linkedSpot?.id ?? initialSpotId ?? null,
-          spot_name: spotName.trim(),
-          flower_type: flowerType || null,
-          bloom_status: bloomStatus || null,
-          entry_fee: freeEntry
-            ? 0
-            : entryFee.trim()
-              ? parseInt(entryFee, 10)
-              : null,
-          has_night_light: hasNightLight || null,
-          has_parking: hasParking || null,
-          pet_friendly: petFriendly || null,
-          comment: locationPrefixedComment,
-          image_urls: imageUrls,
-          anon_session_id: sessionId,
-          device_id: deviceId,
-          nickname,
-        }),
+      const result = await createSpotReport({
+        spot_id: linkedSpot?.id ?? initialSpotId ?? null,
+        spot_name: spotName.trim(),
+        flower_type: flowerType || null,
+        bloom_status: bloomStatus || null,
+        entry_fee: freeEntry
+          ? 0
+          : entryFee.trim()
+            ? parseInt(entryFee, 10)
+            : null,
+        has_night_light: hasNightLight || null,
+        has_parking: hasParking || null,
+        pet_friendly: petFriendly || null,
+        comment: locationPrefixedComment,
+        image_urls: imageUrls,
+        anon_session_id: sessionId,
+        device_id: deviceId,
+        nickname,
       });
 
-      if (res.ok) {
+      if (result.data) {
         setDone(true);
       } else {
-        const { error } = await res.json();
-        alert(error || "제출에 실패했습니다.");
+        alert(result.error || "제출에 실패했습니다.");
       }
     } finally {
       setSubmitting(false);

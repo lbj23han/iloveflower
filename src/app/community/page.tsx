@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Post, POST_CATEGORY_LABELS, PostCategory } from '@/types';
 import FloatingTabBar from '@/components/ui/FloatingTabBar';
 import BrandLockup from '@/components/ui/BrandLockup';
+import LazyTossAdBanner from '@/components/common/LazyTossAdBanner';
+import { createCommunityPost, listCommunityPosts, uploadAppImage } from '@/lib/appApi';
 import {
   getOrCreateSession,
   getDeviceId,
@@ -61,12 +63,12 @@ function isCommunityTab(value: string | null): value is CommunityTab {
   return !!value && COMMUNITY_TABS.some((tab) => tab.value === value);
 }
 
-
 function CommunityPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [nickname, setNicknameState] = useState('');
   const [postPassword, setPostPassword] = useState('');
@@ -80,7 +82,6 @@ function CommunityPageContent() {
   const selectedCategory: CommunityTab = isCommunityTab(searchParams.get('category'))
     ? (searchParams.get('category') as CommunityTab)
     : 'best';
-
   const isHotdeals = false;
 
   useEffect(() => {
@@ -99,14 +100,33 @@ function CommunityPageContent() {
 
     const fetchContent = async () => {
       setLoading(true);
-      const query =
-        selectedCategory === 'best'
-          ? '?category=best'
-          : `?category=${encodeURIComponent(GROUP_TO_POST_CATEGORY[selectedCategory])}`;
-      const res = await fetch(`/api/posts${query}`);
-      if (!active) return;
-      if (res.ok) setPosts(await res.json());
-      setLoading(false);
+      setListError(null);
+      try {
+        const { data, error } = await listCommunityPosts(
+          selectedCategory === 'best'
+            ? 'best'
+            : GROUP_TO_POST_CATEGORY[selectedCategory],
+          10,
+        );
+        if (!active) return;
+
+        if (data) {
+          setPosts(data);
+        } else {
+          setPosts([]);
+          setListError(error || '데이터를 불러오지 못했습니다.');
+        }
+      } catch (error) {
+        if (!active) return;
+        setPosts([]);
+        setListError(
+          error instanceof Error
+            ? error.message
+            : '데이터를 불러오지 못했습니다.',
+        );
+      } finally {
+        if (active) setLoading(false);
+      }
     };
 
     fetchContent();
@@ -130,14 +150,10 @@ function CommunityPageContent() {
       const toUpload = Array.from(files).slice(0, 4 - imageUrls.length);
       const uploaded: string[] = [];
       for (const file of toUpload) {
-        const formData = new FormData();
-        formData.append('file', file);
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        if (res.ok) {
-          const { url } = await res.json();
-          uploaded.push(url);
+        const { data, error } = await uploadAppImage(file, 'community');
+        if (data?.url) {
+          uploaded.push(data.url);
         } else {
-          const { error } = await res.json();
           alert(error || '업로드 실패');
         }
       }
@@ -157,28 +173,21 @@ function CommunityPageContent() {
     const deviceId = await getDeviceId();
 
     try {
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title.trim(),
-          content: content.trim(),
-          category: postCategory,
-          password: postPassword.trim(),
-          anon_session_id: sessionId,
-          device_id: deviceId,
-          nickname: savedNickname,
-          image_urls: imageUrls,
-        }),
+      const { data: post, error } = await createCommunityPost({
+        title: title.trim(),
+        content: content.trim(),
+        category: postCategory,
+        password: postPassword.trim(),
+        anon_session_id: sessionId,
+        device_id: deviceId,
+        nickname: savedNickname,
+        image_urls: imageUrls,
       });
 
-      if (!res.ok) {
-        const { error } = await res.json();
+      if (!post) {
         alert(error || '제출에 실패했습니다.');
         return;
       }
-
-      const post: Post = await res.json();
       if (selectedCategory === 'best' || post.category === postCategory) {
         setPosts((prev) => [post, ...prev]);
       }
@@ -194,7 +203,7 @@ function CommunityPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#ffe4e6_0%,#fff1f4_38%,#f8fafc_100%)] pb-28">
+    <div className="min-h-[100dvh] bg-[radial-gradient(circle_at_top,#ffe4e6_0%,#fff1f4_38%,#f8fafc_100%)] pb-28">
       <header className="sticky top-0 z-10 px-3 pt-3 md:px-4 md:pt-4">
         <div className="mx-auto flex max-w-4xl items-center justify-between rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/82 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-xl">
           <BrandLockup
@@ -204,12 +213,12 @@ function CommunityPageContent() {
             iconWidth={40}
             iconHeight={56}
             titleClassName="font-bold text-[#111827]"
-            subtitleClassName="text-xs text-[#6b7280]"
+            subtitleClassName="text-sm leading-relaxed text-[#6b7280]"
           />
           {!isHotdeals && (
             <button
               onClick={() => setShowForm((prev) => !prev)}
-              className="rounded-full bg-[#111827] px-4 py-2 text-xs font-semibold text-white shadow-sm"
+              className="min-h-[44px] select-none rounded-full bg-[#111827] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform active:scale-[0.98]"
             >
               {showForm ? '취소' : '글쓰기'}
             </button>
@@ -225,12 +234,12 @@ function CommunityPageContent() {
               <button
                 key={tab.value}
                 onClick={() => handleTabChange(tab.value)}
-                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                className={`min-h-[40px] shrink-0 select-none rounded-full border px-4 py-2 text-sm font-semibold transition-transform active:scale-[0.98] ${
                   active
                     ? 'border-[#111827] bg-[#111827] text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]'
                     : tab.value === 'best'
-                      ? 'border-[#f59e0b]/40 bg-[#fffbeb] text-[#b45309] hover:border-[#f59e0b]'
-                      : 'border-[#ffd6dc]/55 bg-[#fffafb]/76 text-[#4b5563] hover:border-[#ffd6dc]'
+                      ? 'border-[#f59e0b]/40 bg-[#fffbeb] text-[#b45309]'
+                      : 'border-[#ffd6dc]/55 bg-[#fffafb]/76 text-[#4b5563]'
                 }`}
               >
                 {tab.label}
@@ -249,12 +258,12 @@ function CommunityPageContent() {
                   value={nickname}
                   onChange={(e) => setNicknameState(e.target.value.slice(0, 20))}
                   placeholder="닉네임"
-                  className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
+                  className="min-h-[48px] w-full rounded-2xl border border-[#dbe4df] bg-white px-4 py-3 text-base font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setNicknameState(refreshNickname())}
-                  className="rounded-[18px] border border-[#dbe4df] bg-white text-xl text-[#4b5563]"
+                  className="min-h-[48px] select-none rounded-2xl border border-[#dbe4df] bg-white text-xl text-[#4b5563] transition-transform active:scale-[0.98]"
                   aria-label="닉네임 다시 생성"
                 >
                   ⟳
@@ -266,16 +275,16 @@ function CommunityPageContent() {
                   value={postPassword}
                   onChange={(e) => setPostPassword(e.target.value.slice(0, 20))}
                   placeholder="글 비밀번호 (수정/삭제 시 필요)"
-                  className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-medium text-[#111827] focus:border-[#ff6b81] focus:outline-none"
+                  className="min-h-[48px] w-full rounded-2xl border border-[#dbe4df] bg-white px-4 py-3 text-base font-medium text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                 />
-                <div className="mt-1 text-[11px] text-[#7b8aa0]">
+                <div className="mt-1 text-sm leading-relaxed text-[#7b8aa0]">
                   비밀번호는 4자 이상 20자 이하로 입력해주세요.
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-[#4b5563]">카테고리</div>
+              <div className="text-sm font-semibold text-[#4b5563]">카테고리</div>
               <div className="scrollbar-hide -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                 {COMMUNITY_TABS.filter((tab) => tab.value !== 'best').map((tab) => {
                   const rawCategory = GROUP_TO_POST_CATEGORY[tab.value as Exclude<CommunityTab, 'best'>];
@@ -284,7 +293,7 @@ function CommunityPageContent() {
                     <button
                       key={tab.value}
                       onClick={() => setPostCategory(rawCategory)}
-                      className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                      className={`min-h-[40px] shrink-0 select-none rounded-full border px-4 py-2 text-sm font-semibold transition-transform active:scale-[0.98] ${
                         active
                           ? 'border-[#ff6b81] bg-[#ff6b81] text-white'
                           : 'border-[#dbe4df] bg-[#fffafb]/84 text-[#4b5563]'
@@ -302,7 +311,7 @@ function CommunityPageContent() {
               value={title}
               onChange={(e) => setTitle(e.target.value.slice(0, 80))}
               placeholder="제목을 입력해주세요"
-              className="w-full rounded-[18px] border border-[#dbe4df] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
+              className="min-h-[48px] w-full rounded-2xl border border-[#dbe4df] bg-white px-4 py-3 text-base font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
             />
 
             <textarea
@@ -310,15 +319,15 @@ function CommunityPageContent() {
               onChange={(e) => setContent(e.target.value.slice(0, 500))}
               placeholder="내용을 입력해주세요"
               rows={6}
-              className="w-full resize-none rounded-[22px] border border-[#dbe4df] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#ff6b81] focus:outline-none"
+              className="w-full resize-none rounded-[22px] border border-[#dbe4df] bg-white px-4 py-3 text-base leading-relaxed text-[#374151] focus:border-[#ff6b81] focus:outline-none"
             />
 
             {/* 이미지 업로드 */}
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#4b5563]">사진 ({imageUrls.length}/4)</span>
+                <span className="text-sm font-semibold text-[#4b5563]">사진 ({imageUrls.length}/4)</span>
                 {imageUrls.length < 4 && (
-                  <label className={`cursor-pointer rounded-full border border-[#ffd6dc] bg-white px-3 py-1.5 text-xs font-semibold text-[#c0394f] ${uploadingImage ? 'opacity-50' : ''}`}>
+                  <label className={`min-h-[40px] cursor-pointer select-none rounded-full border border-[#ffd6dc] bg-white px-4 py-2 text-sm font-semibold text-[#c0394f] ${uploadingImage ? 'opacity-50' : ''}`}>
                     {uploadingImage ? '업로드 중...' : '+ 사진 추가'}
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
                   </label>
@@ -346,36 +355,43 @@ function CommunityPageContent() {
             <button
               onClick={submit}
               disabled={!title.trim() || !content.trim() || !nickname.trim() || !postPassword.trim() || submitting}
-              className="w-full rounded-[20px] bg-[#1f2a3d] px-5 py-3 text-sm font-bold text-white disabled:opacity-50"
+              className="min-h-[52px] w-full select-none rounded-[20px] bg-[#1f2a3d] px-5 py-3 text-base font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
             >
               {submitting ? '등록 중...' : '글 등록'}
             </button>
           </div>
         )}
 
+        {listError && (
+          <div className="rounded-[24px] border border-[#fecaca] bg-[#fff1f2] px-4 py-3 text-sm leading-relaxed text-[#b91c1c]">
+            커뮤니티 글을 불러오지 못했습니다. {listError}
+          </div>
+        )}
+
         {loading ? (
-          <div className="py-10 text-center text-sm text-[#9ca3af]">불러오는 중...</div>
+          <div className="py-10 text-center text-sm text-[#9ca3af] animate-pulse">불러오는 중...</div>
         ) : posts.length === 0 ? (
-          <div className="rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/84 px-6 py-10 text-center text-sm text-[#9ca3af] shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+          <div className="rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/84 px-6 py-10 text-center text-sm leading-relaxed text-[#9ca3af] shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+            <div className="mb-3 text-3xl">💬</div>
             {selectedCategory === 'best'
               ? <>아직 BEST로 선정된 글이 없어요.<br />도전해보세요!</>
               : '아직 글이 없어요. 첫 글을 남겨보세요!'}
           </div>
         ) : (
-          posts.map((post) => (
-            <Link
-              key={post.id}
-              href={`/community/${post.id}`}
-              className="block rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/84 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:border-[#ffd6dc]"
-            >
+          posts.map((post, index) => (
+            <div key={post.id}>
+              <Link
+                href={`/community/${post.id}`}
+                className="block select-none rounded-[28px] border border-[#ffd6dc]/55 bg-[#fffafb]/84 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-transform active:scale-[0.98]"
+              >
               <div className="mb-2">
                 <div className="flex items-center gap-2">
                   {(post.comment_count ?? 0) >= 5 && (
-                    <span className="inline-flex rounded-full bg-[#fffbeb] px-2.5 py-1 text-[11px] font-semibold text-[#b45309]">
+                    <span className="inline-flex rounded-full bg-[#fffbeb] px-3 py-1.5 text-sm font-semibold text-[#b45309]">
                       BEST
                     </span>
                   )}
-                  <span className="inline-flex rounded-full bg-[#fff1f4] px-2.5 py-1 text-[11px] font-semibold text-[#c0394f]">
+                  <span className="inline-flex rounded-full bg-[#fff1f4] px-3 py-1.5 text-sm font-semibold text-[#c0394f]">
                     {POST_CATEGORY_LABELS[post.category]}
                   </span>
                 </div>
@@ -396,9 +412,9 @@ function CommunityPageContent() {
                   )}
                 </div>
               ) : (
-                <p className="mb-3 line-clamp-2 text-xs text-[#6b7280]">{post.content}</p>
+                <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-[#6b7280]">{post.content}</p>
               )}
-              <div className="flex items-center gap-2 text-xs text-[#9ca3af]">
+              <div className="flex items-center gap-2 text-sm text-[#9ca3af]">
                 <span>{post.nickname}</span>
                 <span>·</span>
                 <span>{timeAgo(post.created_at)}</span>
@@ -409,7 +425,13 @@ function CommunityPageContent() {
                   </>
                 )}
               </div>
-            </Link>
+              </Link>
+              {(index + 1) % 5 === 0 && (
+                <div className="py-1">
+                  <LazyTossAdBanner variant="card" />
+                </div>
+              )}
+            </div>
           ))
         )}
       </div>
@@ -423,8 +445,8 @@ export default function CommunityPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top,#ffe4e6_0%,#fff1f4_38%,#f8fafc_100%)]">
-          <div className="flex min-h-screen items-center justify-center text-sm text-[#9ca3af]">
+        <div className="min-h-[100dvh] bg-[radial-gradient(circle_at_top,#ffe4e6_0%,#fff1f4_38%,#f8fafc_100%)]">
+          <div className="flex min-h-[100dvh] items-center justify-center text-sm text-[#9ca3af] animate-pulse">
             불러오는 중...
           </div>
         </div>

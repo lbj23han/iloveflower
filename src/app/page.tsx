@@ -10,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <MapPage />;
+  return (
+    <div className="min-h-[100dvh]">
+      <MapPage />
+    </div>
+  );
 }

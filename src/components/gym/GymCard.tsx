@@ -18,15 +18,15 @@ export default function SpotCard({ spot, onClick }: Props) {
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer rounded-[20px] border border-white/55 bg-white/80 px-4 py-4 shadow-sm transition-all hover:shadow-md"
+      className="cursor-pointer select-none rounded-[24px] border border-white/55 bg-white/78 px-4 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.16)] backdrop-blur-xl transition-transform active:scale-[0.98]"
     >
       <div className="mb-1 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="truncate font-bold text-[#111827]">{spot.name}</div>
-          {spot.address && <div className="truncate text-xs text-[#9ca3af]">{spot.address}</div>}
+          <div className="truncate text-base font-bold text-[#111827]">{spot.name}</div>
+          {spot.address && <div className="truncate text-sm leading-relaxed text-[#6b7280]">{spot.address}</div>}
         </div>
         <span
-          className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+          className="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold"
           style={{ backgroundColor: accent.bg, color: accent.text }}
         >
           {CATEGORY_LABELS[spot.category]}
@@ -36,14 +36,14 @@ export default function SpotCard({ spot, onClick }: Props) {
       <div className="mt-2 flex flex-wrap gap-1.5">
         {flowerLabel && (
           <span
-            className="rounded-full px-2.5 py-1 text-xs font-medium"
+            className="rounded-full px-3 py-1.5 text-sm font-medium"
             style={{ backgroundColor: accent.bg, color: accent.text }}
           >
             {flowerLabel}
           </span>
         )}
         {bloomLabel && (
-          <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+          <span className={`rounded-full px-3 py-1.5 text-sm font-medium ${
             spot.bloom_status === 'peak' ? 'bg-[#ff6b81] text-white' :
             spot.bloom_status === 'blooming' ? 'bg-[#ffd6e0] text-[#c0392b]' :
             'bg-[#f3f4f6] text-[#6b7280]'
@@ -52,27 +52,27 @@ export default function SpotCard({ spot, onClick }: Props) {
           </span>
         )}
         {spot.has_active_festival && (
-          <span className="rounded-full bg-[#fff7ed] px-2.5 py-1 text-xs font-medium text-[#c2410c]">
+          <span className="rounded-full bg-[#fff7ed] px-3 py-1.5 text-sm font-medium text-[#c2410c]">
             진행 중 축제
           </span>
         )}
         {!spot.has_active_festival && spot.festival_count > 0 && (
-          <span className="rounded-full bg-[#fef3c7] px-2.5 py-1 text-xs font-medium text-[#92400e]">
+          <span className="rounded-full bg-[#fef3c7] px-3 py-1.5 text-sm font-medium text-[#92400e]">
             축제 {spot.festival_count}
           </span>
         )}
         {spot.entry_fee === 0 && (
-          <span className="rounded-full bg-[#ecfbf3] px-2.5 py-1 text-xs font-medium text-[#00935d]">무료</span>
+          <span className="rounded-full bg-[#ecfbf3] px-3 py-1.5 text-sm font-medium text-[#00935d]">무료</span>
         )}
         {spot.has_night_light && (
-          <span className="rounded-full bg-[#fffbeb] px-2.5 py-1 text-xs font-medium text-[#b45309]">야간조명</span>
+          <span className="rounded-full bg-[#fffbeb] px-3 py-1.5 text-sm font-medium text-[#b45309]">야간조명</span>
         )}
         {spot.pet_friendly && (
-          <span className="rounded-full bg-[#eff6ff] px-2.5 py-1 text-xs font-medium text-[#2563eb]">반려동물</span>
+          <span className="rounded-full bg-[#eff6ff] px-3 py-1.5 text-sm font-medium text-[#2563eb]">반려동물</span>
         )}
       </div>
 
-      <div className="mt-2 flex items-center gap-2 text-xs text-[#9ca3af]">
+      <div className="mt-3 flex items-center gap-3 text-sm leading-relaxed text-[#9ca3af]">
         <span>👍 {spot.vote_up}</span>
         <span>👎 {spot.vote_down}</span>
       </div>

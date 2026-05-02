@@ -1,7 +1,7 @@
 import { defineConfig } from '@apps-in-toss/web-framework/config';
 
 export default defineConfig({
-  appName: 'kkot-map',
+  appName: 'floral-map',
   brand: {
     displayName: '꽃놀이맵',
     primaryColor: '#ff6b81',

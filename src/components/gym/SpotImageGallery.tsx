@@ -15,13 +15,13 @@ export default function SpotImageGallery({ coverImage, representativeImages, spo
     <>
       {coverImage && (
         <div
-          className="overflow-hidden rounded-2xl border border-[#ffd6dc] bg-white cursor-pointer"
+          className="cursor-pointer overflow-hidden rounded-[24px] border border-white/55 bg-white/78 shadow-[0_14px_36px_rgba(15,23,42,0.16)] backdrop-blur-xl"
           onClick={() => setLightboxUrl(coverImage)}
         >
           <img
             src={coverImage}
             alt={`${spotName} 대표 이미지`}
-            className="w-full max-h-72 object-contain bg-[#f9f9f9]"
+            className="w-full max-h-72 object-contain bg-[#fffafb]"
           />
         </div>
       )}
@@ -32,12 +32,12 @@ export default function SpotImageGallery({ coverImage, representativeImages, spo
             <button
               key={url}
               onClick={() => setLightboxUrl(url)}
-              className="shrink-0 focus:outline-none"
+              className="shrink-0 select-none rounded-[24px] focus:outline-none active:scale-[0.98]"
             >
               <img
                 src={url}
                 alt={`${spotName} 사진 ${i + 1}`}
-                className="h-44 w-44 rounded-2xl object-cover shadow-sm"
+                className="h-44 w-44 rounded-[24px] border border-white/55 object-cover shadow-[0_14px_36px_rgba(15,23,42,0.16)]"
               />
             </button>
           ))}
@@ -57,7 +57,7 @@ export default function SpotImageGallery({ coverImage, representativeImages, spo
           />
           <button
             onClick={() => setLightboxUrl(null)}
-            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm"
+            className="absolute right-4 top-4 flex h-11 w-11 select-none items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-transform active:scale-[0.96]"
           >
             ✕
           </button>

@@ -4,11 +4,20 @@ import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { Comment, Post, POST_CATEGORY_LABELS, PostCategory } from '@/types';
 import {
+  createCommunityComment,
+  deleteCommunityPost,
+  getCommunityPost,
+  listCommunityComments,
+  updateCommunityPost,
+  verifyCommunityPostPassword,
+} from '@/lib/appApi';
+import {
   getOrCreateSession,
   getDeviceId,
   refreshNickname,
   setNickname,
 } from '@/lib/session';
+import LazyTossAdBanner from '@/components/common/LazyTossAdBanner';
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -70,14 +79,13 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     let active = true;
 
-    Promise.all([
-      fetch(`/api/posts/${id}`).then((r) => r.json()),
-      fetch(`/api/comments?post_id=${id}`).then((r) => r.json()),
-    ]).then(([p, c]) => {
-      if (!active) return;
-      setPost(p);
-      setComments(c);
-    });
+    Promise.all([getCommunityPost(id), listCommunityComments(id)]).then(
+      ([postResult, commentResult]) => {
+        if (!active) return;
+        setPost(postResult.data);
+        setComments(commentResult.data ?? []);
+      },
+    );
 
     return () => {
       active = false;
@@ -96,12 +104,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     setPencilVerifying(true);
     setPencilPwError(false);
     try {
-      const res = await fetch(`/api/posts/${post.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pencilVerifyPw.trim() }),
-      });
-      if (!res.ok) {
+      const { data } = await verifyCommunityPostPassword(post.id, pencilVerifyPw.trim());
+      if (!data?.ok) {
         setPencilPwError(true);
         return;
       }
@@ -123,26 +127,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     const deviceId = await getDeviceId();
 
     try {
-      const res = await fetch('/api/comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          post_id: id,
-          parent_id: replyTarget?.id ?? null,
-          content: text.trim(),
-          anon_session_id: sessionId,
-          device_id: deviceId,
-          nickname: savedNickname,
-        }),
+      const { data: comment, error } = await createCommunityComment({
+        post_id: id,
+        parent_id: replyTarget?.id ?? null,
+        content: text.trim(),
+        anon_session_id: sessionId,
+        device_id: deviceId,
+        nickname: savedNickname,
       });
 
-      if (!res.ok) {
-        const { error } = await res.json();
+      if (!comment) {
         alert(error || '댓글 등록 실패');
         return;
       }
-
-      const comment = await res.json();
       setComments((prev) => [...prev, comment]);
       setText('');
       setReplyTarget(null);
@@ -158,25 +155,18 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     const savedNickname = setNickname(nickname);
 
     try {
-      const res = await fetch(`/api/posts/${post.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editTitle.trim(),
-          content: editContent.trim(),
-          category: editCategory,
-          nickname: savedNickname,
-          password: editPassword.trim(),
-        }),
+      const { data: updated, error } = await updateCommunityPost(post.id, {
+        title: editTitle.trim(),
+        content: editContent.trim(),
+        category: editCategory,
+        nickname: savedNickname,
+        password: editPassword.trim(),
       });
 
-      if (!res.ok) {
-        const { error } = await res.json();
+      if (!updated) {
         alert(error || '비밀번호가 틀렸거나 수정에 실패했습니다.');
         return;
       }
-
-      const updated = await res.json();
       setPost(updated);
       setEditing(false);
       setEditPassword('');
@@ -190,14 +180,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
     setDeletingPost(true);
     try {
-      const res = await fetch(`/api/posts/${post.id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: deletePassword.trim() }),
-      });
+      const { data, error } = await deleteCommunityPost(post.id, deletePassword.trim());
 
-      if (!res.ok) {
-        const { error } = await res.json();
+      if (!data?.ok) {
         alert(error || '비밀번호가 틀렸거나 삭제에 실패했습니다.');
         setDeletingPost(false);
         return;
@@ -211,7 +196,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
   if (!post) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-[#9ca3af]">
+      <div className="flex min-h-[100dvh] items-center justify-center text-sm text-[#9ca3af] animate-pulse">
         불러오는 중...
       </div>
     );
@@ -226,10 +211,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   }, {});
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#edf3ff_0%,#f7fbff_34%,#ffffff_100%)] pb-8">
-      <header className="sticky top-0 z-10 border-b border-[#e5e7eb] bg-white">
+    <div className="min-h-[100dvh] bg-[radial-gradient(circle_at_top,#edf3ff_0%,#f7fbff_34%,#ffffff_100%)] pb-[calc(env(safe-area-inset-bottom)+24px)]">
+      <header className="sticky top-0 z-10 border-b border-white/55 bg-white/78 backdrop-blur-xl">
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
-          <Link href="/community" className="text-[#6b7280]">← 커뮤니티</Link>
+          <Link href="/community" className="inline-flex min-h-[44px] items-center rounded-full border border-white/55 bg-white/70 px-4 text-sm text-[#6b7280]">← 커뮤니티</Link>
         </div>
       </header>
 
@@ -237,7 +222,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         <main className="space-y-4">
           <div className="rounded-[28px] border border-[#ffd6dc]/60 bg-[#fffafb]/86 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <div className="mb-3 flex items-center justify-between">
-              <span className="inline-flex rounded-full bg-[#fff1f4] px-2.5 py-1 text-[11px] font-semibold text-[#c0394f]">
+              <span className="inline-flex rounded-full bg-[#fff1f4] px-3 py-1.5 text-sm font-semibold text-[#c0394f]">
                 {POST_CATEGORY_LABELS[post.category]}
               </span>
             </div>
@@ -250,12 +235,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     value={nickname}
                     onChange={(e) => setNicknameState(e.target.value.slice(0, 20))}
                     placeholder="닉네임"
-                    className="w-full rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
+                    className="min-h-[48px] w-full rounded-2xl border border-[#ffd6dc] bg-white px-4 py-3 text-base font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setNicknameState(refreshNickname())}
-                    className="rounded-[18px] border border-[#ffd6dc] bg-white text-xl text-[#4b5563]"
+                    className="min-h-[48px] select-none rounded-2xl border border-[#ffd6dc] bg-white text-xl text-[#4b5563] transition-transform active:scale-[0.98]"
                     aria-label="닉네임 다시 생성"
                   >
                     ⟳
@@ -267,7 +252,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     <button
                       key={category.label}
                       onClick={() => setEditCategory(category.value)}
-                      className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                      className={`min-h-[40px] shrink-0 select-none rounded-full border px-4 py-2 text-sm font-semibold transition-transform active:scale-[0.98] ${
                         editCategory === category.value
                           ? 'border-[#111827] bg-[#111827] text-white'
                           : 'border-[#ffd6dc] bg-[#fffafb]/84 text-[#4b5563]'
@@ -282,35 +267,35 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value.slice(0, 80))}
-                  className="w-full rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
+                  className="min-h-[48px] w-full rounded-2xl border border-[#ffd6dc] bg-white px-4 py-3 text-base font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                 />
 
                 <textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value.slice(0, 500))}
                   rows={8}
-                  className="w-full rounded-[22px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#ff6b81] focus:outline-none"
+                  className="w-full rounded-[22px] border border-[#ffd6dc] bg-white px-4 py-3 text-base leading-relaxed text-[#374151] focus:border-[#ff6b81] focus:outline-none"
                 />
 
 
                 <div className="flex items-center justify-between gap-2">
                   <button
                     onClick={() => { setShowDeleteConfirm((v) => !v); if (!showDeleteConfirm) setDeletePassword(editPassword); }}
-                    className="rounded-full border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-50"
+                    className="min-h-[44px] select-none rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-400 transition-transform active:scale-[0.98]"
                   >
                     삭제
                   </button>
                   <div className="flex gap-2">
                     <button
                       onClick={() => { setEditing(false); setEditPassword(''); setShowDeleteConfirm(false); }}
-                      className="rounded-full border border-[#ffd6dc] bg-white px-4 py-2 text-sm font-medium text-[#4b5563]"
+                      className="min-h-[44px] select-none rounded-full border border-[#ffd6dc] bg-white px-4 py-2 text-sm font-medium text-[#4b5563] transition-transform active:scale-[0.98]"
                     >
                       취소
                     </button>
                     <button
                       onClick={submitPostEdit}
                       disabled={savingPost || !editTitle.trim() || !editContent.trim() || !nickname.trim()}
-                      className="rounded-full bg-[#111827] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                      className="min-h-[44px] select-none rounded-full bg-[#111827] px-5 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
                     >
                       {savingPost ? '저장 중...' : '수정 저장'}
                     </button>
@@ -319,26 +304,26 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
                 {showDeleteConfirm && (
                   <div className="rounded-[18px] border border-red-100 bg-red-50 p-4 space-y-2">
-                    <div className="text-xs font-semibold text-red-500">정말 삭제할까요? 댓글도 함께 삭제됩니다.</div>
+                    <div className="text-sm font-semibold text-red-500">정말 삭제할까요? 댓글도 함께 삭제됩니다.</div>
                     <input
                       type="password"
                       autoComplete="new-password"
                       value={deletePassword}
                       onChange={(e) => setDeletePassword(e.target.value.slice(0, 20))}
                       placeholder="비밀번호 재확인"
-                      className="w-full rounded-[14px] border border-red-200 bg-white px-3 py-2 text-sm focus:border-red-400 focus:outline-none"
+                      className="min-h-[48px] w-full rounded-2xl border border-red-200 bg-white px-4 py-3 text-base focus:border-red-400 focus:outline-none"
                     />
                     <div className="flex gap-2">
                       <button
                         onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); }}
-                        className="flex-1 rounded-full border border-[#e5e7eb] bg-white py-2 text-xs font-semibold text-[#4b5563]"
+                        className="min-h-[44px] flex-1 select-none rounded-full border border-[#e5e7eb] bg-white py-2 text-sm font-semibold text-[#4b5563]"
                       >
                         취소
                       </button>
                       <button
                         onClick={deletePost}
                         disabled={!deletePassword.trim() || deletingPost}
-                        className="flex-1 rounded-full bg-red-500 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                        className="min-h-[44px] flex-1 select-none rounded-full bg-red-500 py-2 text-sm font-semibold text-white disabled:opacity-50"
                       >
                         {deletingPost ? '삭제 중...' : '삭제 확인'}
                       </button>
@@ -363,7 +348,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     ))}
                   </div>
                 )}
-                <div className="mt-4 flex items-center gap-2 text-xs text-[#9ca3af]">
+                <div className="mt-4 flex items-center gap-2 text-sm text-[#9ca3af]">
                   <span>{post.nickname}</span>
                   <span>·</span>
                   <span>{timeAgo(post.created_at)}</span>
@@ -383,19 +368,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       onChange={(e) => { setPencilVerifyPw(e.target.value.slice(0, 20)); setPencilPwError(false); }}
                       onKeyDown={(e) => e.key === 'Enter' && verifyPencilPassword()}
                       placeholder="비밀번호 입력"
-                      className={`flex-1 rounded-[14px] border px-3 py-2 text-sm focus:outline-none ${pencilPwError ? 'border-red-400 focus:border-red-400' : 'border-[#ffd6dc] focus:border-[#ff6b81]'}`}
+                      className={`min-h-[48px] flex-1 rounded-2xl border px-4 py-3 text-base focus:outline-none ${pencilPwError ? 'border-red-400 focus:border-red-400' : 'border-[#ffd6dc] focus:border-[#ff6b81]'}`}
                     />
-                    {pencilPwError && <span className="shrink-0 text-xs text-red-500">틀렸어요</span>}
+                    {pencilPwError && <span className="shrink-0 text-sm text-red-500">틀렸어요</span>}
                     <button
                       onClick={verifyPencilPassword}
                       disabled={!pencilVerifyPw.trim() || pencilVerifying}
-                      className="shrink-0 rounded-full bg-[#111827] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                      className="min-h-[44px] shrink-0 select-none rounded-full bg-[#111827] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                     >
                       {pencilVerifying ? '확인 중' : '확인'}
                     </button>
                     <button
                       onClick={() => { setShowPencilInput(false); setPencilVerifyPw(''); setPencilPwError(false); }}
-                      className="shrink-0 rounded-full border border-[#e5e7eb] bg-white px-3 py-2 text-xs text-[#9ca3af]"
+                      className="min-h-[44px] shrink-0 select-none rounded-full border border-[#e5e7eb] bg-white px-4 py-2 text-sm text-[#9ca3af]"
                     >
                       취소
                     </button>
@@ -404,7 +389,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <div className="flex justify-end">
                     <button
                       onClick={() => setShowPencilInput(true)}
-                      className="rounded-full border border-[#e5e7eb] bg-white px-3 py-1.5 text-xs text-[#9ca3af] hover:border-[#ff6b81] hover:text-[#c0394f]"
+                      className="min-h-[40px] select-none rounded-full border border-[#e5e7eb] bg-white px-4 py-2 text-sm text-[#9ca3af] transition-transform active:scale-[0.98]"
                     >
                       편집
                     </button>
@@ -413,6 +398,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               </div>
             )}
           </div>
+
+          <LazyTossAdBanner variant="card" />
 
           <div className="rounded-[28px] border border-[#ffd6dc]/60 bg-[#fffafb]/86 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <div className="text-lg font-bold text-[#111827]">댓글 쓰기</div>
@@ -424,7 +411,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     value={nickname}
                     onChange={(e) => setNicknameState(e.target.value.slice(0, 20))}
                     placeholder="닉네임"
-                    className="w-full rounded-[18px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
+                    className="min-h-[48px] w-full rounded-2xl border border-[#ffd6dc] bg-white px-4 py-3 text-base font-semibold text-[#111827] focus:border-[#ff6b81] focus:outline-none"
                   />
                   <button
                     type="button"
@@ -437,7 +424,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
 
                 {replyTarget && (
-                  <div className="rounded-[16px] bg-[#eff6ff] px-4 py-2 text-xs text-[#52607a]">
+                  <div className="rounded-[16px] bg-[#eff6ff] px-4 py-2 text-sm leading-relaxed text-[#52607a]">
                     {replyTarget.nickname}님에게 답글 작성 중
                     <button
                       onClick={() => setReplyTarget(null)}
@@ -453,7 +440,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   onChange={(e) => setText(e.target.value.slice(0, 200))}
                   placeholder="댓글을 입력해 주세요."
                   rows={3}
-                  className="w-full rounded-[22px] border border-[#ffd6dc] bg-white px-4 py-3 text-sm text-[#374151] focus:border-[#ff6b81] focus:outline-none"
+                  className="w-full rounded-[22px] border border-[#ffd6dc] bg-white px-4 py-3 text-base leading-relaxed text-[#374151] focus:border-[#ff6b81] focus:outline-none"
                 />
               </div>
 
@@ -474,7 +461,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
             <div className="space-y-4 px-4 py-4">
               {topLevelComments.length === 0 ? (
-                <div className="px-5 py-6 text-center text-sm text-[#9ca3af]">첫 댓글을 남겨보세요!</div>
+                <div className="px-5 py-6 text-center text-sm leading-relaxed text-[#9ca3af]"><div className="mb-2 text-3xl">💬</div>첫 댓글을 남겨보세요!</div>
               ) : (
                 topLevelComments.map((comment) => (
                   <div
@@ -491,7 +478,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                           <div className="text-xs text-[#94a3b8]">{timeAgo(comment.created_at)}</div>
                         </div>
                       </div>
-                      <button className="rounded-full bg-[#eef2f7] px-3 py-1 text-xs font-medium text-[#52607a]">
+                      <button className="min-h-[40px] select-none rounded-full bg-[#eef2f7] px-4 py-2 text-sm font-medium text-[#52607a]">
                         ...
                       </button>
                     </div>
@@ -501,7 +488,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     <div className="mt-3">
                       <button
                         onClick={() => setReplyTarget(comment)}
-                        className="rounded-full border border-[#ffd6dc] bg-white px-3 py-1.5 text-xs font-semibold text-[#52607a]"
+                        className="min-h-[40px] select-none rounded-full border border-[#ffd6dc] bg-white px-4 py-2 text-sm font-semibold text-[#52607a]"
                       >
                         답글 달기
                       </button>

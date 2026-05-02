@@ -3,6 +3,12 @@
 import Image from "next/image";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { SpotReview } from '@/types';
+import {
+  createSpotReview,
+  deleteSpotReview,
+  listSpotReviews,
+  uploadAppImage,
+} from "@/lib/appApi";
 type Review = SpotReview;
 import {
   getOrCreateSession,
@@ -79,16 +85,8 @@ async function uploadFiles(files: FileList, existingCount: number): Promise<stri
   const urls: string[] = [];
   for (const file of toUpload) {
     try {
-      if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-        const { uploadImageClient } = await import('@/lib/clientApi');
-        const { url } = await uploadImageClient(file, 'spot-reviews');
-        if (url) urls.push(url);
-      } else {
-        const fd = new FormData();
-        fd.append('file', file);
-        const res = await fetch('/api/upload?folder=spot-reviews', { method: 'POST', body: fd });
-        if (res.ok) { const { url } = await res.json(); urls.push(url); }
-      }
+      const result = await uploadAppImage(file, "spot-reviews");
+      if (result.data?.url) urls.push(result.data.url);
     } catch {
       // 개별 실패 무시
     }
@@ -159,20 +157,9 @@ export default function ReviewSection({
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
-      const params = new URLSearchParams({
-        spot_id: spotId,
-        offset: String(reviews.length),
-        limit: "12",
-      });
-      let nextReviews: Review[];
-      if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-        const { getReviewsClient } = await import('@/lib/clientApi');
-        nextReviews = await getReviewsClient(spotId, 12, reviews.length) as Review[];
-      } else {
-        const res = await fetch(`/api/reviews?${params}`);
-        if (!res.ok) throw new Error("Failed to fetch reviews");
-        nextReviews = await res.json();
-      }
+      const result = await listSpotReviews(spotId, 12, reviews.length);
+      if (!result.data) throw new Error(result.error || "Failed to fetch reviews");
+      const nextReviews: Review[] = result.data;
       setReviews((prev) => [...prev, ...nextReviews]);
       setHasMore(nextReviews.length >= 12);
     } catch (error) {
@@ -220,33 +207,16 @@ export default function ReviewSection({
       : null;
 
     try {
-      let newReview: Review | null = null;
-      let errorMsg = '';
-      if (process.env.NEXT_PUBLIC_TOSS_BUILD === 'true') {
-        const { createReviewClient } = await import('@/lib/clientApi');
-        const result = await createReviewClient({
-          spot_id: spotId, content: text.trim(), rating: overallRating,
-          signal_crowded: signalRatings.signal_crowded >= 3,
-          signal_photo_spot: signalRatings.signal_photo_spot >= 3,
-          signal_accessible: signalRatings.signal_accessible >= 3,
-          image_urls: imageUrls, anon_session_id: sessionId, device_id: deviceId, nickname: savedNickname,
-        });
-        newReview = result.data; errorMsg = result.error ?? '';
-      } else {
-        const res = await fetch("/api/reviews", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            spot_id: spotId, content: text.trim(), rating: overallRating,
-            signal_crowded: signalRatings.signal_crowded >= 3,
-            signal_photo_spot: signalRatings.signal_photo_spot >= 3,
-            signal_accessible: signalRatings.signal_accessible >= 3,
-            image_urls: imageUrls, password: password.trim(),
-            anon_session_id: sessionId, device_id: deviceId, nickname: savedNickname,
-          }),
-        });
-        if (res.ok) { newReview = await res.json(); }
-        else { const j = await res.json(); errorMsg = j.error || "제출에 실패했습니다."; }
-      }
+      const result = await createSpotReview({
+        spot_id: spotId, content: text.trim(), rating: overallRating,
+        signal_crowded: signalRatings.signal_crowded >= 3,
+        signal_photo_spot: signalRatings.signal_photo_spot >= 3,
+        signal_accessible: signalRatings.signal_accessible >= 3,
+        image_urls: imageUrls, password: password.trim(),
+        anon_session_id: sessionId, device_id: deviceId, nickname: savedNickname,
+      });
+      const newReview = result.data;
+      const errorMsg = result.error ?? '';
 
       if (newReview) {
         setReviews((prev) => [newReview as Review, ...prev]);
@@ -269,17 +239,9 @@ export default function ReviewSection({
 
     setDeletingId(reviewId);
     try {
-      const res = await fetch("/api/reviews", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          review_id: reviewId,
-          password: enteredPassword.trim(),
-        }),
-      });
-      if (!res.ok) {
-        const { error } = await res.json();
-        alert(error || "리뷰 삭제에 실패했습니다.");
+      const result = await deleteSpotReview(reviewId, enteredPassword.trim());
+      if (!result.data) {
+        alert(result.error || "리뷰 삭제에 실패했습니다.");
         return;
       }
       setReviews((prev) => prev.filter((review) => review.id !== reviewId));

@@ -3,7 +3,6 @@ import Link from "next/link";
 import Script from "next/script";
 import "./globals.css";
 
-const isTossBuild = process.env.NEXT_PUBLIC_TOSS_BUILD === 'true';
 const kakaoKey = (process.env.NEXT_PUBLIC_KAKAO_MAP_KEY ?? "").trim();
 
 export const metadata: Metadata = {
@@ -74,15 +73,11 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5992854033857462"
           crossOrigin="anonymous"
         />
-        {isTossBuild ? (
-          <script src="/kakao-maps-loader.js" />
-        ) : (
-          kakaoKey && (
-            <Script
-              src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&libraries=clusterer&autoload=false`}
-              strategy="afterInteractive"
-            />
-          )
+        {kakaoKey && (
+          <Script
+            src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&libraries=clusterer&autoload=false`}
+            strategy="afterInteractive"
+          />
         )}
       </head>
       <body className="h-full">
